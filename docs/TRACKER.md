@@ -69,7 +69,7 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
 | Subagent: P8.2 F3 caches and shared context (Opus) | branch `determinism/f3-caches` | `progress/f3-caches.log` | running |
 | Subagent: P8.2 F4 content-neutral allocations (Opus) | branch `determinism/f4-alloc` | `progress/f4-alloc.log` | done |
 | Subagent: P8.9 eager-vs-JIT verifier (Opus) | branch `determinism/jitverify` | `progress/jitverify.log` | running |
-| Subagent: P8.11 fragment elision + Cross.views timing (Opus) | branch `determinism/p811` | `progress/p811.log` | running |
+| Subagent: P8.11 fragment elision + Cross.views timing (Opus) | branch `determinism/p811` | `progress/p811.log` | done |
 | P8.10 kitchen-sink test IG (Opus) | https://github.com/jmandel/fhir-ig-kitchen-sink | `progress/kitchen-sink.log` | done |
 
 ## Plan
@@ -106,6 +106,7 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
   - F2 classified but left: `pf.expansions` (deliberate output registration; JIT would need it produced eagerly), worker-context `codeSystemsUsed` (a terminology-layer accumulator read only by QA; changing it is out of scope per D15). Open for the maintainers: approve `determinism/f2-anchors` (P10.28); compute the `xref.used` index once before rendering (changes the first language pass's lists); a core API change to take the ViewDefinition join keys off userData.
 - [~] P8.11 Fix the `{% fragment %}` elision write into the loaded Element (a JIT-baseline cause; design late-write group, PG:6609) and compute `Cross.views` only once its inputs are final (fragment-group cause).
   - 04:47Z kitchen-sink: verifier elided 3 → 0, cross-views-early 2 → 0; output gate (master ×2 vs fix ×2): intended change only: with `p811-xref` the last language pass's reference lists (list json/csv, `package.db` list refs, the German valueset-ref-list fragment) no longer carry uses left over from pass 1 (same cross-pass accumulation F2 noted): an output change for the maintainers, together with F2's xref-index question. Verifiers on six IGs and real-IG gates running.
+  - 05:48Z **P8.11 done** (`determinism/p811` 880ef9dc, `determinism/p811-xref` 9167deb4 on F2): verifier elided 3 → 0, cross-views-early 11 → 1 (left: US Core ValueSet fetched from the terminology server loses its previous-version annotation; terminology layer, not fixed, D15). Gates: genomics identical to master within noise, US Core only known noise, kitchen sink and fhir-tools only the intended multi-language list change (needs maintainer approval with the xref-index question).
 - [ ] P8.3 **Enforce** the freeze during HTML generation (a mutation throws in CI/test builds, logs in production), with the determinism harness as the gate.
 - [ ] P8.4 Pure renderers with declared inputs (R7), starting with the StructureDefinition views (the family JIT would defer first).
 - [ ] P8.5 Upstream the in-process engine: `-jekyll-engine shim|shim-mem` (from the prototype), with the code-home decision (publisher module vs separate artifact) and a maintainer (Q1). (Was P6.0/P6.3.)
