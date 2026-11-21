@@ -248,6 +248,7 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
 - [ ] P10.29 **`saveVSList` writes a value set's OIDs as its "sources" array.** Found by P8.2 F2.
 - [ ] P10.30 **`expansions.json` contains each expansion once per language pass** in multi-language IGs. Found by P8.2 F2.
 - [ ] P10.31 **Search-parameter fragments pick a different fhir-extensions SearchParameter version from run to run** (kitchen sink, on master too): another ordering nondeterminism (tier B). Found by P8.2 F2.
+- [ ] P10.32 **With publisher#1489, local builds of IGs on the released HL7 or IHE templates stop on first run.** The PR removes `fhir.base.template` from the trusted templates (deliberately: "no longer trusted"), and a local build whose template chain has active content (an ant script) now stops unless trusted with `-trust-template <id>` or `trustedTemplates` in fhir-settings.json. The latest `hl7.fhir.template` / `hl7.base.template` / `ihe.fhir.template` releases (1.0.0, and IHE `#current`) still depend on `fhir.base.template#1.0.0` (only `hl7.base.template#current` moved to `fhir2.base.template`). Hit by MHD, US Core, genomics in the PR evaluation; to mention to the maintainer with the evaluation results (probably intended, pending new template releases).
 
 ## Open questions
 - Q1. Where should the in-process engine live (a module in fhir-ig-publisher vs a separate artifact), and who maintains it? Discuss with the publisher maintainers (P8.5).
