@@ -71,6 +71,7 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
 | Subagent: P8.9 eager-vs-JIT verifier (Opus) | branch `determinism/jitverify` | `progress/jitverify.log` | done |
 | Subagent: tier-A stack (rebase all done branches onto current master + integration stack + verifier) (Opus) | branch `determinism/tier-a-stack` | `progress/stack.log` | running |
 | Subagent: P8.5 in-process engine on master, then first JIT for verified-safe families (Opus) | branches `determinism/engine`, `determinism/engine-jit` | `progress/engine.log` | done |
+| Subagent: P8.7 defer the expensive families (split side outputs from ValueSet / CodeSystem / StructureMap / `Cross.views` units), measure the time and memory win (Opus) | branch `determinism/engine-jit2` | `progress/engine-jit2.log` | running |
 | Subagent: P8.11 fragment elision + Cross.views timing (Opus) | branch `determinism/p811` | `progress/p811.log` | done |
 | P8.10 kitchen-sink test IG (Opus) | https://github.com/jmandel/fhir-ig-kitchen-sink | `progress/kitchen-sink.log` | done |
 
