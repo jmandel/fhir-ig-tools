@@ -69,6 +69,8 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
 | Subagent: P8.2 F3 caches and shared context (Opus) | branch `determinism/f3-caches` | `progress/f3-caches.log` | running |
 | Subagent: P8.2 F4 content-neutral allocations (Opus) | branch `determinism/f4-alloc` | `progress/f4-alloc.log` | done |
 | Subagent: P8.9 eager-vs-JIT verifier (Opus) | branch `determinism/jitverify` | `progress/jitverify.log` | done |
+| Subagent: tier-A stack (rebase all done branches onto current master + integration stack + verifier) (Opus) | branch `determinism/tier-a-stack` | `progress/stack.log` | running |
+| Subagent: P8.5 in-process engine on master, then first JIT for verified-safe families (Opus) | branches `determinism/engine`, `determinism/engine-jit` | `progress/engine.log` | running |
 | Subagent: P8.11 fragment elision + Cross.views timing (Opus) | branch `determinism/p811` | `progress/p811.log` | done |
 | P8.10 kitchen-sink test IG (Opus) | https://github.com/jmandel/fhir-ig-kitchen-sink | `progress/kitchen-sink.log` | done |
 
