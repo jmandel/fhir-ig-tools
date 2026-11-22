@@ -1,5 +1,6 @@
 package org.hl7.fhir.sushi.importer.config;
 
+import org.hl7.fhir.sushi.fhirdefs.xml.FhirXmlToJs;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -68,7 +69,7 @@ public final class LoadConfigurationFromIgResource {
         if (ext.equals(".json")) {
           fileContent = Json.parseFile(Files.readString(Path.of(filePath), StandardCharsets.UTF_8));
         } else if (ext.equals(".xml")) {
-          fileContent = FhirXmlToJs.convert(Files.readString(Path.of(filePath), StandardCharsets.UTF_8));
+          fileContent = FhirXmlToJs.xmlToObj(Files.readString(Path.of(filePath), StandardCharsets.UTF_8));
         }
       } catch (IOException e) {
         throw new UncheckedIOException(e);
