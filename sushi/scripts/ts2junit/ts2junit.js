@@ -36,13 +36,19 @@ const isList = t => t && t.startsWith('List<');
 const elemOf = t => (isList(t) ? t.slice(5, -1) : 'Object');
 const isModel = t => !t || MODEL_TYPES.has(t);
 
-const TS_TYPE = { string: 'String', number: 'Double', boolean: 'Boolean', any: 'Object' };
+const TS_TYPE = { string: 'String', number: 'Double', boolean: 'Boolean', any: 'Object', void: 'void' };
 function javaType(tn) {
   if (!tn) return 'Object';
   const s = src(tn);
   if (TS_TYPE[s]) return TS_TYPE[s];
   if (/\[\]$/.test(s)) return `List<${javaType({ getText: () => s.slice(0, -2) })}>`;
-  if (ts.isFunctionTypeNode && tn.kind === ts.SyntaxKind.FunctionType) return 'FUNCTION';
+  if (tn.kind === ts.SyntaxKind.FunctionType) {
+    const ps = tn.parameters.map(p => javaType(p.type));
+    const rt = javaType(tn.type);
+    if (ps.length === 0) return rt === 'void' || rt === 'Object' ? 'Runnable' : `java.util.function.Supplier<${rt}>`;
+    if (ps.length === 1) return `java.util.function.Function<${ps[0]}, ${rt}>`;
+    return 'FUNCTION';
+  }
   return s.replace(/^jest\.SpyInstance$/, 'Object');
 }
 
@@ -141,6 +147,7 @@ function E(n, hint) {
     if (hint === 'int[]') return { c: `new int[] {${n.elements.map(e => E(e).c).join(', ')}}`, t: 'int[]' };
     const p = pureValue(n);
     if (p && hint === 'json') return { c: `JsAssert.json(${jsonArg(p.v)})`, t: 'Object' };
+
     const els = n.elements.map(e => E(e, hint === 'double' ? 'double' : undefined).c);
     return { c: `new ArrayList<>(Arrays.asList(${els.join(', ')}))`, t: 'List<Object>' };
   }
@@ -159,6 +166,16 @@ function E(n, hint) {
     }
     const p = pureValue(n);
     if (p) return { c: `JsAssert.json(${jsonArg(p.v)})`, t: 'Object' };
+    if (n.properties.every(q => ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) || ts.isSpreadAssignment(q))) {
+      const parts = [];
+      for (const q of n.properties) {
+        if (ts.isSpreadAssignment(q)) { parts.push(`SPREAD, ${E(q.expression).c}`); continue; }
+        const k = q.name.getText(sf).replace(/^['"]|['"]$/g, '');
+        const v = ts.isShorthandPropertyAssignment(q) ? E(q.name, 'double') : E(q.initializer, 'double');
+        parts.push(`${jstr(k)}, ${v.c}`);
+      }
+      return { c: `obj(${parts.join(', ')})`, t: 'Object' };
+    }
     return { c: `/* TODO-TS2J object literal: ${src(n).replace(/\*\//g, '*\\/').replace(/\n\s*/g, ' ')} */`, t: 'Object' };
   }
   if (ts.isAsExpression(n) || ts.isTypeAssertionExpression(n) || ts.isNonNullExpression(n)) {
@@ -173,7 +190,7 @@ function E(n, hint) {
   }
   if (ts.isNewExpression(n)) {
     const cls = src(n.expression);
-    const args = (n.arguments || []).map(a => E(a).c);
+    const args = (n.arguments || []).map(a => E(a, cls === 'TextLocation' ? undefined : 'double').c);
     return { c: `new ${cls}(${args.join(', ')})`, t: cls };
   }
   if (ts.isBinaryExpression(n)) {
@@ -282,7 +299,9 @@ function call(n) {
     if (f === 'testDefsPath') return { c: `testDefsPath(${args.map(a => E(a).c).join(', ')})`, t: 'String' };
     if (f === 'getTestFHIRDefinitions') return { c: `getTestFHIRDefinitions(${args.map(a => E(a).c).join(', ')})`, t: 'TestFHIRDefinitions' };
     const t = typeOf(f);
-    if (t === 'FUNCTION') return { c: `${f}(${args.map(a => E(a).c).join(', ')})`, t: METHOD_TYPES[f] || null };
+    if (t === 'FUNCTION' || t === 'Runnable') return { c: `${f}.run()`, t: 'void' };
+    if (t && t.startsWith('java.util.function.Function<')) return { c: `${f}.apply(${args.map(a => E(a).c).join(', ')})`, t: t.slice(t.lastIndexOf(', ') + 2, -1) };
+    if (t && t.startsWith('java.util.function.Supplier<')) return { c: `${f}.get()`, t: t.slice(28, -1) };
     return { c: `${f}(${args.map(a => E(a).c).join(', ')})`, t: METHOD_TYPES[f] || null };
   }
   if (ts.isPropertyAccessExpression(callee)) {
@@ -296,6 +315,30 @@ function call(n) {
     if (name === 'push' && args.some(a => ts.isSpreadElement(a))) {
       return { c: args.map(a => ts.isSpreadElement(a) ? `${recv.c}.addAll(${E(a.expression).c})` : `${recv.c}.add(${E(a).c})`).join('; '), t: 'void' };
     }
+    if (name === 'push' && ts.isPropertyAccessExpression(callee.expression) && ['items', 'types'].includes(callee.expression.name.text)) {
+      const conv = callee.expression.name.text === 'items' ? 'containsRuleItem' : 'onlyRuleType';
+      const xs = args.map(a => `${conv}(${E(a, 'double').c})`);
+      return { c: xs.length === 1 ? `${recv.c}.add(${xs[0]})` : `${recv.c}.addAll(Arrays.asList(${xs.join(', ')}))`, t: 'boolean' };
+    }
+    if (['some', 'every', 'filter', 'map', 'find', 'findIndex', 'forEach'].includes(name) && args.length === 1 && !(name === 'find' && isList(recv.t))) {
+      let fnc = E(args[0]).c;
+      const fnArg = args[0];
+      if (['some', 'every', 'filter', 'find', 'findIndex'].includes(name) && (ts.isArrowFunction(fnArg)) && !ts.isBlock(fnArg.body)) {
+        scopes.push(new Map()); fnArg.parameters.forEach(p => declare(p.name.getText(sf), null));
+        const b = E(fnArg.body); scopes.pop();
+        if (b.t !== 'boolean') fnc = `(${fnArg.parameters.map(p => p.name.getText(sf)).join(', ')}) -> Js.truthy(${b.c})`;
+      }
+      return { c: `${name}(${recv.c}, ${fnc})`, t: name === 'some' || name === 'every' ? 'boolean' : name === 'findIndex' ? 'int' : name === 'filter' || name === 'map' ? 'List<Object>' : name === 'forEach' ? 'void' : 'Object' };
+    }
+    if (name === 'test' && ts.isRegularExpressionLiteral(callee.expression)) {
+      const r = E(callee.expression);
+      return { c: `jsRegex(${r.c}, ${jstr(r.flags)}).matcher(Js.toStr(${E(args[0]).c})).find()`, t: 'boolean' };
+    }
+    if (name === 'match' && args.length === 1) {
+      const r = E(args[0]);
+      return { c: `jsMatch(${recv.c}, ${r.t === 'REGEX' ? `jsRegex(${r.c}, ${jstr(r.flags)})` : `Pattern.compile(${r.c})`})`, t: 'Object' };
+    }
+    if (name === 'stringify' && src(callee.expression) === 'JSON') return { c: `Json.stringify(${E(args[0]).c})`, t: 'String' };
     if (name === 'push' && (isList(recv.t) || true)) {
       if (args.length === 1) return { c: `${recv.c}.add(${A().join(', ')})`, t: 'boolean' };
       return { c: `${recv.c}.addAll(Arrays.asList(${A().join(', ')}))`, t: 'boolean' };
@@ -356,6 +399,7 @@ function matcher(n) {
     case 'toBeFalsy': return { c: `${not ? 'assertTrue' : 'assertFalse'}(Js.truthy(${a.c}))`, t: 'void' };
     case 'toMatch': {
       const r = E(arg);
+      if (a.t !== 'String') a = { c: `(String) ${a.c}`, t: 'String' };
       if (r.t === 'Pattern') return { c: `${not ? 'assertNotMatchesPattern' : 'assertMatchesPattern'}(${r.c}, ${a.c})`, t: 'void' };
       if (r.t === 'REGEX') return { c: `${not ? 'assertNotMatches' : 'assertMatches'}(${r.c}, ${jstr(r.flags)}, ${a.c})`, t: 'void' };
       return { c: `${not ? 'assertNotContainsText' : 'assertContainsText'}(${r.c}, ${a.c})`, t: 'void' };
@@ -364,6 +408,15 @@ function matcher(n) {
     case 'toContainEqual': {
       const p = pureValue(arg);
       return { c: `${not ? 'assertNotContainsEqual' : 'assertContainsEqual'}(${p ? 'JsAssert.json(' + jsonArg(p.v) + ')' : E(arg).c}, ${a.c})`, t: 'void' };
+    }
+    case 'toBeEmpty': return { c: `${not ? 'assertNotEquals' : 'assertEquals'}(0, ${isList(a.t) ? a.c + '.size()' : 'len(' + a.c + ')'})`, t: 'void' };
+    case 'toThrow': {
+      const fn = (a.t === 'FUNCTION' || a.t === 'Runnable') && ts.isIdentifier(target) ? `${a.c}::run` : a.c;
+      if (!arg) return { c: `assertThrows(RuntimeException.class, ${fn})`, t: 'void' };
+      if (ts.isIdentifier(arg)) return { c: `assertThrows(${arg.text}.class, ${fn})`, t: 'void' };
+      const r = E(arg);
+      if (r.t === 'REGEX') return { c: `assertThrowsMatching(${r.c}, ${jstr(r.flags)}, ${fn})`, t: 'void' };
+      return { c: `assertThrowsMessage(${r.c}, ${fn})`, t: 'void' };
     }
     case 'toEndWith': return { c: `assertTrue(${a.c}.endsWith(${E(arg).c}))`, t: 'void' };
     case 'toBeInstanceOf': return { c: `assertInstanceOf(${src(arg)}.class, ${a.c})`, t: 'void' };
@@ -437,7 +490,12 @@ function assign(e, ind) {
         return `${ind}${owner.c}.location = new TextLocation(${v.startLine}, ${v.startColumn}, ${v.endLine}, ${v.endColumn});\n`;
       }
       if (prop === 'usage' && ts.isStringLiteral(e.right)) return `${ind}${owner.c}.usage = InstanceUsage.${e.right.text};\n`;
-      const hint = prop === 'value' ? 'double' : prop === 'from' ? 'from' : undefined;
+      const hint = prop === 'from' ? 'from' : 'double';
+      if ((prop === 'items' || prop === 'types') && ts.isArrayLiteralExpression(e.right)) {
+        const conv = prop === 'items' ? 'containsRuleItem' : 'onlyRuleType';
+        return `${ind}${owner.c}.${prop} = new ArrayList<>(Arrays.asList(${e.right.elements.map(x => `${conv}(${E(x, 'double').c})`).join(', ')}));\n`;
+      }
+      if (prop === 'instanceOptions') return `${ind}${owner.c}.instanceOptions = instanceOptions(${E(e.right, 'double').c});\n`;
       const r = E(e.right, hint);
       return `${ind}${owner.c}.${prop} = ${r.c};\n`;
     }
@@ -497,12 +555,13 @@ function fnBody(fn) {
 }
 
 let count = 0;
+let topCount = 0;
 function describe(st, titles, ind, isTop) {
   const call = st.expression;
   const title = call.arguments[0].text;
   const fn = call.arguments[1];
   const names = [...titles, title];
-  const cls = isTop ? className : className2(title);
+  const cls = isTop ? (topCount++ === 0 ? className : className.replace(/Test$/, '') + className2(title.replace(/^\S+\s*/, '')) + 'Test') : className2(title);
   scopes.push(new Map());
   let out = '';
   out += `${ind}@DisplayName(${jstr(title)})\n`;
@@ -582,6 +641,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import org.hl7.fhir.sushi.errors.*;
 import org.hl7.fhir.sushi.export.Package.FshMapEntry;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirtypes.*;

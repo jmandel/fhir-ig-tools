@@ -1,9 +1,9 @@
 import re,sys
 p=sys.argv[1]
 s=open(p).read()
-pat=re.compile(r'(\n\s*)(?:var|List<Object>) (\w+) = new ArrayList<>\(Arrays\.asList\((JsAssert\.json\("""(?:.|\n)*?"""\)(?:, JsAssert\.json\("""(?:.|\n)*?"""\))*)\)\)\.map\(\(\{ pathArray, value \}\) -> \{\n(?:.|\n)*?\n\}\);')
+pat=re.compile(r'(\n\s*)(?:var|List<Object>) (\w+) = map\(new ArrayList<>\(Arrays\.asList\((JsAssert\.json\("""(?:.|\n)*?"""\)(?:, JsAssert\.json\("""(?:.|\n)*?"""\))*)\)\), \(\{ pathArray, value \}\) -> \{\n(?:.|\n)*?\n\}\);')
 s,n1=pat.subn(lambda m: f'{m.group(1)}List<CaretValueRule> {m.group(2)} = designationRules({m.group(3)});',s)
-pat2=re.compile(r'(\n\s*)var \[([\w, ]+)\] = new ArrayList<>\(Arrays\.asList\((JsAssert\.json\("""(?:.|\n)*?"""\)(?:, JsAssert\.json\("""(?:.|\n)*?"""\))*)\)\)\.map\(\(\{ pathArray, value \}\) -> \{\n(?:.|\n)*?\n\}\);')
+pat2=re.compile(r'(\n\s*)(?:var|List<Object>) \[([\w, ]+)\] = map\(new ArrayList<>\(Arrays\.asList\((JsAssert\.json\("""(?:.|\n)*?"""\)(?:, JsAssert\.json\("""(?:.|\n)*?"""\))*)\)\), \(\{ pathArray, value \}\) -> \{\n(?:.|\n)*?\n\}\);')
 def r2(m):
     names=[x.strip() for x in m.group(2).split(',')]
     out=f'{m.group(1)}List<CaretValueRule> designations = designationRules({m.group(3)});'
@@ -28,4 +28,5 @@ helper='''
   }
 '''
 s=s.replace('class CodeSystemExporterTest {\n','class CodeSystemExporterTest {\n'+helper,1)
+assert n1 == 1 and n2 == 1, (n1, n2)
 open(p,'w').write(s)

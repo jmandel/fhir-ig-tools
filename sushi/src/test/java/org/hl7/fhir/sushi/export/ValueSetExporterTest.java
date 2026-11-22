@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import org.hl7.fhir.sushi.errors.*;
 import org.hl7.fhir.sushi.export.Package.FshMapEntry;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirtypes.*;

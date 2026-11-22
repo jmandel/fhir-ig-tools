@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fhirtypes.Common;
+import org.hl7.fhir.sushi.fshtypes.Configuration;
+import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
+import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.fshtypes.TextLocation;
 import org.hl7.fhir.sushi.js.Js;
 import org.hl7.fhir.sushi.js.JsObject;
@@ -33,6 +36,110 @@ final class ExportTestUtil {
     Pattern p = Pattern.compile(jsRegex, f);
     assertFalse(actual != null && p.matcher(actual).find(), () -> "expected not to match /" + jsRegex + "/\n but was: "
         + actual);
+  }
+
+  /** Marker for a TS object spread ({@code {...x, k: v}}) in {@link #obj}. */
+  static final Object SPREAD = new Object();
+
+  /** A TS object literal with non-literal values: obj("k1", v1, "k2", v2, SPREAD, other, ...). */
+  @SuppressWarnings("unchecked")
+  static JsObject obj(Object... kv) {
+    JsObject o = new JsObject();
+    for (int i = 0; i < kv.length; i += 2) {
+      if (kv[i] == SPREAD) {
+        if (kv[i + 1] instanceof Map<?, ?> m) o.putAll((Map<String, Object>) m);
+        if (kv[i + 1] instanceof Configuration.ConfigurationInstanceOptions io) {
+          if (io.setMetaProfile != null) o.put("setMetaProfile", io.setMetaProfile);
+          if (io.setId != null) o.put("setId", io.setId);
+          if (io.manualSliceOrdering != null) o.put("manualSliceOrdering", io.manualSliceOrdering);
+        }
+      } else if (kv[i + 1] != Js.UNDEFINED) {
+        o.put((String) kv[i], kv[i + 1]);
+      }
+    }
+    return o;
+  }
+
+  /** TS {@code config.instanceOptions = { ... }}. */
+  static Configuration.ConfigurationInstanceOptions instanceOptions(Object o) {
+    Configuration.ConfigurationInstanceOptions io = new Configuration.ConfigurationInstanceOptions();
+    io.setMetaProfile = (String) JsAssert.at(o, "setMetaProfile");
+    io.setId = (String) JsAssert.at(o, "setId");
+    io.manualSliceOrdering = (Boolean) JsAssert.at(o, "manualSliceOrdering");
+    return io;
+  }
+
+  /** A TS ContainsRuleItem literal {@code { name, type? }}. */
+  static ContainsRuleItem containsRuleItem(Object o) {
+    return new ContainsRuleItem((String) JsAssert.at(o, "name"), (String) JsAssert.at(o, "type"));
+  }
+
+  /** A TS OnlyRuleType literal {@code { type, isReference?, isCanonical?, isCodeableReference? }}. */
+  static OnlyRuleType onlyRuleType(Object o) {
+    OnlyRuleType t = new OnlyRuleType((String) JsAssert.at(o, "type"));
+    t.isReference = (Boolean) JsAssert.at(o, "isReference");
+    t.isCanonical = (Boolean) JsAssert.at(o, "isCanonical");
+    t.isCodeableReference = (Boolean) JsAssert.at(o, "isCodeableReference");
+    return t;
+  }
+
+  // JS array methods on value-model lists (the callback parameter is untyped, like the TS)
+  static boolean some(Object list, java.util.function.Predicate<Object> fn) {
+    return ((List<?>) list).stream().anyMatch(fn);
+  }
+
+  static boolean every(Object list, java.util.function.Predicate<Object> fn) {
+    return ((List<?>) list).stream().allMatch(fn);
+  }
+
+  static List<Object> filter(Object list, java.util.function.Predicate<Object> fn) {
+    return new java.util.ArrayList<>(((List<?>) list).stream().filter(fn).toList());
+  }
+
+  static List<Object> map(Object list, java.util.function.Function<Object, Object> fn) {
+    List<Object> out = new java.util.ArrayList<>();
+    for (Object o : (List<?>) list) out.add(fn.apply(o));
+    return out;
+  }
+
+  static Object find(Object list, java.util.function.Predicate<Object> fn) {
+    return ((List<?>) list).stream().filter(fn).findFirst().orElse(null);
+  }
+
+  static int findIndex(Object list, java.util.function.Predicate<Object> fn) {
+    List<?> l = (List<?>) list;
+    for (int i = 0; i < l.size(); i++) if (fn.test(l.get(i))) return i;
+    return -1;
+  }
+
+  static void forEach(Object list, java.util.function.Consumer<Object> fn) {
+    ((List<?>) list).forEach(fn);
+  }
+
+  /** JS {@code s.match(re)} truthiness: the first match, or null. */
+  static Object jsMatch(Object s, Pattern p) {
+    if (!(s instanceof String str)) return null;
+    java.util.regex.Matcher m = p.matcher(str);
+    return m.find() ? m.group() : null;
+  }
+
+  /** A TS array literal with non-literal values. */
+  static List<Object> arr(Object... xs) {
+    return new java.util.ArrayList<>(java.util.Arrays.asList(xs));
+  }
+
+  /** Jest {@code expect(fn).toThrow('message')}: throws, and the message contains the text. */
+  static void assertThrowsMessage(String text, org.junit.jupiter.api.function.Executable fn) {
+    Throwable t = org.junit.jupiter.api.Assertions.assertThrows(Throwable.class, fn);
+    assertTrue(t.getMessage() != null && t.getMessage().contains(text), () -> "expected message containing: " + text
+        + "\n but was: " + t.getMessage());
+  }
+
+  /** Jest {@code expect(fn).toThrow(/regex/)}. */
+  static void assertThrowsMatching(String jsRegex, String flags, org.junit.jupiter.api.function.Executable fn) {
+    Throwable t = org.junit.jupiter.api.Assertions.assertThrows(Throwable.class, fn);
+    assertTrue(t.getMessage() != null && jsRegex(jsRegex, flags).matcher(t.getMessage()).find(),
+        () -> "expected message matching /" + jsRegex + "/\n but was: " + t.getMessage());
   }
 
   /** TS {@code rule.from = { system, valueSets }} (null = absent). */
