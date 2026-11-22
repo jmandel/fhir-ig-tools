@@ -55,6 +55,8 @@ public final class App {
   static PrintStream err = new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8);
 
   public static void main(String[] args) {
+    // core's package layer logs through SLF4J without a provider; keep its "no providers" notice off stderr
+    if (System.getProperty("slf4j.internal.verbosity") == null) System.setProperty("slf4j.internal.verbosity", "ERROR");
     int code = run(args);
     out.flush();
     err.flush();
