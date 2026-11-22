@@ -1,21 +1,25 @@
 #!/bin/bash
 # Build the repo (docs/MONOREPO.md). Two ways:
 #
-#   ./build.sh [maven args...]     Maven, all modules. Default args: -B -q package
+#   ./build.sh [maven args...]     Maven, all modules (common, jekyll, sushi). Default args: -B -q package
 #                                  -> common/target/classes, jekyll/target/{classes,test-classes},
-#                                     jekyll/target/shim.jar (the self-contained release jar)
-#       e.g. ./build.sh -B -pl jekyll -am package     one module and what it needs
+#                                     jekyll/target/shim.jar (the shim's self-contained release jar),
+#                                     sushi/target/sushi.jar (the SUSHI port's self-contained jar)
+#                                  Needs JDK 21 (sushi); common and jekyll are still compiled for Java 17.
+#       e.g. ./build.sh -B -pl jekyll -am package     the shim only (this also works on JDK 17)
+#            ./build.sh -B -pl sushi -am package      SUSHI only (sushi/scripts/build.sh wraps this)
 #            ./build.sh -B -o verify                  offline
 #
-#   ./build.sh --fast [module]     plain javac, no Maven (quick, and lets parallel workers build one module
-#                                  without tripping over each other's half-finished code):
+#   ./build.sh --fast [module]     the shim only: plain javac, no Maven (quick, and lets parallel workers build
+#                                  one module without tripping over each other's half-finished code); sushi
+#                                  has no --fast build (it needs Maven for the ANTLR oracle and core):
 #       no module : common + all of jekyll  -> jekyll/build/{classes,test-classes,shim.jar}
 #       module    : common + jekyll util + that module (+ what it needs) -> jekyll/build-<module>/{classes,test-classes}
 #                   module = liquid | kramdown | site | yaml | rouge
 #       BUILD_OUT=<dir> puts the output in jekyll/<dir> instead. Each output dir holds common's classes too,
 #       so `-cp <dir>/classes:<dir>/test-classes` is a complete classpath.
 #
-# Where it runs: a local JDK 17+ (and `mvn` for Maven builds) when they work; otherwise the reference image
+# Where it runs: a local JDK (and `mvn` for Maven builds) when they work; otherwise the reference image
 # (Docker; DOCKER_CONTEXT / DOCKER_HOST pick the daemon, e.g. DOCKER_CONTEXT=igbuild for the Lima VM). In the
 # container, Maven and its local repository live on the Docker host's disk ($VMDATA/fhir-ig, D11), not in the
 # checkout; Maven is fetched from Maven Central on first use and checked against a pinned SHA-512.
