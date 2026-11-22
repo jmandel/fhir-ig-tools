@@ -120,6 +120,7 @@ class FHIRExporterTest {
 
     @BeforeEach
     void setUp() {
+      TestFisher.assumeTankImplemented();
       loggerSpy.reset();
       doc = new FSHDocument("fileName");
       FSHTank input = new FSHTank(new ArrayList<>(List.of(doc)), minimalConfig());
