@@ -36,7 +36,7 @@ class InstanceDefinitionTest {
   @DisplayName("#fromJSON")
   class FromJSON {
     @Test
-    @DisplayName("should load an instance properly")
+    @DisplayName("InstanceDefinition #fromJSON should load an instance properly")
     void load() {
       assertEquals("Patient", patientInstance.getResourceType());
       assertEquals("example", patientInstance.getId());
@@ -49,7 +49,7 @@ class InstanceDefinitionTest {
   @DisplayName("#toJSON")
   class ToJSON {
     @Test
-    @DisplayName("should round trip back to the original JSON")
+    @DisplayName("InstanceDefinition #toJSON should round trip back to the original JSON")
     void roundTrip() {
       patientInstance._instanceMeta.name = "TestName";
       Object newJSON = patientInstance.toJSON();
@@ -57,7 +57,7 @@ class InstanceDefinitionTest {
     }
 
     @Test
-    @DisplayName("should serialize properties such that underscore properties come immediately after their non-underscore counterparts")
+    @DisplayName("InstanceDefinition #toJSON should serialize properties such that underscore properties come immediately after their non-underscore counterparts")
     @SuppressWarnings("unchecked")
     void underscores() {
       Object ext = Json.parse("{\"extension\": [{\"url\": \"SomeExtension\", \"valueCode\": \"someCode\"}]}");
@@ -70,7 +70,7 @@ class InstanceDefinitionTest {
     }
 
     @Test
-    @DisplayName("should serialize subproperties such that underscore properties come immediately after their non-underscore counterparts")
+    @DisplayName("InstanceDefinition #toJSON should serialize subproperties such that underscore properties come immediately after their non-underscore counterparts")
     @SuppressWarnings("unchecked")
     void subUnderscores() {
       firstName(patientInstance).put("_family", Json.parse(

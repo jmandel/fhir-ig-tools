@@ -63,7 +63,7 @@ class PathUtilsTest {
   @DisplayName("#resolveSoftIndexing")
   class ResolveSoftIndexing {
     @Test
-    @DisplayName("should resolve simple (non-nested) soft indexing")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve simple (non-nested) soft indexing")
     void simple() {
       List<Rule> rules = rules("name[+]", "name[=]", "name[=]", "name[+]", "name[=]");
       PathUtils.resolveSoftIndexing(rules);
@@ -71,7 +71,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve nested soft indexing w/ recursive paths")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve nested soft indexing w/ recursive paths")
     void nestedRecursive() {
       List<Rule> rules = rules("item[+].item[+].item[+]", "item[=].item[+].item[+]", "item[=].item[=].item[+]",
           "item[=].item[=].item[=]");
@@ -81,7 +81,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve soft indexing mixed w/ numeric indexes")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve soft indexing mixed w/ numeric indexes")
     void mixedNumeric() {
       List<Rule> rules = rules("item[+].item[+].item[0]", "item[0].item[+].item[+]", "item[=].item[2].item[+]",
           "item[=].item[=].item[1]");
@@ -91,7 +91,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve soft indexing on caret paths")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve soft indexing on caret paths")
     void caretPathsOnly() {
       List<CaretValueRule> rules = List.of(caret("", "contact[+].name"), caret("", "contact[=].phone"),
           caret("", "contact[=].email"), caret("", "contact[+].phone"));
@@ -101,7 +101,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve soft indexing on caret paths and regular paths")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve soft indexing on caret paths and regular paths")
     void caretAndRegular() {
       List<CaretValueRule> rules = List.of(caret("item[+]", "contact[+].name"), caret("item[=]", "contact[=].phone"),
           caret("item[0]", "contact[+].email"), caret("item[+]", "contact[+].phone"));
@@ -112,7 +112,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve soft indexing on regular paths with slicing")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve soft indexing on regular paths with slicing")
     void slicing() {
       List<Rule> rules = rules("item[Slice1][+]", "item[Slice1][=]", "item[Slice2][+]", "item[Slice2][+]");
       PathUtils.resolveSoftIndexing(rules);
@@ -121,7 +121,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve nested soft indexing w/ similar nested path items")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve nested soft indexing w/ similar nested path items")
     void similarNested() {
       List<Rule> rules = rules("compose.include[+].concept[+]", "compose.include[=].concept[+]",
           "compose.exclude[+].concept[+]", "compose.exclude[=].concept[+]");
@@ -131,7 +131,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve improper soft indexing, but log an error")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve improper soft indexing, but log an error")
     void improper() {
       List<Rule> rules = rules("name[=]", "name[=]", "name[=]", "name[+]", "name[=]");
       PathUtils.resolveSoftIndexing(rules);
@@ -141,7 +141,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve soft indexing beginning with a non-zero index")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve soft indexing beginning with a non-zero index")
     void nonZeroStart() {
       List<Rule> rules = rules("name[2]", "name[=]", "name[=]", "name[+]", "name[=]");
       PathUtils.resolveSoftIndexing(rules);
@@ -149,7 +149,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing beginning with a named slice")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing beginning with a named slice")
     void strictNamedSlice() {
       List<Rule> rules = rules("component[Bread]", "component[+]", "component[=]", "component[+]");
       PathUtils.resolveSoftIndexing(rules, true);
@@ -157,7 +157,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing that contains multiple named slices")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing that contains multiple named slices")
     void strictMultipleNamedSlices() {
       List<Rule> rules = rules("component[Bread]", "component[+]", "component[=]", "component[Toast]",
           "component[+]");
@@ -167,7 +167,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing that applies to both an element and its slices")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing that applies to both an element and its slices")
     void strictElementAndSlices() {
       List<Rule> rules = rules("component[+]", "component[=]", "component[Bread][+]", "component[Bread][=]",
           "component[Bread][+]", "component[+]");
@@ -177,7 +177,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing that applies to an element, its slices, and its reslices")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing that applies to an element, its slices, and its reslices")
     void strictReslices() {
       List<Rule> rules = rules("component[Bread][Rye][+]", "component[Bread][+]", "component[+]",
           "component[Bread][+]", "component[Bread][=]", "component[+]");
@@ -187,7 +187,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing with named slices and numbered indices")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing with named slices and numbered indices")
     void strictNumbered() {
       List<Rule> rules = rules("component[+]", "component[=]", "component[Bread][1]", "component[Bread][=]",
           "component[Bread][+]", "component[+]");
@@ -197,7 +197,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing with named slices and out-of-order numbered indices")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing with named slices and out-of-order numbered indices")
     void strictOutOfOrder() {
       List<Rule> rules = rules("component[+]", "component[=]", "component[Bread][1]", "component[Bread][0]",
           "component[+]");
@@ -207,7 +207,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should resolve strict soft indexing with named slices and numbered indices that also have caret paths")
+    @DisplayName("PathUtils #resolveSoftIndexing should resolve strict soft indexing with named slices and numbered indices that also have caret paths")
     void strictWithCaret() {
       List<Rule> rules = new ArrayList<>();
       rules.add(caret("item[+]", "contact[+].name"));
@@ -235,7 +235,7 @@ class PathUtilsTest {
   @DisplayName("#parseFSHPath")
   class ParseFSHPath {
     @Test
-    @DisplayName("should properly seperate path elements into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements into PathParts")
     void simple() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1.item2.item3");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -243,7 +243,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly seperate path elements with brackets into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements with brackets into PathParts")
     void brackets() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1[0].item2[0].item3[0]");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -252,7 +252,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly seperate path elements with multi-digit brackets into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements with multi-digit brackets into PathParts")
     void multiDigit() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1[10].item2[11].item3[12]");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -261,7 +261,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly seperate path elements with slice names into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements with slice names into PathParts")
     void sliceNames() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1[10][Slice1].item2[11][Slice2].item3[12][Slice3]");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -271,7 +271,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly seperate path elements with slice names including brackets into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements with slice names including brackets into PathParts")
     void sliceNamesWithBrackets() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1[10][foo[x]].item2[11][bar[x]][baz[x]].value[x]");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -281,7 +281,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly seperate path elements with slice names on choice elements into PathParts")
+    @DisplayName("PathUtils #parseFSHPath should properly seperate path elements with slice names on choice elements into PathParts")
     void choiceSlice() {
       List<PathPart> pathParts = PathUtils.parseFSHPath("value[x][foo]");
       assertTrue(loggerSpy.getAllLogs("error").isEmpty());
@@ -289,7 +289,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should properly detect syntax errors in path elements (drawn from real world example)")
+    @DisplayName("PathUtils #parseFSHPath should properly detect syntax errors in path elements (drawn from real world example)")
     void syntaxErrors() {
       SourceInfo sourceInfo = new SourceInfo("testfile.fsh", new TextLocation(5, 0, 5, 19));
       List<PathPart> pathParts = PathUtils.parseFSHPath("item1[+}.value[x]", sourceInfo);
@@ -334,7 +334,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple singular properties with resourceType prefix and resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple singular properties with resourceType prefix and resourceType")
     void t1() {
       var results = collect("Observation.status");
       assertJsEqual(List.of("final"), results.values());
@@ -342,7 +342,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple singular properties with resourceType prefix and no resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple singular properties with resourceType prefix and no resourceType")
     void t2() {
       object.remove("resourceType");
       var results = collect("Observation.status");
@@ -351,7 +351,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple singular properties without resourceType prefix but with resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple singular properties without resourceType prefix but with resourceType")
     void t3() {
       var results = collect("status");
       assertJsEqual(List.of("final"), results.values());
@@ -359,7 +359,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple singular properties without resourceType prefix and without resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple singular properties without resourceType prefix and without resourceType")
     void t4() {
       object.remove("resourceType");
       var results = collect("status");
@@ -368,7 +368,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should NOT collect simple singular properties with resourceType prefix and wrong resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should NOT collect simple singular properties with resourceType prefix and wrong resourceType")
     void t5() {
       var results = collect("Condition.status");
       assertJsEqual(List.of(), results.values());
@@ -376,7 +376,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple singular properties with wrong resourceType prefix and no resourceType")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple singular properties with wrong resourceType prefix and no resourceType")
     void t6() {
       object.remove("resourceType");
       var results = collect("Condition.status");
@@ -385,7 +385,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect nested singular properties")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect nested singular properties")
     void t7() {
       var results = collect("Observation.code.text");
       assertJsEqual(List.of("20 minute Apgar Score"), results.values());
@@ -393,7 +393,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple array properties with a single value")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple array properties with a single value")
     void t8() {
       var results = collect("Observation.performer");
       assertJsEqual(json("[{\"reference\": \"Practitioner/example\"}]"), results.values());
@@ -401,7 +401,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect nested array properties with a single value")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect nested array properties with a single value")
     void t9() {
       var results = collect("Observation.code.coding");
       assertJsEqual(json("[{\"system\": \"http://snomed.info/sct\", \"code\": \"443849008\","
@@ -410,7 +410,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect single properties that are nested in arrays with a single value")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect single properties that are nested in arrays with a single value")
     void t10() {
       var results = collect("Observation.category.coding.code");
       assertJsEqual(List.of("survey"), results.values());
@@ -418,7 +418,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect simple array properties with multiple values")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect simple array properties with multiple values")
     void t11() {
       list(object, "performer").add(new JsObject().with("reference", "Practitioner/example2"));
       var results = collect("Observation.performer");
@@ -428,7 +428,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect nested array properties with multiple values")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect nested array properties with multiple values")
     void t12() {
       list(object.get("code"), "coding").add(json(
           "{\"system\": \"http://example.org\", \"code\": \"apgar\", \"display\": \"Apgar score\"}"));
@@ -441,7 +441,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect properties that are nested in arrays with multiple elements in the leaf node")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect properties that are nested in arrays with multiple elements in the leaf node")
     void t13() {
       list(list(object, "category").get(0), "coding").add(json(
           "{\"system\": \"http://example.org\", \"code\": \"example\", \"display\": \"Example\"}"));
@@ -454,7 +454,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect properties that are nested in arrays with multiple elements in an intermediate node")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect properties that are nested in arrays with multiple elements in an intermediate node")
     void t14() {
       list(object, "category").add(json("{\"coding\": {\"system\": \"http://example.org\", \"code\": \"example\","
           + " \"display\": \"Example\"}, \"text\": \"Example\"}"));
@@ -467,7 +467,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect nested singular properties embedded in multiple arrays")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect nested singular properties embedded in multiple arrays")
     void t15() {
       var results = collect("Observation.component.code.coding.code");
       assertJsEqual(List.of("249227004", "249223000", "249226008", "249225007", "249224006"), results.values());
@@ -475,7 +475,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect properties from choice types when a specific choice is specified")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect properties from choice types when a specific choice is specified")
     void t16() {
       var results = collect("Observation.value[x]:valueQuantity.value");
       assertJsEqual(List.of(10.0), results.values());
@@ -483,7 +483,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should collect properties from choice types when a specific choice is not specified")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should collect properties from choice types when a specific choice is not specified")
     void t17() {
       var results = collect("Observation.value[x].value");
       assertJsEqual(List.of(10.0), results.values());
@@ -491,7 +491,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should not collect properties from choice types when a non-matching type is specified")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should not collect properties from choice types when a non-matching type is specified")
     void t18() {
       var results = collect("Observation.value[x]:valueString.value");
       assertJsEqual(List.of(), results.values());
@@ -499,7 +499,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should ignore slicenames in the path, but remember what it ignored")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should ignore slicenames in the path, but remember what it ignored")
     void t19() {
       var results = collect("Observation.component:foo.code.coding:bar.code");
       assertJsEqual(List.of("249227004", "249223000", "249226008", "249225007", "249224006"), results.values());
@@ -508,7 +508,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should ignore resliced slicenames in the path, but remember what it ignored")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should ignore resliced slicenames in the path, but remember what it ignored")
     void t20() {
       var results = collect("Observation.component:foo/bar.code.coding.code");
       assertJsEqual(List.of("249227004", "249223000", "249226008", "249225007", "249224006"), results.values());
@@ -516,7 +516,7 @@ class PathUtilsTest {
     }
 
     @Test
-    @DisplayName("should ignore resliced slicenames in choice types, but remember what it ignored")
+    @DisplayName("PathUtils #collectValuesAtElementIdOrPath should ignore resliced slicenames in choice types, but remember what it ignored")
     void t21() {
       var results = collect("Observation.value[x]:valueQuantity/foo.value");
       assertJsEqual(List.of(10.0), results.values());

@@ -30,7 +30,7 @@ class RangeTest {
   @DisplayName("#validateRange")
   class Validate {
     @Test
-    @DisplayName("should be valid when one bound or both bounds are undefined")
+    @DisplayName("Range #validateRange should be valid when one bound or both bounds are undefined")
     void undefinedBounds() {
       DataTypes.validateRange(range(large, null));
       DataTypes.validateRange(range(null, small));
@@ -38,20 +38,20 @@ class RangeTest {
     }
 
     @Test
-    @DisplayName("should require low bound value to be less than or equal to high bound value")
+    @DisplayName("Range #validateRange should require low bound value to be less than or equal to high bound value")
     void inOrder() {
       DataTypes.validateRange(range(small, large));
       DataTypes.validateRange(range(large, large));
     }
 
     @Test
-    @DisplayName("should throw an error when the low bound value is greater than the high bound value")
+    @DisplayName("Range #validateRange should throw an error when the low bound value is greater than the high bound value")
     void wrongOrder() {
       assertThrows(InvalidRangeValueError.class, () -> DataTypes.validateRange(range(large, small)));
     }
 
     @Test
-    @DisplayName("should throw an error when both bounds are defined, but have different units")
+    @DisplayName("Range #validateRange should throw an error when both bounds are defined, but have different units")
     void units() {
       JsObject differentUnits = range(Js.cloneDeep(small), large);
       ((JsObject) differentUnits.get("low")).put("unit", "UCUM#kg");
@@ -62,7 +62,7 @@ class RangeTest {
     }
 
     @Test
-    @DisplayName("should throw an error when both bounds are defined, but have different codes")
+    @DisplayName("Range #validateRange should throw an error when both bounds are defined, but have different codes")
     void codes() {
       JsObject differentCode = range(Js.cloneDeep(small), large);
       ((JsObject) differentCode.get("low")).put("code", "kg");
@@ -73,7 +73,7 @@ class RangeTest {
     }
 
     @Test
-    @DisplayName("should throw an error when both bounds are defined, but have different systems")
+    @DisplayName("Range #validateRange should throw an error when both bounds are defined, but have different systems")
     void systems() {
       JsObject differentSystem = range(small, Js.cloneDeep(large));
       ((JsObject) differentSystem.get("high")).put("system", "http://all.wrong");
