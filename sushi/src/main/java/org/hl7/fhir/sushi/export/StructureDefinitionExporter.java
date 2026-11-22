@@ -401,7 +401,7 @@ public class StructureDefinitionExporter implements Fishable {
             contextItem = String.join("#", splitContext);
           }
 
-          if (contextPath.isEmpty() && ValidUrl.isUri(contextItem) == null) {
+          if (contextPath.isEmpty() && !ValidUrl.isUri(contextItem)) {
             List<String> splitPath = Common.splitOnPathPeriods(contextItem);
             contextItem = splitPath.get(0);
             contextPath = String.join(".", splitPath.subList(1, splitPath.size()));
@@ -461,7 +461,7 @@ public class StructureDefinitionExporter implements Fishable {
     chain.add(targetElement);
     List<String> urls = new ArrayList<>();
     for (ElementDefinition ed : chain) {
-      ElementDefinition myUrl = ed.getStructDef().findElement(ed.getId() + ".url");
+      ElementDefinition myUrl = ed.structDef.findElement(ed.getId() + ".url");
       Object fixedUri = myUrl == null ? null : Common.getProp(myUrl, "fixedUri");
       if (fixedUri != null) {
         urls.add(org.hl7.fhir.sushi.js.Js.toStr(fixedUri));
@@ -473,7 +473,7 @@ public class StructureDefinitionExporter implements Fishable {
     }
     String extensionHierarchy = String.join(".", urls);
     structDef.getContext().add(new JsObject()
-        .with("expression", jsString(targetElement.getStructDef().getUrl()) + "#" + extensionHierarchy)
+        .with("expression", jsString(targetElement.structDef.getUrl()) + "#" + extensionHierarchy)
         .with("type", "extension"));
   }
 
@@ -545,7 +545,7 @@ public class StructureDefinitionExporter implements Fishable {
     }
 
     // The root element's base.path should be the same as root element's path
-    elements.get(0).getBase().setPath(elements.get(0).getPath());
+    Common.setProp(elements.get(0).getBase(), "path", elements.get(0).getPath());
 
     if ("Element".equals(fshDefinition.parent)
         || "http://hl7.org/fhir/StructureDefinition/Element".equals(fshDefinition.parent)) {
@@ -654,7 +654,9 @@ public class StructureDefinitionExporter implements Fishable {
       if (element != null) {
         try {
           if (rule instanceof CardRule cardRule) {
-            element.constrainCardinality(cardRule.min, cardRule.max);
+            // TS passes undefined through; WP-4's signature takes NaN / "" for unset
+            element.constrainCardinality(cardRule.min == null ? Double.NaN : cardRule.min,
+                cardRule.max == null ? "" : cardRule.max);
           } else if (rule instanceof AssignmentRule assignmentRule) {
             if (!applyAssignmentRule(element, assignmentRule)) {
               continue;
@@ -832,7 +834,7 @@ public class StructureDefinitionExporter implements Fishable {
       String vsURI = replaceLeadingBase(rule.valueSet, vsMetadata == null ? null : vsMetadata.url);
       Metadata csMetadata = fishForMetadata(rule.valueSet, FishableType.CodeSystem);
       String csURI = csMetadata == null ? null : csMetadata.url;
-      if (truthy(csURI) && ValidUrl.isUri(vsURI) == null) {
+      if (truthy(csURI) && !ValidUrl.isUri(vsURI)) {
         throw new MismatchedBindingTypeError(rule.valueSet, rule.path, "ValueSet");
       }
       element.bindToVS(vsURI, rule.strength, rule.sourceInfo, fisher);
