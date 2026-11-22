@@ -372,7 +372,7 @@ public class ValueSetExporter {
         }
         rule.value = instance;
         // since we found a resource, save its type in our list of inline resource paths.
-        inlineResourcePaths.add(new InlineResourcePath(rule.caretPath, instance.resourceType()));
+        inlineResourcePaths.add(new InlineResourcePath(rule.caretPath, instance.getResourceType()));
       }
       // the relevant inline resource paths for the current rule are rules with:
       // - a caret path that is an ancestor of the current rule's path
@@ -413,7 +413,7 @@ public class ValueSetExporter {
           rule.value = instance;
           if (instance != null) {
             // this rule ended up assigning an instance, so save its type in our list of inline resource paths.
-            inlineResourcePaths.add(new InlineResourcePath(rule.caretPath, instance.resourceType()));
+            inlineResourcePaths.add(new InlineResourcePath(rule.caretPath, instance.getResourceType()));
           }
           List<PathPart> pathParts = result.pathParts();
           ruleMap.put(LEADING_ZERO_INDEX.matcher(PathUtils.assembleFSHPath(pathParts)).replaceAll(""),

@@ -92,7 +92,7 @@ public class InstanceExporter implements Fishable {
     List<InstanceDefinition> instancesOfCustomResource = new ArrayList<>();
     for (InstanceDefinition instance : pkg.instances) {
       for (StructureDefinition r : pkg.resources) {
-        if (Objects.equals(r.type, instance.resourceType())) {
+        if (Objects.equals(r.getType(), instance.getResourceType())) {
           instancesOfCustomResource.add(instance);
           break;
         }
@@ -104,7 +104,7 @@ public class InstanceExporter implements Fishable {
       message.add(clr("\n╭─────────────────────────────────────────────────────────────────") + "" + clr("╮"));
       message.add(clr("│") + " Detected the following instance(s) of custom resources:         " + clr("│"));
       for (InstanceDefinition r : instancesOfCustomResource) {
-        String id = r.id();
+        String id = r.getId();
         String printableName = id.length() > maxLength ? id.substring(0, maxLength - 3) + "..." : id;
         message.add(clr("│") + padEnd(" - " + printableName, 65) + clr("│"));
       }
@@ -188,7 +188,7 @@ public class InstanceExporter implements Fishable {
           firstProfile = profiles.get(0);
         }
         inlineResourcePaths.add(new InlineResourcePath(r.path,
-            firstProfile != null && firstProfile != Js.UNDEFINED ? str(firstProfile) : inst.resourceType()));
+            firstProfile != null && firstProfile != Js.UNDEFINED ? str(firstProfile) : inst.getResourceType()));
       }
       if (r.path.endsWith(".resourceType") && r.value instanceof String s) {
         // Only get the part of the path before resourceType, aka if path is a.b.resourceType
@@ -209,7 +209,7 @@ public class InstanceExporter implements Fishable {
     Map<String, RuleMapEntry> ruleMap = new LinkedHashMap<>();
     // Keep track specifically of the rules on contained (path could be contained[index], contained.some-path, or
     // contained)
-    List<StructureDefinition.ValidateValueAtPathResult> containedRules = new ArrayList<>();
+    List<Common.ValidatedContainedRule> containedRules = new ArrayList<>();
     for (Rule rule : rules) {
       List<String> inlineResourceTypes = new ArrayList<>();
       try {
@@ -291,8 +291,8 @@ public class InstanceExporter implements Fishable {
     List<String> assignedResourcePaths = new ArrayList<>();
     for (InlineResourcePath p : inlineResourcePaths) assignedResourcePaths.add(p.path());
     // for core defs, only extension slices can appear
-    if (Objects.equals(instanceOfStructureDefinition.url,
-        "http://hl7.org/fhir/StructureDefinition/" + str(instanceOfStructureDefinition.type))) {
+    if (Objects.equals(instanceOfStructureDefinition.getUrl(),
+        "http://hl7.org/fhir/StructureDefinition/" + str(instanceOfStructureDefinition.getType()))) {
       List<String> secretPaths = new ArrayList<>();
       for (String path : paths) {
         if (EXTENSION_PATH.matcher(path).find()) secretPaths.add(path);
@@ -369,7 +369,7 @@ public class InstanceExporter implements Fishable {
   /** The TS doRuleValidation closure of setAssignedValues. */
   private void doRuleValidation(Rule rule, Object value, StructureDefinition instanceOfStructureDefinition,
       List<String> inlineResourceTypes, boolean manualSliceOrdering, Map<String, RuleMapEntry> ruleMap,
-      List<StructureDefinition.ValidateValueAtPathResult> containedRules) {
+      List<Common.ValidatedContainedRule> containedRules) {
     // Before validating the rule, check if the Canonical keyword was used to reference a contained value set
     if (value instanceof FshCanonical canonical) {
       Object matchingContainedReferenceId = Common.getMatchingContainedReferenceId(canonical.entityName,
@@ -378,7 +378,7 @@ public class InstanceExporter implements Fishable {
         value = "#" + str(matchingContainedReferenceId);
       }
     }
-    StructureDefinition.ValidateValueAtPathResult validatedRule = instanceOfStructureDefinition.validateValueAtPath(
+    StructureDefinition.ValidateValueResult validatedRule = instanceOfStructureDefinition.validateValueAtPath(
         rule.path, value, fisher, inlineResourceTypes, rule.sourceInfo, manualSliceOrdering);
     // Record each valid rule in a map
     // Choice elements on an instance must use a specific type, so if the path still has an unchosen choice element,
@@ -399,7 +399,7 @@ public class InstanceExporter implements Fishable {
       // references. Only check if the rule was a directly contained resources (aka 'contained' or
       // 'contained.name/url/id', optionally with slice names or indices)
       if (CONTAINED_PATH.matcher(rule.path).matches()) {
-        containedRules.add(validatedRule);
+        containedRules.add(new Common.ValidatedContainedRule(validatedRule.pathParts(), validatedRule.assignedValue()));
       }
     }
   }
@@ -433,10 +433,11 @@ public class InstanceExporter implements Fishable {
     String path = PathUtils.assembleFSHPath(parts);
     ElementDefinition element = instanceOfStructureDefinition.findElementByPath(path, fisher);
     String profileUrl = null;
-    if (element != null && element.type != null && !element.type.isEmpty()) {
-      ElementDefinitionType t = element.type.get(0);
-      if (t != null && t.profile != null && !t.profile.isEmpty()) {
-        profileUrl = t.profile.get(0);
+    List<ElementDefinitionType> types = element == null ? null : element.getType();
+    if (types != null && !types.isEmpty()) {
+      ElementDefinitionType t = types.get(0);
+      if (t != null && t.getProfile() != null && !t.getProfile().isEmpty()) {
+        profileUrl = t.getProfile().get(0);
       }
     }
     if (!Js.truthy(profileUrl)) {
@@ -504,7 +505,7 @@ public class InstanceExporter implements Fishable {
     for (ElementDefinition c : children) {
       ElementDefinition child = c;
       // Get the last part of the path, A.B.C => C
-      String[] childPathParts = child.path.split(Pattern.quote("."), -1);
+      String[] childPathParts = child.getPath().split(Pattern.quote("."), -1);
       String childPathEnd = childPathParts[childPathParts.length - 1];
       // Note that in most cases the _ prefixed element will not exist. But if it does exist, we validate
       // using the _ prefixed element, since it will contain any children of the primitive
@@ -533,19 +534,19 @@ public class InstanceExporter implements Fishable {
         }
         List<ElementDefinition> choiceSlices = new ArrayList<>();
         for (ElementDefinition cs : possibleChoiceSlices) {
-          if (Objects.equals(cs.path, child.path)
-              && (Js.truthy(cs.sliceName) || (cs.type != null && cs.type.size() == 1))) {
+          if (Objects.equals(cs.getPath(), child.getPath())
+              && (Js.truthy(cs.getSliceName()) || (cs.getType() != null && cs.getType().size() == 1))) {
             choiceSlices.add(cs);
           }
         }
         for (ElementDefinition choiceSlice : choiceSlices) {
           // for each of these elements, we either have a sliceName, or we build a sliceName from the type
-          String sliceName = choiceSlice.sliceName != null ? choiceSlice.sliceName
-              : childPathEnd.replace("[x]", upperFirst(choiceSlice.type.get(0).code));
+          String sliceName = choiceSlice.getSliceName() != null ? choiceSlice.getSliceName()
+              : childPathEnd.replace("[x]", upperFirst(choiceSlice.getType().get(0).getCode()));
           // as above, we use the _ prefixed element if it exists
           Object underscored = prop(instance, "_" + sliceName);
           instanceChild = underscored != null ? underscored : prop(instance, sliceName);
-          List<String> splitChoicePath = Common.splitOnPathPeriods(choiceSlice.id);
+          List<String> splitChoicePath = Common.splitOnPathPeriods(choiceSlice.getId());
           // If the element we're assigning to has a sliceName, use it to ensure that we're validating
           // against the correct choice slice
           String instanceSliceName = sliceNameOf(instance);
@@ -573,15 +574,15 @@ public class InstanceExporter implements Fishable {
           List<ElementDefinition> namelessChoiceSlices = new ArrayList<>();
           if (connectedSlice != null) {
             for (ElementDefinition cs : connectedSlice.children(true)) {
-              if (Objects.equals(cs.path, child.path) && Js.truthy(cs.sliceName)) namelessChoiceSlices.add(cs);
+              if (Objects.equals(cs.getPath(), child.getPath()) && Js.truthy(cs.getSliceName())) namelessChoiceSlices.add(cs);
             }
           }
           for (ElementDefinition choiceSlice : namelessChoiceSlices) {
-            instanceChild = prop(instance, choiceSlice.sliceName);
+            instanceChild = prop(instance, choiceSlice.getSliceName());
             if (instanceChild != null) {
               // Once we find the the choiceSlice that matches, use it as the child, but warn the user about their
               // rule-writing
-              logger.warn("Element " + child.id + " has its cardinality satisfied by a rule that does not include "
+              logger.warn("Element " + child.getId() + " has its cardinality satisfied by a rule that does not include "
                   + "the slice name. Use slice names in rule paths when possible.");
               child = choiceSlice;
               break;
@@ -591,9 +592,9 @@ public class InstanceExporter implements Fishable {
         // If we still haven't found it, it's possible that a type slice just wasn't created. In that case, there
         // would be a type in the choice element's type array that would be a match if it were type-sliced.
         if (instanceChild == null) {
-          for (ElementDefinitionType type : child.type) {
+          for (ElementDefinitionType type : child.getType()) {
             String name = childPathEnd.endsWith("[x]")
-                ? childPathEnd.substring(0, childPathEnd.length() - 3) + upperFirst(type.code) : childPathEnd;
+                ? childPathEnd.substring(0, childPathEnd.length() - 3) + upperFirst(type.getCode()) : childPathEnd;
             Object underscored = prop(instance, "_" + name);
             instanceChild = underscored != null ? underscored : prop(instance, name);
             if (instanceChild != null) {
@@ -607,8 +608,8 @@ public class InstanceExporter implements Fishable {
         // If the child is a slice, and there are no array elements with matching slice names
         // but there are array elements that could match (since they use numerical indices)
         // we can go no further in validation, since we can't know which slice is represented
-        if (Js.truthy(child.sliceName)) {
-          final String childSliceName = child.sliceName;
+        if (Js.truthy(child.getSliceName())) {
+          final String childSliceName = child.getSliceName();
           boolean anyNamed = false;
           boolean anyUnnamed = false;
           for (Object arrayEl : arrayChild) {
@@ -627,8 +628,8 @@ public class InstanceExporter implements Fishable {
         for (int idx = 0; idx < arrayChild.size(); idx++) {
           Object arrayEl = arrayChild.get(idx);
           String elSliceName = sliceNameOf(arrayEl);
-          if (!Js.truthy(child.sliceName) || Objects.equals(prop(arrayEl, "_sliceName"), child.sliceName)
-              || (elSliceName != null && elSliceName.startsWith(child.sliceName + "/"))) {
+          if (!Js.truthy(child.getSliceName()) || Objects.equals(prop(arrayEl, "_sliceName"), child.getSliceName())
+              || (elSliceName != null && elSliceName.startsWith(child.getSliceName() + "/"))) {
             matchingIndices.add(idx);
             filtered.add(arrayEl);
           }
@@ -654,13 +655,13 @@ public class InstanceExporter implements Fishable {
       // since the actual value may be present on the parent primitive element.
       // if the parent primitive is an object, the value will be in the "assignedValue" attribute.
       // otherwise, the value is the parent primitive itself.
-      int min = child.min == null ? 0 : child.min;
+      double min = child.getMin() == null ? Double.NaN : child.getMin();
       Object primitiveValue = isTypeofObject(parentPrimitive) ? prop(parentPrimitive, "assignedValue")
           : parentPrimitive;
-      if ((min > 0 && instanceChild == null && !(child.id.endsWith(".value") && primitiveValue != null))
+      if ((min > 0 && instanceChild == null && !(child.getId().endsWith(".value") && primitiveValue != null))
           || (instanceChild instanceof List<?> l && l.size() < min)) {
         // Can't point to any specific rule, so give sourceInfo of entire instance
-        logger.error("Element " + child.id + " has minimum cardinality " + child.min + " but occurs "
+        logger.error("Element " + child.getId() + " has minimum cardinality " + str(child.getMin()) + " but occurs "
             + (instanceChild instanceof List<?> l2 ? l2.size() : 0) + " time(s).", fshDefinition.sourceInfo);
       }
     }
@@ -674,13 +675,16 @@ public class InstanceExporter implements Fishable {
 
   /** TS {@code el.type?.[0].code}. */
   private static String firstTypeCode(ElementDefinition el) {
-    if (el.type == null || el.type.isEmpty() || el.type.get(0) == null) return null;
-    return el.type.get(0).code;
+    List<ElementDefinitionType> types = el.getType();
+    if (types == null || types.isEmpty() || types.get(0) == null) return null;
+    return types.get(0).getCode();
   }
 
   /** TS {@code el.max === '1' && (el.base?.max == null || el.base.max === '1')}. */
   private static boolean isSingleton(ElementDefinition el) {
-    return "1".equals(el.max) && (el.base == null || el.base.max == null || "1".equals(el.base.max));
+    Map<String, Object> base = el.getBase();
+    Object baseMax = base == null ? null : base.get("max");
+    return "1".equals(el.getMax()) && (baseMax == null || baseMax == Js.UNDEFINED || "1".equals(baseMax));
   }
 
   private boolean shouldSetMetaProfile(InstanceDefinition instanceDef,
@@ -695,8 +699,8 @@ public class InstanceExporter implements Fishable {
     // Config allows it, so set the meta.profile as long as the instance is
     // a profile and the meta element exists with the right type and card
     String metaPath = instanceOfStructureDefinition.getPathType() + ".meta";
-    return "constraint".equals(instanceOfStructureDefinition.derivation)
-        && instanceOfStructureDefinition.elements.stream().anyMatch(el -> Objects.equals(el.path, metaPath)
+    return "constraint".equals(instanceOfStructureDefinition.getDerivation())
+        && instanceOfStructureDefinition.elements.stream().anyMatch(el -> Objects.equals(el.getPath(), metaPath)
             && "Meta".equals(firstTypeCode(el)) && isSingleton(el));
   }
 
@@ -709,7 +713,7 @@ public class InstanceExporter implements Fishable {
     // Config allows it, so set the id as long as the id element exists with the
     // right type and card (note: FHIR resource ids are actually 'string' type)
     String idPath = instanceOfStructureDefinition.getPathType() + ".id";
-    return instanceOfStructureDefinition.elements.stream().anyMatch(el -> Objects.equals(el.path, idPath)
+    return instanceOfStructureDefinition.elements.stream().anyMatch(el -> Objects.equals(el.getPath(), idPath)
         && ("string".equals(firstTypeCode(el)) || "id".equals(firstTypeCode(el))) && isSingleton(el));
   }
 
@@ -725,11 +729,11 @@ public class InstanceExporter implements Fishable {
       StructureDefinition instanceOfStructureDefinition) {
     List<ElementDefinition> nonChoiceSlicedElements = new ArrayList<>();
     for (ElementDefinition e : instanceOfStructureDefinition.elements) {
-      if (Js.truthy(e.slicing) && !e.path.endsWith("[x]")) nonChoiceSlicedElements.add(e);
+      if (Js.truthy(e.getSlicing()) && !e.getPath().endsWith("[x]")) nonChoiceSlicedElements.add(e);
     }
     for (ElementDefinition slicingEl : nonChoiceSlicedElements) {
       // Use the sliced element's path to get all potential element values from the instance
-      List<Object> values = PathUtils.collectValuesAtElementIdOrPath(slicingEl.id, instanceDef).values();
+      List<Object> values = PathUtils.collectValuesAtElementIdOrPath(slicingEl.getId(), instanceDef).values();
       // Find the values that do not have named slices
       List<Object> unnamedValues = new ArrayList<>();
       for (Object v : values) {
@@ -766,7 +770,7 @@ public class InstanceExporter implements Fishable {
               + "array. Usually you can remove this item from your FSH, since FSH instances inherit required "
               + "assigned values from their profile. Alternately, you can modify your FSH to use the slice name in "
               + "the item's path.  See: https://hl7.org/fhir/uv/shorthand/reference.html#sliced-array-paths\n"
-              + "  Path:  " + slicingEl.path + "\n"
+              + "  Path:  " + slicingEl.getPath() + "\n"
               + "  Slice: " + String.join(" or ", matchedNames) + "\n"
               + "  Value: " + valueString, fshDef.sourceInfo);
         } else {
@@ -774,7 +778,7 @@ public class InstanceExporter implements Fishable {
               + "not use the slice name in its path. This may result in unexpected items in your array. If the item "
               + "is intended to be in the slice, modify your FSH to use the slice name in the item's path. See: "
               + "https://hl7.org/fhir/uv/shorthand/reference.html#sliced-array-paths\n"
-              + "  Path:  " + slicingEl.path + "\n"
+              + "  Path:  " + slicingEl.getPath() + "\n"
               + "  Slice: " + String.join(" or ", matchedNames) + "\n"
               + "  Value: " + valueString, fshDef.sourceInfo);
         }
@@ -795,7 +799,7 @@ public class InstanceExporter implements Fishable {
         // If we don't find any Instances with the name, fish for other resources
         Object fishedFHIR = fisher.fishForFHIR(item);
         if (fishedFHIR instanceof Map<?, ?> json && Js.truthy(json.get("resourceType"))) {
-          result = InstanceDefinition.fromJSON(fishedFHIR);
+          result = InstanceDefinition.fromJSON((Map<String, ?>) json);
         }
       }
     }
@@ -865,7 +869,7 @@ public class InstanceExporter implements Fishable {
       instanceOfStructureDefinition = sdCache.get(u);
     } else {
       instanceOfStructureDefinition = StructureDefinition.fromJSON(json);
-      sdCache.put(instanceOfStructureDefinition.url, instanceOfStructureDefinition);
+      sdCache.put(instanceOfStructureDefinition.getUrl(), instanceOfStructureDefinition);
     }
 
     InstanceDefinition instanceDef = new InstanceDefinition();
@@ -900,13 +904,13 @@ public class InstanceExporter implements Fishable {
     }
     if (isResource) {
       // ResourceType is determined by the StructureDefinition of the type
-      CodeSystemExporter.putOrUndefined(instanceDef, "resourceType", instanceOfStructureDefinition.type);
+      CodeSystemExporter.putOrUndefined(instanceDef, "resourceType", instanceOfStructureDefinition.getType());
       if (shouldSetId(instanceDef, instanceOfStructureDefinition)) {
         CodeSystemExporter.putOrUndefined(instanceDef, "id", fshDefinition.getId());
       }
     }
-    instanceDef._instanceMeta.sdType = instanceOfStructureDefinition.type;
-    instanceDef._instanceMeta.sdKind = instanceOfStructureDefinition.kind;
+    instanceDef._instanceMeta.sdType = instanceOfStructureDefinition.getType();
+    instanceDef._instanceMeta.sdKind = instanceOfStructureDefinition.getKind();
 
     // Set Assigned values based on the FSH rules and the Structure Definition
     instanceDef = setAssignedValues(fshDefinition, instanceDef, instanceOfStructureDefinition);
@@ -914,10 +918,10 @@ public class InstanceExporter implements Fishable {
     // if the exact url is not in there, and a versioned url is also not in there, add it to the front.
     // otherwise, add it at the front.
     if (shouldSetMetaProfile(instanceDef, instanceOfStructureDefinition)) {
-      setMetaProfile(fshDefinition, instanceDef, instanceOfStructureDefinition.url);
+      setMetaProfile(fshDefinition, instanceDef, instanceOfStructureDefinition.getUrl());
     }
     // regardless of what we did with meta.profile, we may need the instanceOfStructureDefinition url later
-    instanceDef._instanceMeta.instanceOfUrl = instanceOfStructureDefinition.url;
+    instanceDef._instanceMeta.instanceOfUrl = instanceOfStructureDefinition.getUrl();
     instanceDef.validateId(fshDefinition);
     validateRequiredElements(instanceDef, instanceOfStructureDefinition.elements, fshDefinition);
     checkForNamelessSlices(fshDefinition, instanceDef, instanceOfStructureDefinition);
@@ -942,7 +946,7 @@ public class InstanceExporter implements Fishable {
       Object thisId = idOrName(instanceDef);
       for (InstanceDefinition instance : pkg.instances) {
         if (!InstanceUsage.Inline.name().equals(instance._instanceMeta.usage)
-            && Objects.equals(instanceDef.resourceType(), instance.resourceType())
+            && Objects.equals(instanceDef.getResourceType(), instance.getResourceType())
             && Objects.equals(thisId, idOrName(instance)) && instanceDef != instance) {
           logger.error("Multiple instances of type " + str(instanceDef.get("resourceType")) + " with id "
               + str(thisId) + ". Each non-inline instance of a given type must have a unique id.",
@@ -962,7 +966,7 @@ public class InstanceExporter implements Fishable {
   }
 
   private static boolean hasElementWithId(StructureDefinition sd, String id) {
-    return sd.elements.stream().anyMatch(element -> Objects.equals(element.id, id));
+    return sd.elements.stream().anyMatch(element -> Objects.equals(element.getId(), id));
   }
 
   @SuppressWarnings("unchecked")

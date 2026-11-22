@@ -41,11 +41,11 @@ public class MappingExporter {
    * @throws InvalidFHIRIdError when the id on the fshDefinition is not valid in FHIR
    */
   private void setMetadata(StructureDefinition structDef, Mapping fshDefinition) {
-    if (structDef.mapping == null) {
-      structDef.mapping = new ArrayList<>();
+    if (structDef.getMapping() == null) {
+      structDef.setMapping(new ArrayList<>());
     }
     // JS RegExp.test(undefined) tests the string "undefined" (which is a valid id)
-    if (!PrimitiveTypes.idRegex.matcher(str(fshDefinition.id)).find()) {
+    if (!PrimitiveTypes.ID_REGEX.matcher(str(fshDefinition.id)).find()) {
       throw new InvalidFHIRIdError(fshDefinition.id);
     }
     JsObject mapping = new JsObject();
@@ -53,7 +53,7 @@ public class MappingExporter {
     if (Js.truthy(fshDefinition.title)) mapping.put("name", fshDefinition.title);
     if (Js.truthy(fshDefinition.target)) mapping.put("uri", fshDefinition.target);
     if (Js.truthy(fshDefinition.description)) mapping.put("comment", fshDefinition.description);
-    structDef.mapping.add(mapping);
+    structDef.getMapping().add(mapping);
   }
 
   /** Applies mapping rules to the individual ElementDefinitions on the SD. */
@@ -87,7 +87,7 @@ public class MappingExporter {
     StructureDefinition sourceStructDef = (StructureDefinition) pkg.fish(fshDefinition.source,
         FishableType.Profile, FishableType.Extension, FishableType.Resource, FishableType.Logical);
     if (sourceStructDef != null) {
-      Object parent = fisher.fishForFHIR(sourceStructDef.baseDefinition, FishableType.Resource, FishableType.Type,
+      Object parent = fisher.fishForFHIR(sourceStructDef.getBaseDefinition(), FishableType.Resource, FishableType.Type,
           FishableType.Profile, FishableType.Extension, FishableType.Logical);
       Map<String, Object> matchingParentMapping = null;
       if (parent instanceof Map<?, ?> p && p.get("mapping") instanceof List<?> parentMappings) {
@@ -114,9 +114,9 @@ public class MappingExporter {
           // Update parent mapping with additional or changed metadata (comment is the only property this can be
           // the case for)
           Map<String, Object> inheritedMapping = null;
-          for (Map<String, Object> m : sourceStructDef.mapping) {
-            if (Objects.equals(m.get("identity"), fshDefinition.id)) {
-              inheritedMapping = m;
+          for (Object m : sourceStructDef.getMapping()) {
+            if (m instanceof Map<?, ?> mm && Objects.equals(mm.get("identity"), fshDefinition.id)) {
+              inheritedMapping = (Map<String, Object>) mm;
               break;
             }
           }

@@ -201,7 +201,7 @@ public class CodeSystemExporter {
         }
         rule.value = instance;
         // since we found a resource, save its type in our list of inline resource paths.
-        inlineResourcePaths.add(new InlineResourcePath(rule.path, rule.caretPath, instance.resourceType()));
+        inlineResourcePaths.add(new InlineResourcePath(rule.path, rule.caretPath, instance.getResourceType()));
       }
       // the relevant inline resource paths for the current rule are rules with:
       // - the same path
@@ -244,7 +244,7 @@ public class CodeSystemExporter {
           rule.value = instance;
           if (instance != null) {
             // this rule ended up assigning an instance, so save its type in our list of inline resource paths.
-            inlineResourcePaths.add(new InlineResourcePath(rule.path, rule.caretPath, instance.resourceType()));
+            inlineResourcePaths.add(new InlineResourcePath(rule.path, rule.caretPath, instance.getResourceType()));
           }
           List<PathPart> pathParts = result.pathParts();
           if (pathParts.stream().anyMatch(part -> Common.isExtension(part.base))) {
