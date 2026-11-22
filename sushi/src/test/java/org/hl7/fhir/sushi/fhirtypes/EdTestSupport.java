@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.js.Js;
 import org.hl7.fhir.sushi.js.JsObject;
@@ -82,7 +83,7 @@ final class EdTestSupport {
     assertJsEqual(json(expectedJson), actual);
   }
 
-  private static Object normalize(Object v) {
+  static Object normalize(Object v) {
     if (v == null || v == Js.UNDEFINED) return null;
     if (v instanceof JsonSerializable || v instanceof Map<?, ?> || v instanceof List<?>) {
       String s = Json.stringify(v);
@@ -137,9 +138,10 @@ final class EdTestSupport {
   }
 
   /** A mutable array literal. */
-  static List<Object> list(Object... v) {
-    List<Object> l = new ArrayList<>();
-    for (Object o : v) l.add(o);
+  @SafeVarargs
+  static <T> List<T> list(T... v) {
+    List<T> l = new ArrayList<>();
+    for (T o : v) l.add(o);
     return l;
   }
 
@@ -177,6 +179,125 @@ final class EdTestSupport {
   static ElementDefinition findId(List<ElementDefinition> l, String id) {
     for (ElementDefinition e : l) if (id.equals(e.getId())) return e;
     return null;
+  }
+
+  private static final Pattern SEGMENT = Pattern.compile("([^.\\[\\]]+)|\\[(\\d+)\\]");
+
+  /**
+   * TS {@code obj.a.b[0].c} over the value model and PropertyHolders (ElementDefinition, ElementDefinitionType,
+   * StructureDefinition); null as soon as a step is null/undefined (like optional chaining).
+   */
+  static Object at(Object obj, String path) {
+    Matcher m = SEGMENT.matcher(path);
+    Object cur = obj;
+    while (m.find()) {
+      if (cur == null) return null;
+      if (m.group(1) != null) {
+        cur = Common.getProp(cur, m.group(1));
+      } else {
+        int i = Integer.parseInt(m.group(2));
+        if (cur instanceof List<?> l) {
+          cur = i < l.size() ? l.get(i) : null;
+        } else {
+          cur = Common.getProp(cur, m.group(2));
+        }
+      }
+    }
+    return cur == Js.UNDEFINED ? null : cur;
+  }
+
+  /** TS {@code obj.a.b = value} (intermediate steps must exist). */
+  static void setAt(Object obj, String path, Object value) {
+    int dot = path.lastIndexOf('.');
+    Object target = dot < 0 ? obj : at(obj, path.substring(0, dot));
+    String key = dot < 0 ? path : path.substring(dot + 1);
+    Matcher idx = Pattern.compile("^(.*)\\[(\\d+)\\]$").matcher(key);
+    if (idx.matches()) {
+      @SuppressWarnings("unchecked") List<Object> l = (List<Object>) (idx.group(1).isEmpty() ? target
+          : Common.getProp(target, idx.group(1)));
+      l.set(Integer.parseInt(idx.group(2)), value);
+      return;
+    }
+    Common.setProp(target, key, value);
+  }
+
+  /** TS {@code x.length} for arrays and strings. */
+  static int size(Object v) {
+    if (v instanceof List<?> l) return l.size();
+    if (v instanceof String s) return s.length();
+    if (v instanceof Map<?, ?> m) return m.size();
+    throw new AssertionError("no length: " + v);
+  }
+
+  /** TS {@code arr[i]} with a computed index. */
+  static Object get(Object list, Object index) {
+    int i = ((Number) index).intValue();
+    List<?> l = (List<?>) list;
+    return i >= 0 && i < l.size() ? l.get(i) : null;
+  }
+
+  /** TS {@code sd.elements[i]} with a computed index. */
+  static ElementDefinition get(List<ElementDefinition> list, Object index) {
+    int i = ((Number) index).intValue();
+    return i >= 0 && i < list.size() ? list.get(i) : null;
+  }
+
+  /** Jest toContain (=== membership for arrays, substring for strings). */
+  static boolean contains(Object haystack, Object needle) {
+    if (haystack instanceof String s) return s.contains((String) needle);
+    for (Object o : (List<?>) haystack) if (java.util.Objects.equals(o, needle)) return true;
+    return false;
+  }
+
+  /** Jest toContainEqual. */
+  static boolean containsEqual(Object haystack, Object needle) {
+    if (haystack == null) return false;
+    for (Object o : (List<?>) haystack) if (Js.isEqual(normalize(o), normalize(needle))) return true;
+    return false;
+  }
+
+  /** Jest toMatch(/re/): find() of a JS regex source. */
+  static void assertMatchesJs(String jsRegex, Object actual) {
+    assertTrue(actual instanceof String s && Pattern.compile(jsRegex).matcher(s).find(),
+        () -> "expected /" + jsRegex + "/ but was: " + actual);
+  }
+
+  /** A TS OnlyRuleType object literal {type, isReference?, isCanonical?, isCodeableReference?}. */
+  static org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType ort(String type, Boolean isReference, Boolean isCanonical,
+      Boolean isCodeableReference) {
+    var t = new org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType(type);
+    t.isReference = isReference;
+    t.isCanonical = isCanonical;
+    t.isCodeableReference = isCodeableReference;
+    return t;
+  }
+
+  /** fs.readFileSync(path, {encoding: 'base64'}). */
+  static String readBase64(java.nio.file.Path p) {
+    try {
+      return java.util.Base64.getEncoder().encodeToString(java.nio.file.Files.readAllBytes(p));
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
+    }
+  }
+
+  /** JSON.parse(fs.readFileSync(path, 'utf-8')). */
+  static Object readJson(String path) {
+    try {
+      return Json.parse(java.nio.file.Files.readString(java.nio.file.Path.of(path)));
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
+    }
+  }
+
+  /** lodash findLastIndex. */
+  static <T> int findLastIndex(List<T> l, java.util.function.Predicate<? super T> p) {
+    for (int i = l.size() - 1; i >= 0; i--) if (p.test(l.get(i))) return i;
+    return -1;
+  }
+
+  static double num(Object v) {
+    return ((Number) v).doubleValue();
   }
 
   /** {@code new ElementDefinitionType(code)} list, for toEqual comparisons of ED.type. */

@@ -1847,7 +1847,8 @@ public class ElementDefinition implements PropertyHolder, JsonSerializable, Js.D
           "Applying value set bindings to a CodeableReference element's underlying .concept path is not allowed. Instead, apply the binding directly to the CodeableReference element.",
           ruleSourceInfo);
     }
-    List<String> strengths = List.of("example", "preferred", "extensible", "required");
+    // (a mutable list: List.of(...).indexOf(null) throws, JS indexOf(undefined) is -1)
+    List<String> strengths = new ArrayList<>(List.of("example", "preferred", "extensible", "required"));
     // Check if this is a valid strength (if the binding.strength already exists)
     Map<String, Object> binding = getBinding();
     if (Js.truthy(binding) && Js.truthy(binding.get("strength"))) {
