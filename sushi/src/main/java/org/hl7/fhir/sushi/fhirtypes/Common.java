@@ -1179,7 +1179,7 @@ public final class Common {
         }
       }
       if (type != null && id != null) {
-        clone = FshClone.cloneDeep(rule);
+        clone = rule.<T>cloneDeep();
         FshReference assignedReference = (FshReference) ruleValue(clone);
         // Set the sdType which will be used for type-checking during assignment
         assignedReference.sdType = type;
@@ -1203,7 +1203,7 @@ public final class Common {
         int firstPipe = ref.reference.indexOf('|');
         if (firstPipe > -1) {
           logger.warn("Reference assignments should not include a version.", rule.sourceInfo);
-          clone = FshClone.cloneDeep(rule);
+          clone = rule.<T>cloneDeep();
           ((FshReference) ruleValue(clone)).reference = ref.reference.substring(0, firstPipe);
           clone = replaceReferences(clone, tank, fisher);
         } else if (type == null && id == null && Js.truthy(ref.reference)) {
@@ -1222,7 +1222,7 @@ public final class Common {
         String baseSystem = code.system.split("\\|", -1)[0];
         Metadata codeSystemMeta = fisher.fishForMetadata(baseSystem, FishableType.CodeSystem);
         if (codeSystemMeta != null) {
-          clone = FshClone.cloneDeep(rule);
+          clone = rule.<T>cloneDeep();
           FshCode assignedCode = (FshCode) ruleValue(clone);
           assignedCode.system = code.system.replaceFirst("^[^|]+",
               Matcher.quoteReplacement(Js.toStr(codeSystemMeta.url)));
@@ -1493,7 +1493,7 @@ public final class Common {
           }
         }
         if (AllowedRules.isAllowedRule(fshDefinition, ruleSetRule)) {
-          Rule ruleSetRuleClone = FshClone.cloneDeep(ruleSetRule);
+          Rule ruleSetRuleClone = ruleSetRule.<Rule>cloneDeep();
           if (Js.truthy(context)) {
             String newPath = context;
             if (".".equals(ruleSetRuleClone.path)) {
