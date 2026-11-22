@@ -138,9 +138,6 @@ public class StructureDefinitionExporter implements Fishable {
   /**
    * Checks generated resources for any custom resources which are not in the http://hl7.org/fhir/StructureDefinition
    * namespace, and are therefore not conformant.
-   *
-   * <p>TS colours the box with chalk; chalk emits no escape codes when stdout is not a TTY (how the IG Publisher
-   * runs SUSHI), so the box is built uncoloured here.
    */
   private void warnOnNonConformantResourceDefinitions() {
     List<StructureDefinition> nonConformantResources = new ArrayList<>();
@@ -152,22 +149,36 @@ public class StructureDefinitionExporter implements Fishable {
     if (!nonConformantResources.isEmpty()) {
       int maxLength = 61;
       List<String> message = new ArrayList<>();
-      message.add("\n╭─────────────────────────────────────────────────────────────────╮");
-      message.add("│ Detected the following non-conformant Resource definitions:     │");
+      message.add(clr("\n╭─────────────────────────────────────────────────────────────────") + "" + clr("╮"));
+      message.add(clr("│") + " Detected the following non-conformant Resource definitions:     " + clr("│"));
       for (StructureDefinition r : nonConformantResources) {
-        String printableName = r.getName().length() > maxLength ? r.getName().substring(0, maxLength - 3) + "..." : r.getName();
-        message.add("│" + padEnd(" - " + printableName, 65) + "│");
+        String name = r.getName();
+        String printableName = name.length() > maxLength ? name.substring(0, maxLength - 3) + "..." : name;
+        message.add(clr("│") + padEnd(" - " + printableName, 65) + clr("│"));
       }
-      message.add("│                                                                 │");
-      message.add("│ Resources not in the \"http://hl7.org/fhir/StructureDefinition\"  │");
-      message.add("│ namespace are not conformant to the FHIR specification.         │");
-      message.add("│ These resources are incompatible with standard XML/JSON         │");
-      message.add("│ schemas, public test servers, public registries, standard       │");
-      message.add("│ validation, and standard publication tooling. These resources   │");
-      message.add("│ should not be used for inter-organizational data exchange.      │");
-      message.add("╰─────────────────────────────────────────────────────────────────╯\n");
+      message.add(clr("│") + "                                                                 " + clr("│"));
+      message.add(clr("│") + " Resources not in the \"http://hl7.org/fhir/StructureDefinition\"  " + clr("│"));
+      message.add(clr("│") + " namespace are not conformant to the FHIR specification.         " + clr("│"));
+      message.add(clr("│") + " These resources are incompatible with standard XML/JSON         " + clr("│"));
+      message.add(clr("│") + " schemas, public test servers, public registries, standard       " + clr("│"));
+      message.add(clr("│") + " validation, and standard publication tooling. These resources   " + clr("│"));
+      message.add(clr("│") + " should not be used for inter-organizational data exchange.      " + clr("│"));
+      message.add(clr("╰─────────────────────────────────────────────────────────────────") + "" + clr("╯\n"));
       logger.warn(String.join("\n", message));
     }
+  }
+
+  /**
+   * chalk 4 {@code chalk.rgb(179, 98, 0)(s)} (the logger.warn colour, truecolor level), only when chalk would colour
+   * (FshLogger.colorEnabled). Like chalk, closes and re-opens the style around each line break.
+   */
+  private static String clr(String s) {
+    if (!logger.colorEnabled() || s.isEmpty()) {
+      return s;
+    }
+    String open = "\u001b[38;2;179;98;0m";
+    String close = "\u001b[39m";
+    return open + s.replace("\n", close + "\n" + open) + close;
   }
 
   /** lodash padEnd (string length in UTF-16 units; lodash counts astral symbols as one -- names are ASCII here). */

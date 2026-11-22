@@ -40,6 +40,14 @@ abstract class SdeTestBase {
         testDefsPath("StructureDefinition-elementdefinition-type-must-support.json"));
   }
 
+  /** TS defs.loadVirtualPackage(new InMemoryVirtualPackage({name, version}, map, {log, allowNonResources: true})). */
+  static void loadInMemoryVirtualPackage(TestFHIRDefinitions defs, String name, String version,
+      Map<String, Object> resourcesById) {
+    defs.loadVirtualPackage(new org.hl7.fhir.sushi.fhirdefs.InMemoryVirtualPackage(
+        org.hl7.fhir.sushi.fhirdefs.InMemoryVirtualPackage.packageJSON(name, version), resourcesById,
+        TestFHIRDefinitions.LOG_MESSAGE, true));
+  }
+
   TestFHIRDefinitions defs;
   TestFisher fisher;
   FSHDocument doc;
