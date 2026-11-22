@@ -41,9 +41,25 @@ Core and FPL agree on every package and version (`latest` for the automatic depe
 in ch-ekm, exact versions), on the resource count of every package (so core's `.index.json` list equals FPL's
 `package/*.json` scan on these packages), and on the winner and order of every lookup that goes to a package.
 
-### Corpus sample
+### Corpus sample (30 IGs)
 
-(pending: 30 IGs chosen for `dev` (5), `current` (6), `x.y.x` (5) and `latest` (4) dependencies, plus 10 random.)
+Chosen for their dependency versions: `dev` (tewhatuora actnow, HL7Chile IPS-CL, hl7-eu imaging-api, HL7 ebm,
+Minsal-CL tei), `current` (hl7-be workflow, unscripted-rx us-pharmacy, TEHIK-EE ig-ee-spd, WHO smart-ccc, HL7
+imaging-service-request, HL7 davinci-pdex-formulary, ...), `x.y.x` (euridice eu-health-data-api, hl7ch ch-ems, IHE
+ITI.DIS, hl7ch ch-vacd, hl7ch ch-emr), `latest` (3 ansforge IGs, HL7 ebm-incubator) and 10 random ones.
+
+- Packages loaded (names, versions, order, status): identical in **30/30**.
+- Lookups: **14,681 unique / 232,393 calls, all identical** (after rule R1 below; before it, hl7-eu imaging-api had 5
+  differing lookups).
+- Loading log lines: identical in 25/30. The 5 others differ only by D7/D8 (below): TS printed
+  `Cached package X#current is out of date ...` + `Attempting to download ...` + `Downloaded` + `Cached ... to` when
+  it refreshed a stale `current` build (hl7.fhir.uv.cow, hl7.fhir.us.davinci-pdex-plan-net), and two
+  `Attempting to download smart.who.int.trust-phw#0.2.0-litlfred from ...` lines before a failed download
+  (smart-trust); core refreshes/attempts silently. (One more mismatch, smart-ccc, was the compare script matching an
+  unrelated `Found both a "menu" property ...` line.)
+
+**Totals (6 reference + 30 corpus IGs): 20,178 unique lookups / 414,452 calls compared, 20,178 identical, 0
+different; 1 FPL rule ported (R1); 2 message-only differences observed (D7, D8).**
 
 ## Differences
 
@@ -78,9 +94,9 @@ in ch-ekm, exact versions), on the resource count of every package (so core's `.
   (`CorePackageProviderTest`); everything else stays core's (the current build is then loaded with core's
   `loadPackage(id, "current")`).
 
-## Known design-level differences not observed so far
+## Known design-level differences (core as is; kept)
 
-These follow from using core as is; none occurred in the measured IGs. Each is listed so a probe hit can be
+These follow from using core as is; D7 and D8 occurred (log lines only, no lookup differs), the others did not. Each is listed so a probe hit can be
 classified quickly.
 
 | # | situation | FPL (TS) | core (Java) | effect |
@@ -90,6 +106,6 @@ classified quickly.
 | D3 | `latest`/`x.y.x` offline | `Latest version of package X could not be determined from the package registry` (error) | newest cached version | Java loads where TS fails |
 | D4 | `x.x` (minor wildcard, e.g. `3.x`) | `Incorrect version format for package X: 3.x. Wildcard should only be used to specify patch versions.` | core resolves it like a wildcard | Java loads where TS errors |
 | D5 | `x.y` (two-part version) not in the cache | download `x.y` from the registry (normally fails) | newest cached `x.y.*` | Java loads where TS fails |
-| D7 | `current` freshness | FPL compares package.json `date` with build.fhir.org's manifest and logs `Cached package X#current is out of date ...` | core's own check (`CIBuildClient.isCurrent`); no such log line | log line missing in Java when a stale current build is refreshed |
-| D8 | cold cache downloads | `Attempting to download X#V from <url>` (packages.fhir.org first) | core's server order (packages2.fhir.org first); the `Attempting ...` line is not printed; `Downloaded X#V` / `Cached X#V to <dir>` are | one log line per download |
+| D7 (observed: hl7-be workflow, HL7 imaging-service-request, HL7 davinci-pdex-formulary) | `current` freshness | FPL compares package.json `date` with build.fhir.org's manifest and logs `Cached package X#current is out of date ...` | core's own check (`CIBuildClient.isCurrent`); no such log line | log line missing in Java when a stale current build is refreshed |
+| D8 (observed: WHO smart-trust) | cold cache downloads | `Attempting to download X#V from <url>` (packages.fhir.org first) | core's server order (packages2.fhir.org first); the `Attempting ...` line is not printed; `Downloaded X#V` / `Cached X#V to <dir>` are | one log line per download |
 | D9 | package files listed in a package | every `package/*.json` file whose content has a string `resourceType` | core's `.index.json` (rebuilt by core when missing/outdated) | resource counts / lookups would differ if a package's index omits a file; not seen on 6 reference IGs |
