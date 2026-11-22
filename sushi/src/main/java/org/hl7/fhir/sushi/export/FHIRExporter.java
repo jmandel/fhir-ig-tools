@@ -3,7 +3,7 @@ package org.hl7.fhir.sushi.export;
 import org.hl7.fhir.sushi.importer.FSHTank;
 import org.hl7.fhir.sushi.utils.MasterFisher;
 
-// port of sushi/src/export/FHIRExporter.ts + exportFHIR.ts -- CONTRACT SKELETON, owned by WP-4.
+// port of sushi/src/export/FHIRExporter.ts + exportFHIR.ts -- owned by WP-6.
 /**
  * Orchestrates the exporters in TS order: applyInsertRules (SD, CS, VS, Instance), then SD export, CS, VS,
  * Instances, Mappings, then post-processing. The exporter classes below are the WP seams:
@@ -28,6 +28,6 @@ public class FHIRExporter {
   }
 
   public Package export() {
-    throw new UnsupportedOperationException("TODO WP-4");
+    throw new UnsupportedOperationException("TODO WP-6");
   }
 }
