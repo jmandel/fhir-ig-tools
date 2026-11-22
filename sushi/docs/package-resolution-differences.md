@@ -61,6 +61,23 @@ in ch-ekm, exact versions), on the resource count of every package (so core's `.
   corpus IGs' predefined-resource folders + 13,331 mutations, 0 differences (JSON text, error messages, stdout).
   First probe run (before the port): ch-term 2 and smart-anc 5 of their lookups differed; after: 0.
 
+### R1 — `dev` not in the cache, only `current` (core differs; FPL rule ported)
+
+- IG: hl7-eu imaging-api (`ihe.rad.mado: dev`; the cache has `ihe.rad.mado#current`, not `#dev`).
+- Lookups: every lookup that hits the package, e.g.
+  `https://profiles.ihe.net/RAD/MADO/StructureDefinition/ext-R5-DocumentReference.bodySite` (Extension), and
+  `findResourceInfos('*', {type: ImplementationGuide})`.
+- TS: FPL sees no `#dev` folder, logs `Falling back to ihe.rad.mado#current since ihe.rad.mado#dev is not locally
+  cached. To avoid this, ...`, loads the current build and registers it as `ihe.rad.mado#current`.
+- core: `loadPackageFromCacheOnly(id, "dev")` returns the cached `current` build, so the package was registered as
+  `ihe.rad.mado#dev` and the fallback message was not printed. Same resources, same winners, different package label.
+- Changes SUSHI output: yes — the console log (missing line, `Loaded ihe.rad.mado#dev` instead of `#current`), and
+  IGExporter's `findPackageJSON(id, 'dev')` (used for a dependency's canonical when the package has no IG resource)
+  would find the package in Java but not in TS.
+- Action: ported FPL's rule — `CorePackageProvider.isCached(id, "dev")` is true only when the `id#dev` folder exists
+  (`CorePackageProviderTest`); everything else stays core's (the current build is then loaded with core's
+  `loadPackage(id, "current")`).
+
 ## Known design-level differences not observed so far
 
 These follow from using core as is; none occurred in the measured IGs. Each is listed so a probe hit can be
@@ -73,7 +90,6 @@ classified quickly.
 | D3 | `latest`/`x.y.x` offline | `Latest version of package X could not be determined from the package registry` (error) | newest cached version | Java loads where TS fails |
 | D4 | `x.x` (minor wildcard, e.g. `3.x`) | `Incorrect version format for package X: 3.x. Wildcard should only be used to specify patch versions.` | core resolves it like a wildcard | Java loads where TS errors |
 | D5 | `x.y` (two-part version) not in the cache | download `x.y` from the registry (normally fails) | newest cached `x.y.*` | Java loads where TS fails |
-| D6 | `dev` not cached | message `Falling back to X#current ...` + current build | core falls back to `current` (message kept: logged by our loader) | none expected |
 | D7 | `current` freshness | FPL compares package.json `date` with build.fhir.org's manifest and logs `Cached package X#current is out of date ...` | core's own check (`CIBuildClient.isCurrent`); no such log line | log line missing in Java when a stale current build is refreshed |
 | D8 | cold cache downloads | `Attempting to download X#V from <url>` (packages.fhir.org first) | core's server order (packages2.fhir.org first); the `Attempting ...` line is not printed; `Downloaded X#V` / `Cached X#V to <dir>` are | one log line per download |
 | D9 | package files listed in a package | every `package/*.json` file whose content has a string `resourceType` | core's `.index.json` (rebuilt by core when missing/outdated) | resource counts / lookups would differ if a package's index omits a file; not seen on 6 reference IGs |
