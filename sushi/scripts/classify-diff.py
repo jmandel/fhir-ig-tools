@@ -48,7 +48,7 @@ def classify(r, j):
 SKIP = ('Elapsed time', 'version of SUSHI', 'determine if it is running the latest version',
         'listing of releases, including the latest', 'github.com/FHIR/sushi/releases', 'npm install -g fsh-sushi',
         'You are using SUSHI version', 'Unable to determine the latest version of sushi',
-        'Attempting fallback to determine version of sushi')
+        'Attempting fallback to determine version of sushi', 'npm notice')
 import re
 TIMESTAMP = re.compile(r'^ *\d+\.\d{3} ')            # work/sushi-spike/tools/timeit.py line prefix
 PUN = re.compile(r'^([|║]) .+? +(\d+ Errors?) +(\d+ Warnings?) ([|║])$')  # summary box pun line (D7)
