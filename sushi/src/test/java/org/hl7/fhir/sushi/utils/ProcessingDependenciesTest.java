@@ -103,7 +103,7 @@ class ProcessingDependenciesTest {
   // .calledWith(...).mockRejectedValue(...)).
 
   static FHIRDefinitions defsWith(TestFHIRDefinitions.FakePackageProvider provider) {
-    FHIRDefinitions.Override o = new FHIRDefinitions.Override();
+    FHIRDefinitions.Overrides o = new FHIRDefinitions.Overrides();
     o.packageProvider = provider;
     return FHIRDefinitions.createFHIRDefinitions(o);
   }
