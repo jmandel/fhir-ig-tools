@@ -21,8 +21,8 @@ import org.hl7.fhir.sushi.js.Js;
  * (download, cache, registry, version resolution incl. latest/x.y.x/current/dev, .index.json — D1a). What stays here
  * is what core does not do for SUSHI: the resource index and its queries, virtual packages, and FPL's log messages.
  *
- * <p>Differences from FPL by design: SafeMode.FREEZE is not emulated (callers get the cached object, as in FPL; they
- * must not mutate it — FPL would throw a TypeError); debug stack traces are Java's; version resolution and download
+ * <p>SafeMode.FREEZE is emulated: resources are deeply frozen ({@link org.hl7.fhir.sushi.js.Frozen}); mutating one
+ * throws, as FPL's frozen objects do. Differences from FPL by design: debug stack traces are Java's; version resolution and download
  * are core's, so FPL's "Attempting to download ... from <url>" line is not printed (core picks the server).
  */
 public class BasePackageLoader {
@@ -301,6 +301,8 @@ public class BasePackageLoader {
       } else {
         resource = packageProvider.readResource(resourcePath);
       }
+      // FPL SafeMode.FREEZE: hand out deeply frozen resources, so an accidental mutation fails loudly (TS: TypeError)
+      resource = org.hl7.fhir.sushi.js.Frozen.deepFreeze(resource);
       if (resourceCache != null) resourceCache.put(resourcePath, resource);
     }
     return resource;

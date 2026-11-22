@@ -80,6 +80,12 @@ beyond 2^53, integer64) = `BigInteger` in fshtypes; JSON.stringify throws on it,
 lodash equivalents: `Js.isEqual` (deep, key order ignored, -0 == 0), `Js.cloneDeep` (`DeepCloneable` for classes),
 `Js.truthy`, `Js.toStr` (template-literal interpolation). Add helpers here, coordinated, instead of per module.
 
+**D3a Fished resources are frozen.** Like fhir-package-loader's SafeMode.FREEZE, `FHIRDefinitions` hands out
+deeply frozen resources (`js.Frozen`: still `JsObject`/`ArrayList`, but every mutator throws `FrozenMutationError`
+with V8's TypeError text). Code that changes a fished resource must `Js.cloneDeep` it first, as the TS code does;
+an accidental mutation fails loudly instead of silently corrupting the shared cache. (`FrozenTest`; full suite and
+the 6 reference IGs unchanged.)
+
 **D4 JSON writer.** `Json.outputJson(v)` = fs-extra `outputJSONSync(path, v, {spaces: 2})` =
 `JSON.stringify(v, null, 2) + "\n"`: 2-space indent, `": "`, empty `{}`/`[]`, undefined members skipped (null in
 arrays), ECMAScript Number→String (shortest round-trip, V8 thresholds; JDK's 2-digit minimum fixed up), JSON.stringify
