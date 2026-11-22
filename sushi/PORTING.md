@@ -37,7 +37,7 @@ code. No other third-party libraries, and **no ANTLR at runtime**.
 |---|---|---|---|
 | `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (on main since WP-8 day 1) | **7.0.6** (release matching the publisher toolchain's 7.0.7-SNAPSHOT) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
 | `org.apache.commons:commons-compress` | **runtime** | 1.26.0 (= publisher's) | optional in core's pom, needed by core's package cache to unpack .tgz packages; not imported by our code |
-| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | compile, **only if** WP-3 needs it | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
+| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | **not used** (WP-3 ported fhir-tool's XML→JSON in-tree, `importer.config.FhirXmlToJs`) | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
 | build plugins: antlr4-maven-plugin 4.13.2, build-helper 3.6.0, compiler/surefire/jar | build | | the antlr plugin's output is excluded from main and added to test sources |
@@ -276,6 +276,6 @@ shim, `sushi` = this port). This repo is laid out to move as is:
    against TS must run before exporters' differential results mean anything.
 4. **Hidden JS semantics** (key order from assignment order, `Number` formatting in messages, regex, sort
    comparators, `localeCompare`): conventions above; reviewers check them.
-5. **YAML**: shared layer refactor in the shim is outside this repo; WP-3 can vendor the event layer temporarily
-   (copy with a "from fhir-ig-jekyll@<commit>" note) and switch to `common` at the monorepo move.
+5. **YAML**: shared layer refactor in the shim is outside this repo; WP-3 vendored the event layer (package `yaml`, from
+   fhir-ig-jekyll@dc6cf398) plus a yaml@1.10 composer; switch to `common` at the monorepo move.
 6. **Test-port volume** (~3,600 tests, ~80k TS lines) dominates effort; keep tests 1:1 to make it mechanical.
