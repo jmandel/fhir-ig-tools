@@ -62,7 +62,7 @@ class UtilLeavesOracleTest {
   }
 
   @Test void validUrlIsUri() throws IOException {
-    for (List<Object> r : rows("uris")) assertEquals(r.get(1), ValidUrl.isUri((String) r.get(0)), (String) r.get(0));
+    for (List<Object> r : rows("uris")) assertEquals(r.get(1), ValidUrl.isUriValue((String) r.get(0)), (String) r.get(0));
   }
 
   @Test void textTable() throws IOException {

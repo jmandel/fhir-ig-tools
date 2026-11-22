@@ -16,8 +16,13 @@ public final class ValidUrl {
       Pattern.compile("(?:([^:/?#]+):)?(?://([^/?#]*))?([^?#]*)(?:\\?([^#]*))?(?:#([\\s\\S]*))?");
   private static final Pattern SCHEME = Pattern.compile("^[a-z][a-z0-9+\\-.]*\\z");
 
-  /** isUri(value): the re-assembled URI, or null (TS undefined) when invalid. */
-  public static String isUri(String value) {
+  /** valid-url isUri as SUSHI uses it (truthiness of the result). */
+  public static boolean isUri(String value) {
+    return isUriValue(value) != null;
+  }
+
+  /** valid-url isUri's return value: the re-assembled URI, or null (TS undefined) when invalid. */
+  public static String isUriValue(String value) {
     if (value == null || value.isEmpty()) return null;
     if (ILLEGAL.matcher(value).find()) return null;
     if (BAD_HEX1.matcher(value).find()) return null;
