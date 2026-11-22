@@ -134,6 +134,13 @@ package snapshot (`baseline-20261120`) + per-IG overlay.
   `\b` are ASCII in both; JS `/u` and sticky flags have no direct equivalent. `trim()` → `Js.trim` (Java `strip()`
   differs on U+00A0, U+FEFF, U+001C–1F). Number → string in messages: `Js.toStr` / `JsNumber.toString`
   (never `String.valueOf(double)`: `1.0E-7` vs `1e-7`, `5.0` vs `5`).
+- **lodash.** In `js.Js` (oracle-tested): `isEqual`, `cloneDeep` (fshtypes entities via `FshEntity.cloneDeep()`),
+  `isEmpty` (numbers/booleans are empty!), `isMatch` (partial; arrays order-insensitive), `merge`/`mergeWith`
+  (arrays by index), `pad/padStart/padEnd`, `upperFirst`, `escapeRegExp`, `words`. Plain Java for the rest, with
+  these semantics: `sortBy` = stable `List.sort` by key (undefined/null keys last); `uniqWith`/`uniq` keep the FIRST
+  occurrence in order; `difference`/`xor`/`includes` use SameValueZero (`Js.isEqual` on leaves, NaN equal);
+  `groupBy` = `LinkedHashMap` in first-seen key order; `partition` keeps order; `pickBy` keeps key order;
+  `findLast`, `flatMap`, `flatten` (one level), `sumBy`, `min`, `repeat`, `sample` (`Puns` only).
 - **Exceptions.** TS `throw new XError()` caught and logged → Java unchecked exceptions in `errors/` with the same
   class name and the exact TS message; keep the try/catch placement (it decides which message is logged and what is
   skipped).
@@ -195,7 +202,8 @@ rebased on main; plus the WP-specific gate below.
 | **WP-10 IG, CLI, glue** | IGExporter, predefinedResources, App (commander options), run/FshToFhir, Processing (rest: inputs, writing, fsh-index.txt via text-table, preprocessed), puns, title-case, sanitize-filename, ini; logger tests | ~3,580 | 319 | all | full differential: `fsh-generated/` byte-identical + log identical (minus pun/version lines) + same exit status on the 6 reference IGs, then the corpus |
 
 Ten packages, run by 8 agents (phase 2 staffing): WP-8+WP-9 share an agent; WP-10 starts later, its leaf parts
-(puns, text-table, title-case, sanitize-filename, `testhelpers.LoggerSpy`) are done by the integrator. Originally: WP-9 is small (pair it with WP-3 or WP-8), WP-1 can be followed by WP-2 work by the same
+(puns, text-table, title-case, sanitize-filename, valid-url, `testhelpers.LoggerSpy`) are done by the integrator
+(on main: `utils.Puns/TextTable/TitleCase/SanitizeFilename/ValidUrl`, test helper `testhelpers.LoggerSpy`). Originally: WP-9 is small (pair it with WP-3 or WP-8), WP-1 can be followed by WP-2 work by the same
 agent, and WP-10 can start late (its first weeks: puns/text-table/title-case/sanitize + Processing). Critical path:
 WP-5 ↔ WP-4 → WP-6 → WP-7 → WP-10. Day 1 for every WP: replace its skeletons' `TODO` bodies with **real
 signatures** (public methods other WPs call), commit to main, then implement.
