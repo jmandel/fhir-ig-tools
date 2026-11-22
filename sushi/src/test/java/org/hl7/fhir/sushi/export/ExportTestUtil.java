@@ -233,9 +233,36 @@ final class ExportTestUtil {
     }
   }
 
+  /** An InstanceDefinition as the TS object (its own keys plus _instanceMeta), for toEqual with _instanceMeta. */
+  static Object withMeta(Object instance) {
+    if (!(instance instanceof org.hl7.fhir.sushi.fhirtypes.InstanceDefinition inst)) return instance;
+    JsObject o = new JsObject();
+    JsObject meta = new JsObject();
+    var m = inst._instanceMeta;
+    if (m.name != null) meta.put("name", m.name);
+    if (m.title != null) meta.put("title", m.title);
+    if (m.description != null) meta.put("description", m.description);
+    if (m.usage != null) meta.put("usage", m.usage);
+    if (m.sdType != null) meta.put("sdType", m.sdType);
+    if (m.sdKind != null) meta.put("sdKind", m.sdKind);
+    if (m.instanceOfUrl != null) meta.put("instanceOfUrl", m.instanceOfUrl);
+    o.put("_instanceMeta", meta);
+    o.putAll(inst);
+    return o;
+  }
+
   /** TS {@code obj.key = value} on a value-model object or PropertyHolder. */
   static void setProp(Object obj, String key, Object value) {
-    Common.setProp(obj, key, value);
+    if (obj instanceof Map || obj instanceof org.hl7.fhir.sushi.fhirtypes.PropertyHolder) {
+      Common.setProp(obj, key, value);
+      return;
+    }
+    // a FSH-side Java object (e.g. rule.value.version = ... on a FshCanonical): its public field
+    try {
+      obj.getClass().getField(key).set(obj, value);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError("cannot set " + key + " on " + obj, e);
+    }
   }
 
   /** TS {@code delete obj.key}. */

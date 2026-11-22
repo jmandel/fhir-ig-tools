@@ -137,7 +137,9 @@ function E(n, hint) {
   if (ts.isIdentifier(n)) {
     if (n.text === 'undefined') return { c: 'null', t: null };
     if (n.text === 'minimalConfig') return { c: 'MinimalConfig.minimalConfig()', t: 'Configuration' };
-    return { c: n.text, t: typeOf(n.text) };
+    const t = typeOf(n.text);
+    if (t && t.startsWith('CAST:')) return { c: `((${t.slice(5)}) ${n.text})`, t: t.slice(5) };
+    return { c: n.text, t };
   }
   if (ts.isRegularExpressionLiteral(n)) {
     const m = n.text.match(/^\/(.*)\/([a-z]*)$/s);
@@ -149,6 +151,7 @@ function E(n, hint) {
     if (p && hint === 'json') return { c: `JsAssert.json(${jsonArg(p.v)})`, t: 'Object' };
 
     const els = n.elements.map(e => E(e, hint === 'double' ? 'double' : undefined).c);
+    if (els.length === 1 && els[0] === 'null') return { c: 'new ArrayList<>(Collections.singletonList(null))', t: 'List<Object>' };
     return { c: `new ArrayList<>(Arrays.asList(${els.join(', ')}))`, t: 'List<Object>' };
   }
   if (ts.isObjectLiteralExpression(n)) {
@@ -203,7 +206,8 @@ function E(n, hint) {
   }
   if (ts.isArrowFunction(n) || ts.isFunctionExpression(n)) {
     const ps = n.parameters.map(p => p.name.getText(sf));
-    scopes.push(new Map()); ps.forEach(p => declare(p, null));
+    const pts = hint && hint.paramTypes ? hint.paramTypes : [];
+    scopes.push(new Map()); ps.forEach((p, i) => declare(p, pts[i] && pts[i] !== 'Object' ? (hint.noCast ? pts[i] : 'CAST:' + pts[i]) : null));
     let body;
     if (ts.isBlock(n.body)) body = '{\n' + n.body.statements.map(s => S(s, '  ')).join('') + '}';
     else body = E(n.body).c;
@@ -321,10 +325,12 @@ function call(n) {
       return { c: xs.length === 1 ? `${recv.c}.add(${xs[0]})` : `${recv.c}.addAll(Arrays.asList(${xs.join(', ')}))`, t: 'boolean' };
     }
     if (['some', 'every', 'filter', 'map', 'find', 'findIndex', 'forEach'].includes(name) && args.length === 1 && !(name === 'find' && isList(recv.t))) {
-      let fnc = E(args[0]).c;
+      const et = isList(recv.t) ? elemOf(recv.t) : null;
+      const ph = { paramTypes: [et] };
+      let fnc = E(args[0], ph).c;
       const fnArg = args[0];
       if (['some', 'every', 'filter', 'find', 'findIndex'].includes(name) && (ts.isArrowFunction(fnArg)) && !ts.isBlock(fnArg.body)) {
-        scopes.push(new Map()); fnArg.parameters.forEach(p => declare(p.name.getText(sf), null));
+        scopes.push(new Map()); fnArg.parameters.forEach(p => declare(p.name.getText(sf), et && et !== 'Object' ? 'CAST:' + et : null));
         const b = E(fnArg.body); scopes.pop();
         if (b.t !== 'boolean') fnc = `(${fnArg.parameters.map(p => p.name.getText(sf)).join(', ')}) -> Js.truthy(${b.c})`;
       }
@@ -344,7 +350,7 @@ function call(n) {
       return { c: `${recv.c}.addAll(Arrays.asList(${A().join(', ')}))`, t: 'boolean' };
     }
     if (name === 'find' && isList(recv.t) && args.length === 1) {
-      const fn = E(args[0]);
+      const fn = E(args[0], { paramTypes: [elemOf(recv.t)], noCast: true });
       return { c: `${recv.c}.stream().filter(${fn.c.replace(/Objects\.equals\(([a-z]+)\.id,/g, 'Objects.equals($1.getId(),')}).findFirst().orElse(null)`, t: elemOf(recv.t) };
     }
     if (name === 'slice' && isList(recv.t) && args.length === 1 && src(args[0]) === '-1') {
@@ -387,6 +393,7 @@ function matcher(n) {
     }
     case 'toEqual': case 'toStrictEqual': {
       const p = pureValue(arg);
+      if (p && p.v && typeof p.v === 'object' && !Array.isArray(p.v) && '_instanceMeta' in p.v) a = { c: `withMeta(${a.c})`, t: 'Object' };
       if (p) return { c: `${not ? 'assertNotJsonEqual' : 'assertJsonEqual'}(${jsonArg(p.v === undefined ? null : p.v)}, ${a.c})`, t: 'void' };
       return { c: `${not ? 'assertNotJsEqual' : 'assertJsEqual'}(${E(arg).c}, ${a.c})`, t: 'void' };
     }

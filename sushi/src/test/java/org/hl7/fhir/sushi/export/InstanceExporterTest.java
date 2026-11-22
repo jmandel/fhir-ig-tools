@@ -6015,7 +6015,7 @@ class InstanceExporterTest {
         valueRule.value = "ext on given[0]";
         instance.rules.addAll(Arrays.asList(urlRule, valueRule));
         InstanceDefinition exported = exportInstance.apply(instance);
-        assertJsEqual(obj("given", new ArrayList<>(Arrays.asList(null)), "_given", new ArrayList<>(Arrays.asList(obj("extension", new ArrayList<>(Arrays.asList(obj("url", displayUrl, "valueString", "ext on given[0]"))))))), at(exported, "name[0]"));
+        assertJsEqual(obj("given", new ArrayList<>(Collections.singletonList(null)), "_given", new ArrayList<>(Arrays.asList(obj("extension", new ArrayList<>(Arrays.asList(obj("url", displayUrl, "valueString", "ext on given[0]"))))))), at(exported, "name[0]"));
       }
 
       @Test
@@ -8731,7 +8731,7 @@ class InstanceExporterTest {
       // Scope the assertion to the specific false-positive error only. Do NOT assert zero
       // warnings: the |1.2.3 request logs an expected version-fallback warning from
       // handleExtensionContainsRule's fishForFHIRBestVersion, unrelated to this bug.
-      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("minimum cardinality 1 but occurs 0 time\\(s\\)", "").matcher(Js.toStr(m)).find()));
+      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("minimum cardinality 1 but occurs 0 time\\(s\\)", "").matcher(Js.toStr(((String) m))).find()));
       // Exercise the shared/cached StructureDefinition path: a second instance of the same
       // profile must also bind the slice. Pre-fix, the no-match fallback mutated the shared,
       // cached InstanceOf SD, so order-dependent regressions could slip past a single instance.
@@ -8750,7 +8750,7 @@ class InstanceExporterTest {
           }
         ]
         """, at(exported2, "extension"));
-      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("minimum cardinality 1 but occurs 0 time\\(s\\)", "").matcher(Js.toStr(m)).find()));
+      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("minimum cardinality 1 but occurs 0 time\\(s\\)", "").matcher(Js.toStr(((String) m))).find()));
     }
 
     @Test
@@ -8793,7 +8793,7 @@ class InstanceExporterTest {
         ]
         """, at(exported, "modifierExtension"));
       assertEquals(0, loggerSpy.getAllMessages("error").size());
-      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("Non-modifier extension .* used on modifierExtension element", "").matcher(Js.toStr(m)).find()));
+      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("Non-modifier extension .* used on modifierExtension element", "").matcher(Js.toStr(((String) m))).find()));
     }
 
     @Test
@@ -8839,7 +8839,7 @@ class InstanceExporterTest {
         ]
         """, at(exported, "extension"));
       assertEquals(0, loggerSpy.getAllMessages("error").size());
-      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("Modifier extension .* used on extension element", "").matcher(Js.toStr(m)).find()));
+      assertEquals(false, some(loggerSpy.getAllMessages("error"), (m) -> jsRegex("Modifier extension .* used on extension element", "").matcher(Js.toStr(((String) m))).find()));
     }
 
     @Test
@@ -10607,7 +10607,7 @@ class InstanceExporterTest {
       doc.instances.put(instance.name, instance);
       sdExporter.export();
       List<InstanceDefinition> exported = exporter.export().instances;
-      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyInstance")).findFirst().orElse(null);
+      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(i._instanceMeta.name, "MyInstance")).findFirst().orElse(null);
       assertNull(at(exportedInstance, "category"));
       assertContainsEqual(JsAssert.json("\"Cannot assign {\\\"coding\\\":[{\\\"code\\\":\\\"bar\\\",\\\"system\\\":\\\"http://not-example.com\\\"}]} to this element since it conflicts with all values of the closed slicing.\""), loggerSpy.getAllMessages("error"));
     }
@@ -10662,7 +10662,7 @@ class InstanceExporterTest {
       doc.instances.put(instance.name, instance);
       sdExporter.export();
       List<InstanceDefinition> exported = exporter.export().instances;
-      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyInstance")).findFirst().orElse(null);
+      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(i._instanceMeta.name, "MyInstance")).findFirst().orElse(null);
       assertJsonEqual("""
         [
           {
@@ -10720,7 +10720,7 @@ class InstanceExporterTest {
       doc.instances.put(instance.name, instance);
       sdExporter.export();
       List<InstanceDefinition> exported = exporter.export().instances;
-      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyInstance")).findFirst().orElse(null);
+      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(i._instanceMeta.name, "MyInstance")).findFirst().orElse(null);
       assertJsonEqual("""
         [
           {
@@ -10792,7 +10792,7 @@ class InstanceExporterTest {
       doc.instances.put(instance.name, instance);
       sdExporter.export();
       List<InstanceDefinition> exported = exporter.export().instances;
-      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyTestPatientExample")).findFirst().orElse(null);
+      InstanceDefinition exportedInstance = exported.stream().filter((i) -> Objects.equals(i._instanceMeta.name, "MyTestPatientExample")).findFirst().orElse(null);
       assertJsonEqual("""
         [
           {
@@ -10824,8 +10824,8 @@ class InstanceExporterTest {
       inlineInstance.rules.add(assignedValRule);
       doc.instances.put(inlineInstance.name, inlineInstance);
       List<InstanceDefinition> exported = exporter.export().instances;
-      List<Object> exportedBundle = filter(exported, (i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyBundle"));
-      List<Object> exportedBundledPatient = filter(exported, (i) -> Objects.equals(at(i, "_instanceMeta.name"), "MyBundledPatient"));
+      List<Object> exportedBundle = filter(exported, (i) -> Objects.equals(((InstanceDefinition) i)._instanceMeta.name, "MyBundle"));
+      List<Object> exportedBundledPatient = filter(exported, (i) -> Objects.equals(((InstanceDefinition) i)._instanceMeta.name, "MyBundledPatient"));
       assertEquals(1, exportedBundle.size());
       assertEquals(1, exportedBundledPatient.size());
     }
@@ -11316,7 +11316,7 @@ class InstanceExporterTest {
           "status": "active",
           "type": "server"
         }
-        """, exportedInstance);
+        """, withMeta(exportedInstance));
         assertEquals(0, loggerSpy.getAllLogs("warn").size());
         assertEquals(0, loggerSpy.getAllLogs("error").size());
       }
@@ -11349,7 +11349,7 @@ class InstanceExporterTest {
           "url": "http://hl7.org/fhir/us/minimal/Requirements/RQ1",
           "status": "active"
         }
-        """, exportedInstance);
+        """, withMeta(exportedInstance));
         assertEquals(0, loggerSpy.getAllLogs("warn").size());
         assertEquals(0, loggerSpy.getAllLogs("error").size());
       }
@@ -11382,7 +11382,7 @@ class InstanceExporterTest {
           "url": "http://hl7.org/fhir/us/minimal/SubscriptionTopic/ST1",
           "status": "active"
         }
-        """, exportedInstance);
+        """, withMeta(exportedInstance));
         assertEquals(0, loggerSpy.getAllLogs("warn").size());
         assertEquals(0, loggerSpy.getAllLogs("error").size());
       }
@@ -11444,7 +11444,7 @@ class InstanceExporterTest {
             }
           ]
         }
-        """, exportedInstance);
+        """, withMeta(exportedInstance));
         assertEquals(0, loggerSpy.getAllMessages("warn").size());
         assertEquals(0, loggerSpy.getAllLogs("error").size());
       }
@@ -12002,7 +12002,7 @@ class InstanceExporterTest {
         bundleInstance.rules.add(bundleValRule);
         InstanceDefinition exported = exportInstance.apply(bundleInstance);
         assertNull(at(exported, "entry"));
-        assertTrue(Js.truthy(some(loggerSpy.getAllMessages("error"), (e) -> Js.truthy(jsMatch(e, jsRegex("Cannot assign Observation value: MyInlineObservation. Value does not match element type: Patient, Organization", ""))))));
+        assertTrue(Js.truthy(some(loggerSpy.getAllMessages("error"), (e) -> Js.truthy(jsMatch(((String) e), jsRegex("Cannot assign Observation value: MyInlineObservation. Value does not match element type: Patient, Organization", ""))))));
       }
 
       @Test
