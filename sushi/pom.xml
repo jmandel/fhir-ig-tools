@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Java port of SUSHI 3.21.1 (FSH compiler). Package root org.hl7.fhir.sushi is a placeholder (naming decision N1 in PORTING.md). -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.hl7.fhir</groupId>
+  <artifactId>sushi-java</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>sushi-java</name>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- scripts/build.sh points this at the VM disk (D11); default keeps plain `mvn` usable -->
+    <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
+    <antlr.version>4.13.2</antlr.version>
+    <junit.version>5.11.4</junit.version>
+  </properties>
+
+  <dependencies>
+    <!-- Runtime: no third-party libraries (PORTING.md "Dependencies"). org.hl7.fhir.utilities (package cache) is added
+         by WP-7 at the version the IG Publisher ships. -->
+    <!-- Test only: the ANTLR parser generated from SUSHI's grammar is the oracle for the hand-written FSH parser. -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <directory>${sushi.buildDir}</directory>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr.version}</version>
+        <!-- Generates the TEST-SCOPE oracle parser from src/test/antlr4 (SUSHI's .g4 files, unmodified). The plugin
+             registers its output as a main source root, so default-compile excludes it and build-helper adds it to
+             the test sources instead. -->
+        <configuration>
+          <sourceDirectory>${project.basedir}/src/test/antlr4</sourceDirectory>
+          <outputDirectory>${project.build.directory}/generated-test-sources/antlr4</outputDirectory>
+          <visitor>true</visitor>
+          <listener>true</listener>
+        </configuration>
+        <executions>
+          <execution>
+            <goals><goal>antlr4</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>21</release>
+          <compilerArgs><arg>-Xlint:all,-serial,-processing</arg></compilerArgs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes><exclude>org/hl7/fhir/sushi/importer/antlr/**</exclude></excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>antlr-oracle-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals><goal>add-test-source</goal></goals>
+            <configuration>
+              <sources><source>${project.build.directory}/generated-test-sources/antlr4</source></sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <trimStackTrace>false</trimStackTrace>
+          <systemPropertyVariables>
+            <!-- SUSHI checkout (tests + fixtures) on the VM, used by data-driven tests; tests skip when absent -->
+            <sushi.ts.dir>${sushi.ts.dir}</sushi.ts.dir>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive><manifest><mainClass>org.hl7.fhir.sushi.App</mainClass></manifest></archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>ts-dir-default</id>
+      <activation><property><name>!sushi.ts.dir</name></property></activation>
+      <properties><sushi.ts.dir>/srv/ig/sushi-spike/sushi</sushi.ts.dir></properties>
+    </profile>
+  </profiles>
+</project>
