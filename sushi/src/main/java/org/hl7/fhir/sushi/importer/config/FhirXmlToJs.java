@@ -11,17 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import org.hl7.fhir.sushi.js.JsObject;
 import org.hl7.fhir.sushi.js.Json;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 // port of fhir-tool 5.0.2 convertToJs.ts (ConvertToJs.convert, as Fhir.xmlToObj calls it), R4 model
 /**
@@ -287,50 +282,56 @@ final class FhirXmlToJs {
 
   private static XNode parse(String xml) {
     try {
-      DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-      f.setNamespaceAware(false);
-      f.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-      f.setExpandEntityReferences(false);
-      DocumentBuilder b = f.newDocumentBuilder();
-      b.setErrorHandler(null);
-      Document d = b.parse(new InputSource(new StringReader(xml)));
-      return toXNode(d);
-    } catch (FhirToolError e) {
-      throw e;
-    } catch (Exception e) {
+      XMLInputFactory f = XMLInputFactory.newFactory();
+      f.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+      f.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+      f.setProperty(XMLInputFactory.IS_COALESCING, false);
+      XMLStreamReader r = f.createXMLStreamReader(new StringReader(xml));
+      List<List<XNode>> stack = new ArrayList<>();
+      List<String> names = new ArrayList<>();
+      List<Map<String, String>> attrs = new ArrayList<>();
+      stack.add(new ArrayList<>());
+      StringBuilder text = null;
+      while (r.hasNext()) {
+        int ev = r.next();
+        if (ev != XMLStreamConstants.CHARACTERS && ev != XMLStreamConstants.SPACE && text != null) {
+          // xml-js drops whitespace-only text between elements (captureSpacesBetweenElements: false)
+          if (!text.toString().isBlank()) stack.get(stack.size() - 1).add(new XNode("text", null, null, null, text.toString()));
+          text = null;
+        }
+        switch (ev) {
+          case XMLStreamConstants.START_ELEMENT -> {
+            Map<String, String> a = new java.util.LinkedHashMap<>();
+            for (int i = 0; i < r.getAttributeCount(); i++) a.put(r.getAttributeLocalName(i), r.getAttributeValue(i));
+            for (int i = 0; i < r.getNamespaceCount(); i++) {
+              String pfx = r.getNamespacePrefix(i);
+              a.put(pfx == null || pfx.isEmpty() ? "xmlns" : "xmlns:" + pfx, r.getNamespaceURI(i));
+            }
+            names.add(r.getLocalName());
+            attrs.add(a);
+            stack.add(new ArrayList<>());
+          }
+          case XMLStreamConstants.END_ELEMENT -> {
+            List<XNode> children = stack.remove(stack.size() - 1);
+            XNode el = new XNode("element", names.remove(names.size() - 1), attrs.remove(attrs.size() - 1),
+                children.isEmpty() ? null : children, null);
+            stack.get(stack.size() - 1).add(el);
+          }
+          case XMLStreamConstants.CHARACTERS, XMLStreamConstants.SPACE -> {
+            if (text == null) text = new StringBuilder();
+            text.append(r.getText());
+          }
+          case XMLStreamConstants.CDATA -> stack.get(stack.size() - 1).add(new XNode("cdata", null, null, null, r.getText()));
+          case XMLStreamConstants.COMMENT -> stack.get(stack.size() - 1).add(new XNode("comment", null, null, null, r.getText()));
+          case XMLStreamConstants.PROCESSING_INSTRUCTION -> stack.get(stack.size() - 1).add(
+              new XNode("instruction", r.getPITarget(), null, null, r.getPIData()));
+          default -> {}
+        }
+      }
+      return new XNode("document", null, null, stack.get(0), null);
+    } catch (XMLStreamException e) {
       throw new FhirToolError(String.valueOf(e.getMessage()));
     }
   }
 
-  private static XNode toXNode(Node n) {
-    List<XNode> children = new ArrayList<>();
-    for (Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
-      switch (c.getNodeType()) {
-        case Node.ELEMENT_NODE -> children.add(toXNode(c));
-        case Node.COMMENT_NODE -> children.add(new XNode("comment", null, null, null, c.getNodeValue()));
-        case Node.TEXT_NODE -> {
-          // xml-js drops whitespace-only text between elements (captureSpacesBetweenElements: false)
-          if (!c.getNodeValue().isBlank()) children.add(new XNode("text", null, null, null, c.getNodeValue()));
-        }
-        case Node.CDATA_SECTION_NODE -> children.add(new XNode("cdata", null, null, null, c.getNodeValue()));
-        case Node.PROCESSING_INSTRUCTION_NODE -> children.add(new XNode("instruction", c.getNodeName(), null, null,
-            c.getNodeValue()));
-        default -> {}
-      }
-    }
-    if (n.getNodeType() == Node.DOCUMENT_NODE) return new XNode("document", null, null, children, null);
-    JsObjectAttrs attrs = new JsObjectAttrs();
-    NamedNodeMap nm = n.getAttributes();
-    for (int i = 0; nm != null && i < nm.getLength(); i++) {
-      Attr a = (Attr) nm.item(i);
-      attrs.put(a.getName(), a.getValue());
-    }
-    return new XNode("element", ((Element) n).getTagName(), attrs, children.isEmpty() ? null : children, null);
-  }
-
-  /** attribute name -> value, in DOM order (only lookups by name matter). */
-  private static final class JsObjectAttrs extends java.util.LinkedHashMap<String, String> {
-    private static final long serialVersionUID = 1L;
-  }
 }
