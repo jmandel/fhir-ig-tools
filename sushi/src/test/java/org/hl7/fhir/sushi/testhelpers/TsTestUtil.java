@@ -61,6 +61,28 @@ public final class TsTestUtil {
     return o;
   }
 
+  /** A Configuration from a TS object literal (spreading a Configuration converts it to its JS form first). */
+  public static Configuration cfg(Object... kv) {
+    Object[] c = kv.clone();
+    for (int i = 0; i < c.length; i += 2) {
+      if (c[i] == SPREAD && c[i + 1] instanceof Configuration conf) {
+        c[i + 1] = org.hl7.fhir.sushi.importer.config.ConfigurationJs.toJs(conf);
+      }
+    }
+    return org.hl7.fhir.sushi.importer.config.ConfigurationJs.fromJs(obj(c));
+  }
+
+  /** The typed value of one Configuration field built from its JS form (e.g. menu, history, groups). */
+  @SuppressWarnings("unchecked")
+  public static <T> T configField(String key, Object js) {
+    Configuration c = org.hl7.fhir.sushi.importer.config.ConfigurationJs.fromJs(obj(key, js));
+    try {
+      return (T) Configuration.class.getField(key).get(c);
+    } catch (ReflectiveOperationException e) {
+      throw new IllegalArgumentException(key, e);
+    }
+  }
+
   /** TS {@code config.instanceOptions = { ... }}. */
   public static Configuration.ConfigurationInstanceOptions instanceOptions(Object o) {
     Configuration.ConfigurationInstanceOptions io = new Configuration.ConfigurationInstanceOptions();
