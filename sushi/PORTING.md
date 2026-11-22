@@ -37,7 +37,7 @@ code. No other third-party libraries, and **no ANTLR at runtime**.
 |---|---|---|---|
 | `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (on main since WP-8 day 1) | **7.0.6** (release matching the publisher toolchain's 7.0.7-SNAPSHOT) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
 | `org.apache.commons:commons-compress` | **runtime** | 1.26.0 (= publisher's) | optional in core's pom, needed by core's package cache to unpack .tgz packages; not imported by our code |
-| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | **not used** (WP-3 ported fhir-tool's XML→JSON in-tree, `importer.config.FhirXmlToJs`) | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
+| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | **not used**: fhir-tool's XML→JSON is ported once, `fhirdefs.xml.FhirXmlToJs` (WP-8: sax 1.2.4 + xml-js + R4 type data; used by fhirdefs for predefined XML and by `importer.config` for legacy ig.xml) | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
 | build plugins: antlr4-maven-plugin 4.13.2, build-helper 3.6.0, compiler/surefire/jar | build | | the antlr plugin's output is excluded from main and added to test sources |
@@ -244,6 +244,12 @@ or `| <wp> | contract: <what/why>` lines in `../progress/sushi-port-requests.log
 `main` builds green (`scripts/build.sh`), touches only the WP's own packages (plus its tests), or the contract change
 was accepted. Accepted contract changes are announced in the `main` commit message and as
 `| integrator | contract changed: …` in the requests log. Merges are fast-forward/rebase merges (linear history).
+
+## 6b. Known differences
+
+`docs/known-differences.md` lists every accepted/open behaviour difference from TS SUSHI 3.21.1 (KD-n entries with
+scope, evidence, decision). `docs/package-resolution-differences.md` (WP-8) lists FPL rules ported because core
+resolved differently. Add entries there, never silently.
 
 ## 7. Monorepo move (planned)
 
