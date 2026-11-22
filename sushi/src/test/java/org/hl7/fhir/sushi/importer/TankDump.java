@@ -22,6 +22,7 @@ import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.js.JsNumber;
 import org.hl7.fhir.sushi.js.JsObject;
 import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.sushi.testhelpers.JsDump;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 /**
@@ -36,13 +37,6 @@ import org.hl7.fhir.sushi.utils.FshLogger;
  */
 public final class TankDump {
   private TankDump() {}
-
-  /** Classes that are plain objects (object literals / interfaces) in TS: no $class. */
-  private static final Set<Class<?>> PLAIN = Set.of(SourceInfo.class, TextLocation.class,
-      org.hl7.fhir.sushi.fshtypes.ExtensionContext.class, ValueSetComponentFrom.class, ValueSetFilter.class,
-      OnlyRuleType.class, ContainsRuleItem.class);
-  /** Java-only bookkeeping fields with no TS counterpart. */
-  private static final Set<String> SKIP_FIELDS = Set.of("ruleLookupCache");
 
   public static void main(String[] args) throws IOException {
     run(Path.of(args[0]), Path.of(args[1]));
@@ -81,7 +75,7 @@ public final class TankDump {
       FSHTank tank = new FSHTank(docs, config);
       tank.checkDuplicateNameEntities();
       Files.createDirectories(out);
-      Files.writeString(out.resolve("tank.json"), Json.stringify(dump(docs), 1) + "\n", StandardCharsets.UTF_8);
+      Files.writeString(out.resolve("tank.json"), Json.stringify(JsDump.dump(docs), 1) + "\n", StandardCharsets.UTF_8);
       writePreprocessedFSH(out, in.toAbsolutePath(), tank);
     } finally {
       FshLogger.logger.setSink(old);
@@ -138,56 +132,4 @@ public final class TankDump {
     throw new IllegalArgumentException(e.getClass().getName());
   }
 
-  /** The canonical dump value (see class comment). */
-  static Object dump(Object v) {
-    if (v == null) return null;
-    if (v instanceof String || v instanceof Boolean) return v;
-    if (v instanceof Double d) {
-      if (Double.isFinite(d)) return d;
-      return obj("$num", JsNumber.toString(d));
-    }
-    if (v instanceof Integer i) return (double) i;
-    if (v instanceof BigInteger b) return obj("$bigint", b.toString());
-    if (v instanceof Pattern p) return obj("$regex", p.pattern());
-    if (v instanceof Enum<?> e) return e.toString();
-    if (v instanceof Map<?, ?> m) {
-      List<Object> entries = new ArrayList<>();
-      m.forEach((k, x) -> entries.add(new ArrayList<>(Arrays.asList(k, dump(x)))));
-      return obj("$map", entries);
-    }
-    if (v instanceof List<?> l) {
-      List<Object> out = new ArrayList<>();
-      for (Object x : l) out.add(dump(x));
-      return out;
-    }
-    TreeMap<String, Object> fields = new TreeMap<>();
-    if (!PLAIN.contains(v.getClass())) {
-      fields.put("$class", v instanceof FshEntity fe ? fe.constructorName() : v.getClass().getSimpleName());
-    }
-    for (Class<?> c = v.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
-      for (Field f : c.getDeclaredFields()) {
-        if (Modifier.isStatic(f.getModifiers()) || SKIP_FIELDS.contains(f.getName()) || f.isSynthetic()) continue;
-        f.setAccessible(true);
-        Object x;
-        try {
-          x = f.get(v);
-        } catch (IllegalAccessException e) {
-          throw new IllegalStateException(e);
-        }
-        Object d = dump(x);
-        String name = f.getName().endsWith("_") ? f.getName().substring(0, f.getName().length() - 1) : f.getName();
-        if (d != null && !fields.containsKey(name)) fields.put(name, d);
-      }
-    }
-    JsObject o = new JsObject();
-    // $class sorts first in TS too ('$' < letters, and Object.keys(...).sort() puts '$class' before '_id')
-    fields.forEach(o::put);
-    return o;
-  }
-
-  private static JsObject obj(String k, Object v) {
-    JsObject o = new JsObject();
-    o.put(k, v);
-    return o;
-  }
 }
