@@ -33,7 +33,10 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-      <version>1.27.1</version>
+      <!-- optional in core's pom but needed at runtime by its package cache; the version the publisher ships.
+           runtime scope: our code must not import it (build.DependencyRuleTest). -->
+      <version>1.26.0</version>
+      <scope>runtime</scope>
     </dependency>
     <!-- Test only: the ANTLR parser generated from SUSHI's grammar is the oracle for the hand-written FSH parser. -->
     <dependency>

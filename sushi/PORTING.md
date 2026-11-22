@@ -36,6 +36,7 @@ code. No other third-party libraries, and **no ANTLR at runtime**.
 | dependency | scope | version | why |
 |---|---|---|---|
 | `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (on main since WP-8 day 1) | **7.0.6** (release matching the publisher toolchain's 7.0.7-SNAPSHOT) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
+| `org.apache.commons:commons-compress` | **runtime** | 1.26.0 (= publisher's) | optional in core's pom, needed by core's package cache to unpack .tgz packages; not imported by our code |
 | `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | compile, **only if** WP-3 needs it | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
