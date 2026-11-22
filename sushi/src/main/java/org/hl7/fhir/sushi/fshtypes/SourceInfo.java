@@ -4,7 +4,7 @@ import java.util.Objects;
 
 // port of sushi/src/fshtypes/FshEntity.ts type SourceInfo (SUSHI 3.21.1)
 /** All fields optional (null = undefined). Value semantics for test comparisons. */
-public final class SourceInfo {
+public final class SourceInfo implements org.hl7.fhir.sushi.js.Js.DeepCloneable {
   public String file;
   public TextLocation location;
   public String appliedFile;
@@ -34,5 +34,10 @@ public final class SourceInfo {
 
   @Override public int hashCode() {
     return Objects.hash(file, location, appliedFile, appliedLocation);
+  }
+
+  @Override
+  public Object cloneDeep(java.util.IdentityHashMap<Object, Object> seen) {
+    return copy();
   }
 }

@@ -159,4 +159,182 @@ public final class Js {
     if (v instanceof Map<?, ?>) return "[object Object]";
     return v.toString();
   }
+
+  // ------------------------------------------------------------------------------------------------ lodash (strings)
+
+  /** lodash pad: centre in {@code length} with spaces (left floor, right ceil). Length counts UTF-16 units (lodash
+   *  counts code points/combining marks; identical for the BMP text SUSHI pads). */
+  public static String pad(String s, int length) {
+    int n = s.length();
+    if (n >= length) return s;
+    int total = length - n, left = total / 2;
+    return " ".repeat(left) + s + " ".repeat(total - left);
+  }
+
+  public static String padStart(String s, int length) {
+    return s.length() >= length ? s : " ".repeat(length - s.length()) + s;
+  }
+
+  public static String padEnd(String s, int length) {
+    return s.length() >= length ? s : s + " ".repeat(length - s.length());
+  }
+
+  /** lodash upperFirst (JS toUpperCase of the first UTF-16 unit, e.g. 'ß' becomes "SS"). */
+  public static String upperFirst(String s) {
+    if (s == null || s.isEmpty()) return s == null ? "" : s;
+    return s.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + s.substring(1);
+  }
+
+  /** lodash escapeRegExp: escapes ^ $ \ . * + ? ( ) [ ] { } | (result is a valid JS and Java regex). */
+  public static String escapeRegExp(String s) {
+    return s.replaceAll("[\\\\^$.*+?()\\[\\]{}|]", "\\\\$0");
+  }
+
+  /**
+   * lodash isEmpty over the value model: null/undefined, "", empty list/map are empty; numbers and booleans are
+   * empty too (lodash: isEmpty(5) === true); a Java object (fshtypes etc.) is not.
+   */
+  public static boolean isEmpty(Object v) {
+    if (v == null || v == UNDEFINED || v instanceof Number || v instanceof Boolean) return true;
+    if (v instanceof String s) return s.isEmpty();
+    if (v instanceof java.util.Collection<?> c) return c.isEmpty();
+    if (v instanceof Map<?, ?> m) return m.isEmpty();
+    return false;
+  }
+
+  /**
+   * lodash isMatch(object, source): partial deep comparison. Every key of a source object must match in object
+   * (extra keys allowed); a source array matches when object's array is at least as long and every source element
+   * partially matches SOME element of it (lodash COMPARE_PARTIAL_FLAG, order-insensitive); leaves compare like
+   * isEqual.
+   */
+  public static boolean isMatch(Object object, Object source) {
+    if (source instanceof Map<?, ?> s) {
+      if (!(object instanceof Map<?, ?> o)) return s.isEmpty() && object != null;
+      for (Map.Entry<?, ?> e : s.entrySet()) {
+        if (!o.containsKey(e.getKey())) {
+          if (e.getValue() == UNDEFINED) continue;
+          return false;
+        }
+        if (!isMatch(o.get(e.getKey()), e.getValue())) return false;
+      }
+      return true;
+    }
+    if (source instanceof List<?> s) {
+      if (!(object instanceof List<?> o) || o.size() < s.size()) return false;
+      for (Object se : s) {
+        boolean found = false;
+        for (Object oe : o) if (isMatch(oe, se)) { found = true; break; }
+        if (!found) return false;
+      }
+      return true;
+    }
+    return isEqual(object, source);
+  }
+
+  /**
+   * lodash merge(destination, source) for the value model: plain objects merge recursively, arrays merge BY INDEX,
+   * a source undefined never overwrites an existing value, other values replace. Mutates and returns destination
+   * (sources are deep-cloned where inserted, like lodash's baseMergeDeep).
+   */
+  @SuppressWarnings("unchecked")
+  public static Object merge(Object destination, Object source) {
+    return mergeWith(destination, source, null);
+  }
+
+  /** Customizer for {@link #mergeWith}: return {@link #UNDEFINED} to fall back to the default merge. */
+  public interface MergeCustomizer {
+    Object apply(Object objValue, Object srcValue, Object key);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Object mergeWith(Object destination, Object source, MergeCustomizer customizer) {
+    if (source instanceof Map<?, ?> sm && destination instanceof Map<?, ?> dm) {
+      Map<String, Object> d = (Map<String, Object>) dm;
+      for (String k : ownKeys((Map<String, Object>) sm)) mergeKey(d, k, d.get(k), sm.get(k), customizer, d.containsKey(k));
+      return d;
+    }
+    if (source instanceof List<?> sl && destination instanceof List<?> dl) {
+      List<Object> d = (List<Object>) dl;
+      for (int i = 0; i < sl.size(); i++) {
+        Object cur = i < d.size() ? d.get(i) : UNDEFINED;
+        Object v = mergeValue(cur, sl.get(i), i, customizer, i < d.size());
+        if (v == NO_CHANGE) continue;
+        if (i < d.size()) d.set(i, v); else { while (d.size() < i) d.add(UNDEFINED); d.add(v); }
+      }
+      return d;
+    }
+    return destination;
+  }
+
+  private static final Object NO_CHANGE = new Object();
+
+  private static void mergeKey(Map<String, Object> d, String k, Object cur, Object src, MergeCustomizer c, boolean has) {
+    Object v = mergeValue(has ? cur : UNDEFINED, src, k, c, has);
+    if (v != NO_CHANGE) d.put(k, v);
+  }
+
+  private static Object mergeValue(Object cur, Object src, Object key, MergeCustomizer c, boolean has) {
+    if (c != null) {
+      Object r = c.apply(cur == UNDEFINED ? null : cur, src, key);
+      if (r != UNDEFINED) return r;
+    }
+    if (src instanceof Map<?, ?> || src instanceof List<?>) {
+      boolean sameKind = (src instanceof Map<?, ?> && cur instanceof Map<?, ?>) || (src instanceof List<?> && cur instanceof List<?>);
+      Object target = sameKind ? cur : (src instanceof Map<?, ?> ? new JsObject() : new ArrayList<>());
+      return mergeWith(target, src, c);
+    }
+    if (src == UNDEFINED && has) return NO_CHANGE;
+    return src;
+  }
+
+  /** lodash words(string) with the default pattern (ASCII fast path or lodash's unicode word regex). */
+  public static List<String> words(String s) {
+    java.util.regex.Matcher m = (HAS_UNICODE_WORD.matcher(s).find() ? UNICODE_WORD : ASCII_WORD).matcher(s);
+    List<String> out = new ArrayList<>();
+    while (m.find()) out.add(m.group());
+    return out;
+  }
+
+  private static final java.util.regex.Pattern HAS_UNICODE_WORD =
+      java.util.regex.Pattern.compile("[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]");
+  private static final java.util.regex.Pattern ASCII_WORD =
+      java.util.regex.Pattern.compile("[^\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\x7f]+");
+  private static final java.util.regex.Pattern UNICODE_WORD = unicodeWordPattern();
+
+  /**
+   * Transcription of lodash 4.17 _unicodeWords.js. JS (no u flag) matches UTF-16 units, Java matches code points, so
+   * the surrogate-unit constructs are rewritten as code-point ranges: astral = lone surrogates + U+10000..U+10FFFF,
+   * surrogate pair = U+10000..U+10FFFF, \ud83c[\udffb-\udfff] = U+1F3FB..U+1F3FF, regional = U+1F1E6..U+1F1FF.
+   */
+  private static java.util.regex.Pattern unicodeWordPattern() {
+    String rsAstralRange = "\\ud800-\\udfff\\x{10000}-\\x{10FFFF}", rsComboRange = "\\u0300-\\u036f\\ufe20-\\ufe2f\\u20d0-\\u20ff",
+        rsDingbatRange = "\\u2700-\\u27bf", rsLowerRange = "a-z\\xdf-\\xf6\\xf8-\\xff", rsMathOpRange = "\\xac\\xb1\\xd7\\xf7",
+        rsNonCharRange = "\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf", rsPunctuationRange = "\\u2000-\\u206f",
+        rsSpaceRange = " \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000",
+        rsUpperRange = "A-Z\\xc0-\\xd6\\xd8-\\xde", rsVarRange = "\\ufe0e\\ufe0f";
+    String rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
+    String rsApos = "['’]", rsBreak = "[" + rsBreakRange + "]", rsCombo = "[" + rsComboRange + "]", rsDigits = "\\d+",
+        rsDingbat = "[" + rsDingbatRange + "]", rsLower = "[" + rsLowerRange + "]",
+        // JS character class "[^...\\d+...]": inside a class, \d is digits and + is a literal plus
+        rsMisc = "[^" + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + "]",
+        rsFitz = "[\\x{1F3FB}-\\x{1F3FF}]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")",
+        rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "[\\x{1F1E6}-\\x{1F1FF}]{2}",
+        rsSurrPair = "[\\x{10000}-\\x{10FFFF}]", rsUpper = "[" + rsUpperRange + "]", rsZWJ = "\\u200d";
+    String rsMiscLower = "(?:" + rsLower + "|" + rsMisc + ")", rsMiscUpper = "(?:" + rsUpper + "|" + rsMisc + ")",
+        rsOptContrLower = "(?:" + rsApos + "(?:d|ll|m|re|s|t|ve))?", rsOptContrUpper = "(?:" + rsApos + "(?:D|LL|M|RE|S|T|VE))?",
+        reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?",
+        rsOptJoin = "(?:" + rsZWJ + "(?:" + rsNonAstral + "|" + rsRegional + "|" + rsSurrPair + ")" + rsOptVar + reOptMod + ")*",
+        rsOrdLower = "\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])",
+        rsOrdUpper = "\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])",
+        rsSeq = rsOptVar + reOptMod + rsOptJoin,
+        rsEmoji = "(?:" + rsDingbat + "|" + rsRegional + "|" + rsSurrPair + ")" + rsSeq;
+    String re = String.join("|",
+        rsUpper + "?" + rsLower + "+" + rsOptContrLower + "(?=" + rsBreak + "|" + rsUpper + "|$)",
+        rsMiscUpper + "+" + rsOptContrUpper + "(?=" + rsBreak + "|" + rsUpper + rsMiscLower + "|$)",
+        rsUpper + "?" + rsMiscLower + "+" + rsOptContrLower,
+        rsUpper + "+" + rsOptContrUpper, rsOrdUpper, rsOrdLower, rsDigits, rsEmoji);
+    // JS $ without m = end of input (Java \z); JS \b and \d are ASCII, as in Java by default.
+    return java.util.regex.Pattern.compile(re.replace("|$)", "|\\z)"));
+  }
 }

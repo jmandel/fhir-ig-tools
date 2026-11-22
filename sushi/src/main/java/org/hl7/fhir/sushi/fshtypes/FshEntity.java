@@ -9,7 +9,7 @@ package org.hl7.fhir.sushi.fshtypes;
  * {@code new CardRule("x").<CardRule>withFile("f")} read like the TS. The cast is safe because the method
  * always returns {@code this}; assigning to an unrelated subtype throws ClassCastException at the call site.
  */
-public abstract class FshEntity {
+public abstract class FshEntity implements Cloneable, org.hl7.fhir.sushi.js.Js.DeepCloneable {
   public final SourceInfo sourceInfo = new SourceInfo();
 
   /** Rule lookup cache for definitions with rules (see Common.RuleLookupCache); not part of the TS shape. */
@@ -67,5 +67,37 @@ public abstract class FshEntity {
     sourceInfo.location = c.location;
     sourceInfo.appliedFile = c.appliedFile;
     sourceInfo.appliedLocation = c.appliedLocation;
+  }
+
+  /**
+   * lodash cloneDeep of a FSH entity (TS cloneDeep(rule), cloneDeep(fshCode) ...): a field-by-field copy of the whole
+   * class hierarchy where every field value is cloned with {@link org.hl7.fhir.sushi.js.Js#cloneDeep} (lists, maps,
+   * nested entities, SourceInfo/TextLocation; shared sub-objects and cycles preserved). Immutable values (String,
+   * numbers, BigInteger, enums, Pattern) are shared, as lodash shares primitives. The rule-lookup cache (a TS WeakMap,
+   * not an own property) is not copied. Subclasses don't need to override this.
+   */
+  @Override
+  public Object cloneDeep(java.util.IdentityHashMap<Object, Object> seen) {
+    try {
+      FshEntity copy = (FshEntity) super.clone();
+      seen.put(this, copy);
+      copy.ruleLookupCache = null;
+      for (Class<?> c = getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+        for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+          if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || f.getName().equals("ruleLookupCache")) continue;
+          f.setAccessible(true);
+          f.set(copy, org.hl7.fhir.sushi.js.Js.cloneDeep(f.get(this), seen));
+        }
+      }
+      return copy;
+    } catch (CloneNotSupportedException | IllegalAccessException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /** Typed convenience: {@code Rule r2 = rule.cloneDeep();} */
+  @SuppressWarnings("unchecked")
+  public <T extends FshEntity> T cloneDeep() {
+    return (T) org.hl7.fhir.sushi.js.Js.cloneDeep(this);
   }
 }
