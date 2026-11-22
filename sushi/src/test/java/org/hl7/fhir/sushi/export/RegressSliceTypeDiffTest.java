@@ -39,4 +39,21 @@ class RegressSliceTypeDiffTest {
     Map<String, Object> diffEl = slice.calculateDiff().toJSON();
     assertFalse(diffEl.containsKey("type"), Json.stringify(diffEl));
   }
+
+  /** Corpus WHO smart-trust (KD-3): an AddElement rule with an unknown type crashes with V8's TypeError text. */
+  @Test void logicalAddElementWithUnknownTypeLogsV8TypeError() {
+    org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy.reset();
+    var doc = importSingleText("""
+        Logical: Mini
+        * a 0..1 NoSuchTypeAnywhere "a" "a"
+        """, "Mini.fsh");
+    Configuration config = MinimalConfig.minimalConfig();
+    FSHTank tank = new FSHTank(new ArrayList<>(List.of(doc)), config);
+    Package pkg = new Package(config);
+    var exporter = new StructureDefinitionExporter(tank, pkg, new TestFisher(tank, SdeTestBase.r4Defs(), pkg));
+    exporter.export();
+    assertTrue(org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy.getAllMessages("error").stream()
+        .anyMatch(m -> m.startsWith("Cannot read properties of undefined (reading 'sdType')")),
+        String.valueOf(org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy.getAllMessages("error")));
+  }
 }

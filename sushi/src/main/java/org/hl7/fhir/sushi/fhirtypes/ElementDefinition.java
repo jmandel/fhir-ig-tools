@@ -823,6 +823,8 @@ public class ElementDefinition implements PropertyHolder, JsonSerializable, Js.D
         codeableRefTypeCnt++;
       } else {
         Metadata metadata = fisher.fishForMetadata(t.type);
+        // TS: metadata.sdType on undefined (type not found) -> V8 TypeError (corpus WHO smart-trust, KD-3)
+        if (metadata == null) throw jsTypeError("Cannot read properties of undefined (reading 'sdType')");
         initialTypes.add(new ElementDefinitionType(metadata.sdType));
       }
     }

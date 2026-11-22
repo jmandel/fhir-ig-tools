@@ -125,9 +125,15 @@ public class BasePackageLoader {
       }
     }
     PackageProvider.CachedPackage pkg;
+    // FPL's FHIRRegistryClient logs "Attempting to download X#V from <endpoint>/X/V" for each registry it tries
+    // (packages.fhir.org, then packages2.fhir.org/packages); core downloads with its own server order and logs
+    // nothing. Reproduced: one line when the download succeeds, both when it fails (D8; corpus WHO smart-trust).
+    boolean registryDownload = !wasCached && !current && System.getenv("FPL_REGISTRY") == null;
     try {
       pkg = packageProvider.loadPackage(name, version);
+      if (registryDownload) logAttempting(name, version, 1);
     } catch (Exception e) {
+      if (registryDownload) logAttempting(name, version, 2);
       if (wildcard) {
         // FPL resolves x.y.x against the registry first and that failure propagates
         throw new FplErrors.LatestVersionUnavailableError(name, true);
@@ -325,6 +331,16 @@ public class BasePackageLoader {
       if (resourceCache != null) resourceCache.put(resourcePath, resource);
     }
     return resource;
+  }
+
+  private static final List<String> FPL_REGISTRIES =
+      List.of("https://packages.fhir.org", "https://packages2.fhir.org/packages");
+
+  private void logAttempting(String name, String version, int registries) {
+    for (int r = 0; r < registries; r++) {
+      String url = FPL_REGISTRIES.get(r) + "/" + name + "/" + version;
+      log.accept("info", "Attempting to download " + name + "#" + version + " from " + url);
+    }
   }
 
   public LoadStatus getPackageLoadStatus(String name, String version) {
