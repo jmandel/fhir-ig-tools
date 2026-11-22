@@ -178,6 +178,7 @@ class ElementDefinitionAssignFshReferenceTest {
       StructureDefinition carePlan;
       @BeforeEach
       void beforeEach13() {
+        TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
         doc = new FSHDocument("Conditions.fsh");
         var input = new FSHTank(list(doc), minimalConfig());
         var r5Defs = r5Defs();

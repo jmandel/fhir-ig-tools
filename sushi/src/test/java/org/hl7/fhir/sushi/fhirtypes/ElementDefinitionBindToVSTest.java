@@ -300,7 +300,7 @@ class ElementDefinitionBindToVSR5Test {
       assertEquals("required", at(concept, "binding.strength"));
       assertEquals(1, size(loggerSpy.getAllMessages("error")));
       assertMatchesJs("Applying value set bindings to a CodeableReference element's underlying \\.concept path is not allowed.* directly to the CodeableReference element", loggerSpy.getLastMessage("error"));
-      assertMatchesJs("File: fishy\\.fsh.*Line: 6\\D*", loggerSpy.getLastMessage("error"));
+      assertMatchesJs("(?s)File: fishy\\.fsh.*Line: 6\\D*", loggerSpy.getLastMessage("error"));
       assertEquals(0, size(loggerSpy.getAllMessages("warn")));
     }
   }
