@@ -46,6 +46,18 @@ public final class Parser extends Scanner {
     super(input, encoding);
   }
 
+  /**
+   * As {@link #Parser(byte[], int)}, with {@code yaml110} = true selecting the opt-in relaxations SUSHI's yaml@1.10
+   * composer needs where eemeli/yaml 1.10 (YAML 1.2) accepts input libyaml 0.2.5 rejects: any character is allowed
+   * and only CR/LF break lines; tabs may appear on otherwise blank lines and before the end of a line inside plain
+   * scalars; {@code %} may start a plain scalar after column 0; a block mapping value without a key (": x") has an
+   * empty key. With false this is exactly libyaml 0.2.5 (what the Jekyll shim uses).
+   */
+  public Parser(byte[] input, int encoding, boolean yaml110) {
+    super(input, encoding);
+    this.yaml110 = yaml110;
+  }
+
   // ---- PEEK_TOKEN / SKIP_TOKEN ----
 
   private Token peekToken() {
@@ -414,6 +426,10 @@ public final class Parser extends Scanner {
       Event event = new Event(Event.Type.MAPPING_END, token.startMark, token.endMark);
       skipToken();
       return event;
+    } else if (yaml110 && token.type == Token.Type.VALUE) {
+      // yaml110: a value without a key (": x" in a block mapping) has an empty key in yaml@1.10
+      state = State.BLOCK_MAPPING_VALUE;
+      return processEmptyScalar(token.startMark);
     } else {
       throw parserErrorContext("while parsing a block mapping", pop(marks), "did not find expected key", token.startMark);
     }

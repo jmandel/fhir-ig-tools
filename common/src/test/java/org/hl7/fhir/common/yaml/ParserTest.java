@@ -16,7 +16,11 @@ import org.junit.jupiter.api.Test;
  */
 class ParserTest {
   private static List<Event> events(String yaml) {
-    Parser p = new Parser(yaml.getBytes(StandardCharsets.UTF_8), Parser.UTF8_ENCODING);
+    return events(yaml, false);
+  }
+
+  private static List<Event> events(String yaml, boolean yaml110) {
+    Parser p = new Parser(yaml.getBytes(StandardCharsets.UTF_8), Parser.UTF8_ENCODING, yaml110);
     List<Event> out = new ArrayList<>();
     for (Event e; (e = p.parse()) != null; ) {
       out.add(e);
@@ -91,5 +95,18 @@ class ParserTest {
     assertEquals(Event.Type.STREAM_START, p.parse().type);
     assertEquals(Event.Type.STREAM_END, p.parse().type);
     assertNull(p.parse());
+  }
+
+  @Test
+  void yaml110IsOptIn() {
+    // libyaml 0.2.5 (the default) rejects each of these; the opt-in yaml110 mode accepts them as yaml@1.10 does
+    assertThrows(LibyamlError.class, () -> events("a: 1\n: x\n"));
+    assertEquals("x", str(events("a: 1\n: x\n", true).get(6).value));
+    assertThrows(LibyamlError.class, () -> events("a: b\u0001c\n"));
+    assertEquals("b\u0001c", str(events("a: b\u0001c\n", true).get(4).value));
+    assertThrows(LibyamlError.class, () -> events("a: %y\n"));
+    assertEquals("%y", str(events("a: %y\n", true).get(4).value));
+    // NEL is a line break only in libyaml mode
+    assertEquals("x\u0085y", str(events("a: x\u0085y\n", true).get(4).value));
   }
 }
