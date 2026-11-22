@@ -218,6 +218,22 @@ public final class FshLogger {
     taps.remove(tap);
   }
 
+  private volatile boolean colorEnabled;
+
+  /**
+   * Whether chalk would colour output (TS: chalk's level > 0, i.e. stdout is a TTY or FORCE_COLOR). One process-wide
+   * flag for every chalk use: the level labels here, the summary box (App), and the boxed messages in
+   * StructureDefinitionExporter/InstanceExporter. App sets it once at startup together with the console sink;
+   * default false (as in tests and differential runs, where stdout is not a TTY).
+   */
+  public boolean colorEnabled() {
+    return colorEnabled;
+  }
+
+  public void setColorEnabled(boolean enabled) {
+    colorEnabled = enabled;
+  }
+
   /** winston Console transport + SUSHI's printer: {@code "<level> <message>"} on stdout. */
   public static Consumer<LogEntry> consoleSink(PrintStream out, boolean color) {
     return e -> out.println((color ? colorLabel(e.level()) : e.level().label()) + " " + e.message());
