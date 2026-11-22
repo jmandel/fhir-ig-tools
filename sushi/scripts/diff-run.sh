@@ -12,7 +12,8 @@
 # Report: $ROOT/work/sushi-port/diff/<IG>-<label>.json (classified, scripts/classify-diff.py, incl. exit codes); summary
 # on stderr. Wrap in work/locks/waitfree.sh timing (untimed). Build the jar first: sushi/scripts/build.sh -B -q
 # -DskipTests package (-> sushi/target/sushi.jar, self-contained). JAR=... overrides the jar; the
-# extracted trees ($JR/cmp) are kept only when files differ (KEEP=1: always).
+# extracted trees ($JR/cmp) are kept only when files differ (KEEP=1: always). SUSHI_JAVA_RUNS (default
+# $VMDATA/sushi-port/runs) and SUSHI_DIFF_REPORTS (default $ROOT/work/sushi-port/diff) move the Java runs and reports.
 # ROOT (default: the repository root) is the workspace that holds work/sushi-spike (corpus list, TS runner, timeit.py
 # staged on the VM) and work/locks.
 set -eu
@@ -22,7 +23,7 @@ if [ -f "$JAR" ]; then JAR="$(cd "$(dirname "$JAR")" && pwd)/$(basename "$JAR")"
 elif ! vm "[ -f '$JAR' ]"; then echo "no jar $JAR (build it: sushi/scripts/build.sh -B -q -DskipTests package)" >&2; exit 2; fi
 TSR=$VMDATA/sushi-spike/runs/$IG-$LABEL
 vm "[ -f '$TSR/out.tar' ]" || TSR=$VMDATA/sushi-spike/runs/$IG-ts-$LABEL
-JR=$SP/runs/$IG-$LABEL; REP="$ROOT/work/sushi-port/diff"; mkdir -p "$REP"
+JR=${SUSHI_JAVA_RUNS:-$SP/runs}/$IG-$LABEL; REP="${SUSHI_DIFF_REPORTS:-$ROOT/work/sushi-port/diff}"; mkdir -p "$REP"
 vm "[ -f '$TSR/out.tar' ]" || "$ROOT/work/sushi-spike/tools/run-sushi.sh" "$IG" "ts-$LABEL" >&2
 SUB=$(awk -F'\t' -v n="$IG" '$1==n{print $8}' "$ROOT/work/sushi-spike/corpus.tsv"); [ "$SUB" = . ] && SUB=""
 SNAP=$VMDATA/determinism/snap/baseline-20261120; PKG=$VMDATA/sushi-spike/pkg/$IG

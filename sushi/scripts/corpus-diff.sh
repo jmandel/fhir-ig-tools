@@ -8,7 +8,7 @@
 set -u
 HERE="$(cd "$(dirname "$0")/.." && pwd)"; ROOT="${ROOT:-$(cd "$HERE/.." && pwd)}"; . "$ROOT/scripts/lib/vmdata.sh"
 J=3; [ "${1:-}" = -j ] && { J=$2; shift 2; }
-LIST=${1:-$ROOT/work/sushi-spike/fsh-repos.txt}; REP="$ROOT/work/sushi-port/diff"; mkdir -p "$REP"
+LIST=${1:-$ROOT/work/sushi-spike/fsh-repos.txt}; REP="${SUSHI_DIFF_REPORTS:-$ROOT/work/sushi-port/diff}"; mkdir -p "$REP"
 one() {
   IG=$1; SRC=$VMDATA/sushi-spike/src/$IG
   [ -f "$REP/$IG-corpus.json" ] && return 0
