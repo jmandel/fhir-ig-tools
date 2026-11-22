@@ -1,12 +1,6 @@
 package org.hl7.fhir.sushi.fhirtypes;
 
 import static org.hl7.fhir.sushi.fhirtypes.Common.applyInsertRules;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertAddElementRule;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertAssignmentRule;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertCardRule;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertCaretValueRule;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertConceptRule;
-import static org.hl7.fhir.sushi.testhelpers.Asserts.assertValueSetConceptComponent;
 import static org.hl7.fhir.sushi.testhelpers.JsAssert.assertMatches;
 import static org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +24,11 @@ import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.importer.FSHDocument;
 import org.hl7.fhir.sushi.importer.FSHTank;
 import org.hl7.fhir.sushi.js.Json;
-import org.hl7.fhir.sushi.testhelpers.Asserts;
+import org.hl7.fhir.sushi.testhelpers.TestFisher;
+import org.hl7.fhir.sushi.fshtypes.rules.Rule;
+import org.hl7.fhir.sushi.fshtypes.rules.ValueSetConceptComponentRule;
+import org.hl7.fhir.sushi.js.JsNumber;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import org.hl7.fhir.sushi.testhelpers.MinimalConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +47,7 @@ class ApplyInsertRulesTest {
 
   @BeforeEach
   void beforeEach() {
+    TestFisher.assumeTankImplemented();
     doc = new FSHDocument("fileName");
     tank = new FSHTank(List.of(doc), MinimalConfig.minimalConfig());
     loggerSpy.reset();
@@ -83,6 +82,71 @@ class ApplyInsertRulesTest {
 
   static String errorMessage() {
     return loggerSpy.getLastMessage("error");
+  }
+
+
+  // ---- the parts of test/testhelpers/asserts.ts these tests use (WP-2 owns the full port) ----
+
+  static void assertCardRule(Rule rule, String path, double min, Object max) {
+    CardRule cardRule = assertInstanceOf(CardRule.class, rule);
+    assertEquals(path, cardRule.path);
+    assertEquals(Double.valueOf(min), cardRule.min);
+    assertEquals(max instanceof Number n ? JsNumber.toString(n.doubleValue()) : max.toString(), cardRule.max);
+  }
+
+  static void assertAssignmentRule(Rule rule, String path, Object value, boolean exactly, boolean isInstance) {
+    AssignmentRule r = assertInstanceOf(AssignmentRule.class, rule);
+    assertEquals(path, r.path);
+    assertEquals(value, r.value);
+    assertEquals(exactly, r.exactly);
+    assertEquals(isInstance, r.isInstance);
+  }
+
+  static void assertCaretValueRule(Rule rule, String path, String caretPath, Object value, boolean isInstance,
+      List<String> pathArray) {
+    CaretValueRule r = assertInstanceOf(CaretValueRule.class, rule);
+    assertEquals(path, r.path);
+    assertEquals(caretPath, r.caretPath);
+    assertEquals(value, r.value);
+    assertEquals(isInstance, r.isInstance);
+    assertEquals(pathArray, r.pathArray);
+  }
+
+  static void assertValueSetConceptComponent(Rule rule, String fromSystem, List<String> fromValueSets,
+      List<FshCode> concepts, boolean included) {
+    ValueSetConceptComponentRule r = assertInstanceOf(ValueSetConceptComponentRule.class, rule);
+    assertEquals(fromSystem, r.from.system);
+    assertEquals(fromValueSets, r.from.valueSets);
+    assertEquals(concepts.size(), r.concepts.size());
+    for (int i = 0; i < concepts.size(); i++) {
+      assertEquals(concepts.get(i).code, r.concepts.get(i).code);
+      assertEquals(concepts.get(i).system, r.concepts.get(i).system);
+      assertEquals(concepts.get(i).display, r.concepts.get(i).display);
+    }
+    assertEquals(included, r.inclusion);
+  }
+
+  static void assertConceptRule(Rule rule, String code, String display, String definition, List<String> hierarchy) {
+    ConceptRule r = assertInstanceOf(ConceptRule.class, rule);
+    assertEquals(code, r.code);
+    assertEquals(display, r.display);
+    assertEquals(definition, r.definition);
+    assertEquals(hierarchy, r.hierarchy);
+  }
+
+  static void assertAddElementRule(Rule rule, String path, double min, String max, boolean summary,
+      List<OnlyRuleType> types, String short_) {
+    AddElementRule r = assertInstanceOf(AddElementRule.class, rule);
+    assertEquals(path, r.path);
+    assertEquals(Double.valueOf(min), r.min);
+    assertEquals(max, r.max);
+    if (summary) assertEquals(true, r.summary);
+    assertEquals(types.size(), r.types.size());
+    for (int i = 0; i < types.size(); i++) {
+      assertEquals(types.get(i).type, r.types.get(i).type);
+      assertEquals(Boolean.TRUE.equals(types.get(i).isReference), Boolean.TRUE.equals(r.types.get(i).isReference));
+    }
+    assertEquals(short_, r.short_);
   }
 
   @Test
@@ -389,13 +453,12 @@ class ApplyInsertRulesTest {
 
     applyInsertRules(logical, tank);
     assertEquals(3, logical.rules.size());
-    Asserts.Flags summary = new Asserts.Flags(null, true, null, null, null, null);
-    assertAddElementRule(logical.rules.get(0), "primaryId", new Asserts.AddElementArgs(1, "1", summary,
-        List.of(new OnlyRuleType("uri")), new Asserts.Defs("Primary ID", null, null)));
-    assertAddElementRule(logical.rules.get(1), "primaryOrganization", new Asserts.AddElementArgs(1, "1", summary,
-        List.of(OnlyRuleType.reference("Organization")), new Asserts.Defs("Primary Organization", null, null)));
-    assertAddElementRule(logical.rules.get(2), "sharedNotes", new Asserts.AddElementArgs(0, "*", null,
-        List.of(new OnlyRuleType("Annotation")), new Asserts.Defs("Shared notes", null, null)));
+    assertAddElementRule(logical.rules.get(0), "primaryId", 1, "1", true, List.of(new OnlyRuleType("uri")),
+        "Primary ID");
+    assertAddElementRule(logical.rules.get(1), "primaryOrganization", 1, "1", true,
+        List.of(OnlyRuleType.reference("Organization")), "Primary Organization");
+    assertAddElementRule(logical.rules.get(2), "sharedNotes", 0, "*", false, List.of(new OnlyRuleType("Annotation")),
+        "Shared notes");
   }
 
   @Nested

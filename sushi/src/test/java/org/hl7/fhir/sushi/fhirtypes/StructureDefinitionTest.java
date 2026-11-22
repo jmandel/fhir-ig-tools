@@ -445,6 +445,7 @@ class StructureDefinitionTest {
     }
 
     StructureDefinition exportMappingProfile(String profileName, boolean withMappings) {
+      TestFisher.assumeTankImplemented();
       FSHDocument doc = new FSHDocument("fileName");
       FSHTank input = new FSHTank(List.of(doc), MinimalConfig.minimalConfig());
       Package pkg = new Package(input.config);
@@ -519,6 +520,7 @@ class StructureDefinitionTest {
 
       @BeforeEach
       void setUp() {
+        TestFisher.assumeTankImplemented();
         addElementRule1 = new AddElementRule("prop1");
         addElementRule1.min = 0.0;
         addElementRule1.max = "1";
