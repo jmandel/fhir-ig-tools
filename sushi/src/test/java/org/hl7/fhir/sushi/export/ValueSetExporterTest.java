@@ -38,6 +38,8 @@ class ValueSetExporterTest {
   @BeforeEach
   void beforeEach() {
     loggerSpy.reset();
+    TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank is on main
+    loggerSpy.reset();
     doc = new FSHDocument("fileName");
     FSHTank input = new FSHTank(new ArrayList<>(Arrays.asList(doc)), MinimalConfig.minimalConfig());
     pkg = new Package(input.config);
