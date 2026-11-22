@@ -1,14 +1,13 @@
 package org.hl7.fhir.sushi.fhirdefs;
 
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,13 +16,14 @@ import org.hl7.fhir.sushi.js.Js;
 
 // port of fhir-package-loader 2.2.4 src/loader/BasePackageLoader.ts
 /**
- * Loads packages into a {@link PackageDB} and answers lookups. The orchestration and every log message are FPL's;
- * the package cache, registry and current-build access are pluggable ({@link PackageCache}, {@link RegistryClient},
- * {@link CurrentBuildClient}). In production they are backed by org.hl7.fhir.core's package layer as is (D1a, see
- * {@link CorePackageCache}, {@link CoreRegistryClient}, {@link CoreCurrentBuildClient}).
+ * Loads packages into a {@link PackageDB} and answers lookups (FPL's BasePackageLoader, reduced to what is not core's).
+ * Packages come from a {@link PackageProvider}: in production org.hl7.fhir.core's FilesystemPackageCacheManager as is
+ * (download, cache, registry, version resolution incl. latest/x.y.x/current/dev, .index.json — D1a). What stays here
+ * is what core does not do for SUSHI: the resource index and its queries, virtual packages, and FPL's log messages.
  *
- * <p>Differences from FPL by design: SafeMode.FREEZE is not emulated (callers get the cached object, as FPL; they
- * must not mutate it — FPL would throw a TypeError); debug stack traces are Java's.
+ * <p>Differences from FPL by design: SafeMode.FREEZE is not emulated (callers get the cached object, as in FPL; they
+ * must not mutate it — FPL would throw a TypeError); debug stack traces are Java's; version resolution and download
+ * are core's, so FPL's "Attempting to download ... from <url>" line is not printed (core picks the server).
  */
 public class BasePackageLoader {
   public static final int DEFAULT_RESOURCE_CACHE_SIZE = 200;
@@ -36,24 +36,21 @@ public class BasePackageLoader {
           + "  3. Disable certificate validation as described at https://bit.ly/3syjzm7 (NOT RECOMMENDED).\n";
 
   private static final Pattern CURRENT_VERSION = Pattern.compile("^current(\\$.+)?$");
+  private static final Pattern PATCH_WILDCARD = Pattern.compile("^\\d+\\.\\d+\\.x$");
   private static final Pattern VIRTUAL_PATH = Pattern.compile("^virtual:([^:]+):(.*)$", Pattern.DOTALL);
   private static final Pattern CERTIFICATE = Pattern.compile("certificate");
 
   protected final PackageDB packageDB;
-  protected final PackageCache packageCache;
-  protected final RegistryClient registryClient;
-  protected final CurrentBuildClient currentBuildClient;
+  protected final PackageProvider packageProvider;
   protected BiConsumer<String, String> log;
-  private final Map<String, VirtualPackage> virtualPackages = new HashMap<>();
+  // lookup-only maps (get/put by key; never iterated)
+  private final Map<String, VirtualPackage> virtualPackages = new LinkedHashMap<>();
   private final Map<String, Object> resourceCache;
 
-  public BasePackageLoader(
-      PackageDB packageDB, PackageCache packageCache, RegistryClient registryClient,
-      CurrentBuildClient currentBuildClient, BiConsumer<String, String> log, int resourceCacheSize) {
+  public BasePackageLoader(PackageDB packageDB, PackageProvider packageProvider, BiConsumer<String, String> log,
+      int resourceCacheSize) {
     this.packageDB = packageDB;
-    this.packageCache = packageCache;
-    this.registryClient = registryClient;
-    this.currentBuildClient = currentBuildClient;
+    this.packageProvider = packageProvider;
     this.log = log != null ? log : (l, m) -> {};
     this.resourceCache = resourceCacheSize > 0 ? lru(resourceCacheSize) : null;
   }
@@ -71,20 +68,24 @@ public class BasePackageLoader {
   }
 
   /**
-   * Loads a package (resolving {@code latest}/{@code x.y.x}, downloading when needed). Exceptions from version
-   * resolution propagate (TS: the promise rejects); the caller logs {@code e.getMessage()}.
+   * Loads a package. {@code latest} is resolved first and a failure propagates (TS: the promise rejects with
+   * LatestVersionUnavailableError; the caller logs {@code e.getMessage()}); every other failure is logged and
+   * returns FAILED, as in FPL.
    */
   public LoadStatus loadPackage(String name, String version) {
     String packageLabel = name + "#" + version;
     String originalVersion = version;
-    try {
-      version = registryClient.resolveVersion(name, version);
-    } catch (RuntimeException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
+    if ("latest".equals(version)) {
+      try {
+        version = packageProvider.resolveLatest(name);
+      } catch (Exception e) {
+        version = null;
+      }
+      if (version == null || version.isEmpty()) {
+        throw new FplErrors.LatestVersionUnavailableError(name, false);
+      }
     }
-    if (!java.util.Objects.equals(version, originalVersion)) {
+    if (!Objects.equals(version, originalVersion)) {
       log.accept("info", "Resolved " + packageLabel + " to concrete version " + version);
       packageLabel = name + "#" + version;
     }
@@ -96,7 +97,8 @@ public class BasePackageLoader {
     }
 
     // If it's a "dev" version, but it wasn't found in the cache, fall back to using the current version
-    if ("dev".equals(version) && !packageCache.isPackageInCache(name, version)) {
+    // (core does the fallback; the message and the #current label are FPL's)
+    if ("dev".equals(version) && !packageProvider.isCached(name, version)) {
       log.accept("info", "Falling back to " + name + "#current since " + packageLabel + " is not locally cached. To "
           + "avoid this, add " + packageLabel + " to your local FHIR cache by building it locally with the HL7 FHIR "
           + "IG Publisher.");
@@ -104,58 +106,59 @@ public class BasePackageLoader {
       packageLabel = name + "#" + version;
     }
 
-    String downloadErrorMessage = null;
-    // If it's a "current" version, download the latest version from the build server (if applicable)
-    if (isCurrentVersion(version)) {
-      String branch = version.indexOf('$') != -1 ? version.split("\\$", -1)[1] : null;
-      if (packageCache instanceof CurrentRefresher refresher) {
-        try {
-          refresher.refreshCurrent(name, version);
-        } catch (Exception e) {
-          downloadErrorMessage = "Failed to download most recent " + packageLabel + " from current builds";
-          if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) {
-            downloadErrorMessage += CERTIFICATE_MESSAGE;
-          }
-        }
-      } else if (isCurrentVersionMissingOrStale(name, branch)) {
-        try {
-          InputStream tarballStream = currentBuildClient.downloadCurrentBuild(name, branch);
-          packageCache.cachePackageTarball(name, version, tarballStream);
-        } catch (Exception e) {
-          downloadErrorMessage = "Failed to download most recent " + packageLabel + " from current builds";
-          if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) {
-            downloadErrorMessage += CERTIFICATE_MESSAGE;
-          }
-        }
-      }
-    }
-    // Else if it isn't "current" and isn't in the cache, download it from the registry
-    else if (!packageCache.isPackageInCache(name, version)) {
-      try {
-        InputStream tarballStream = registryClient.download(name, version);
-        packageCache.cachePackageTarball(name, version, tarballStream);
-      } catch (Exception e) {
-        downloadErrorMessage = "Failed to download " + packageLabel + " from the registry";
-        if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) {
-          downloadErrorMessage += CERTIFICATE_MESSAGE;
-        }
-      }
-    }
-
-    // Finally attempt to load it from the cache
-    PackageStats stats;
+    boolean wildcard = PATCH_WILDCARD.matcher(version).matches();
+    boolean current = isCurrentVersion(version);
+    boolean wasCached = current || wildcard || packageProvider.isCached(name, version);
+    PackageProvider.CachedPackage pkg;
     try {
-      stats = loadPackageFromCache(name, version);
+      pkg = packageProvider.loadPackage(name, version);
     } catch (Exception e) {
-      log.accept("error", "Failed to load " + packageLabel
-          + (downloadErrorMessage != null ? ": " + downloadErrorMessage : ""));
+      if (wildcard) {
+        // FPL resolves x.y.x against the registry first and that failure propagates
+        throw new FplErrors.LatestVersionUnavailableError(name, true);
+      }
+      String downloadErrorMessage = current
+          ? "Failed to download most recent " + packageLabel + " from current builds"
+          : "Failed to download " + packageLabel + " from the registry";
+      if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) {
+        downloadErrorMessage += CERTIFICATE_MESSAGE;
+      }
+      log.accept("error", "Failed to load " + packageLabel + ": " + downloadErrorMessage);
       return LoadStatus.FAILED;
     }
-    if (downloadErrorMessage != null) {
-      // Loading succeeded despite a download error. This might happen if a current build is stale,
-      // but the download fails, in which case the stale build will be loaded instead.
-      log.accept("warn", downloadErrorMessage + ". Using most recent cached package instead.");
+    if (wildcard) {
+      // core resolved the wildcard (cache first, then the registry)
+      String resolved = pkg.version();
+      if (!Objects.equals(resolved, version)) {
+        log.accept("info", "Resolved " + packageLabel + " to concrete version " + resolved);
+        version = resolved;
+        packageLabel = name + "#" + version;
+      }
+      if (getPackageLoadStatus(name, version) == LoadStatus.LOADED) {
+        log.accept("info", packageLabel + " already loaded");
+        return LoadStatus.LOADED;
+      }
     }
+    if (!wasCached) {
+      log.accept("info", "Downloaded " + packageLabel);
+      log.accept("info", "Cached " + packageLabel + " to " + resolvePath(pkg.packagePath()));
+    }
+
+    // Register the package and its resources
+    packageDB.savePackageInfo(new PackageInfo(name, version, resolvePath(pkg.packagePath()),
+        resolvePath(pkg.packageJSONPath())));
+    for (String resourcePath : pkg.resourcePaths()) {
+      try {
+        loadResource(resourcePath, packageProvider.readResource(resourcePath), name, version, false);
+      } catch (Exception e) {
+        // swallow this error because some JSON files will not be resources
+        // and don't log it if it is package.json (since every package should have one)
+        if (!DiskBasedVirtualPackage.basename(resourcePath).equals("package.json")) {
+          log.accept("debug", "JSON file at path " + resourcePath + " was not FHIR resource");
+        }
+      }
+    }
+    PackageStats stats = packageDB.getPackageStats(name, version);
     log.accept("info", "Loaded " + stats.name() + "#" + stats.version() + " with " + stats.resourceCount()
         + " resources");
     return LoadStatus.LOADED;
@@ -205,39 +208,9 @@ public class BasePackageLoader {
     return LoadStatus.LOADED;
   }
 
-  private PackageStats loadPackageFromCache(String name, String version) {
-    // Ensure the package is cached
-    if (!packageCache.isPackageInCache(name, version)) {
-      throw new IllegalStateException(name + "#" + version + " cannot be loaded from the package cache");
-    }
-    // Get the cached package path and package.json path
-    String packagePath = packageCache.getPackagePath(name, version);
-    String packageJSONPath = packageCache.getPackageJSONPath(name, version);
-    PackageInfo info = new PackageInfo(name, version, resolvePath(packagePath), resolvePath(packageJSONPath));
-    packageDB.savePackageInfo(info);
-    // Load the resources within the package
-    loadResourcesFromCache(name, version);
-    return packageDB.getPackageStats(name, version);
-  }
-
   private static String resolvePath(String p) {
     // path.resolve(undefined) throws in node; FPL only reaches here with paths from the cache
     return p == null ? null : Path.of(p).toAbsolutePath().normalize().toString();
-  }
-
-  private void loadResourcesFromCache(String packageName, String packageVersion) {
-    for (String resourcePath : packageCache.getPotentialResourcePaths(packageName, packageVersion)) {
-      try {
-        Object resourceJSON = packageCache.getResourceAtPath(resourcePath);
-        loadResource(resourcePath, resourceJSON, packageName, packageVersion, false);
-      } catch (Exception e) {
-        // swallow this error because some JSON files will not be resources
-        // and don't log it if it is package.json (since every package should have one)
-        if (!DiskBasedVirtualPackage.basename(resourcePath).equals("package.json")) {
-          log.accept("debug", "JSON file at path " + resourcePath + " was not FHIR resource");
-        }
-      }
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -312,36 +285,6 @@ public class BasePackageLoader {
     packageDB.saveResourceInfo(info);
   }
 
-  private boolean isCurrentVersionMissingOrStale(String name, String branch) {
-    boolean isStale = true;
-    String version = branch != null ? "current$" + branch : "current";
-    String packageJSONPath = packageCache.getPackageJSONPath(name, version);
-    if (packageJSONPath != null) {
-      try {
-        Object packageJSON = packageCache.getResourceAtPath(packageJSONPath);
-        Object cachedPackageDate = packageJSON instanceof Map<?, ?> m ? m.get("date") : null;
-        if (Js.truthy(cachedPackageDate)) {
-          String packageLabel = name + "#" + version;
-          String latestBuildDate = currentBuildClient.getCurrentBuildDate(name, branch);
-          isStale = !cachedPackageDate.equals(latestBuildDate);
-          if (isStale) {
-            log.accept("debug", "Cached package date for " + packageLabel + " (" + formatDate(Js.toStr(cachedPackageDate))
-                + ") does not match last build date (" + formatDate(latestBuildDate) + ")");
-            log.accept("info", "Cached package " + packageLabel + " is out of date and will be replaced by the most "
-                + "recent current build.");
-          } else {
-            log.accept("debug", "Cached package date for " + packageLabel + " (" + formatDate(Js.toStr(cachedPackageDate))
-                + ") matches last build date (" + formatDate(latestBuildDate) + "), so the cached package will be "
-                + "used");
-          }
-        }
-      } catch (Exception e) {
-        // do nothing -- will fall back to stale if we couldn't determine staleness
-      }
-    }
-    return isStale;
-  }
-
   public Object getResourceAtPath(String resourcePath) {
     Object resource = resourceCache != null ? resourceCache.get(resourcePath) : null;
     if (resource == null) {
@@ -356,7 +299,7 @@ public class BasePackageLoader {
           }
         }
       } else {
-        resource = packageCache.getResourceAtPath(resourcePath);
+        resource = packageProvider.readResource(resourcePath);
       }
       if (resourceCache != null) resourceCache.put(resourcePath, resource);
     }
@@ -419,13 +362,6 @@ public class BasePackageLoader {
 
   static boolean isCurrentVersion(String version) {
     return version != null && CURRENT_VERSION.matcher(version).matches();
-  }
-
-  /** Takes a date in format YYYYMMDDHHmmss and converts to YYYY-MM-DDTHH:mm:ss */
-  static String formatDate(String date) {
-    return date != null && !date.isEmpty()
-        ? date.replaceFirst("(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})", "$1-$2-$3T$4:$5:$6")
-        : "";
   }
 
   static String getSDFlavor(Map<String, Object> json) {

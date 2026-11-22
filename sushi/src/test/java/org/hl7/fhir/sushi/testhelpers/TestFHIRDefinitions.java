@@ -1,7 +1,5 @@
 package org.hl7.fhir.sushi.testhelpers;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,20 +9,18 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.fhirdefs.CurrentBuildClient;
 import org.hl7.fhir.sushi.fhirdefs.DiskBasedVirtualPackage;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirdefs.InMemoryVirtualPackage;
-import org.hl7.fhir.sushi.fhirdefs.PackageCache;
+import org.hl7.fhir.sushi.fhirdefs.PackageProvider;
 import org.hl7.fhir.sushi.fhirdefs.R5DefsForR4;
-import org.hl7.fhir.sushi.fhirdefs.RegistryClient;
 import org.hl7.fhir.sushi.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/test/testhelpers/TestFHIRDefinitions.ts (SUSHI 3.21.1)
 /**
- * FHIRDefinitions with the package cache, registry and current-build client replaced by fakes (no network, no real
- * FHIR cache), as the jest mocks in TS. Definitions come from local folders via virtual packages
+ * FHIRDefinitions with the package provider replaced by a fake (no network, no real FHIR cache), as the jest mocks
+ * in TS. Definitions come from local folders via virtual packages
  * ({@link #getTestFHIRDefinitions}, {@link #loadLocalPaths}); the TS fixtures are read in place from the SUSHI
  * checkout ({@code -Dsushi.ts.dir}, see {@link #testDefsPath}).
  */
@@ -33,26 +29,20 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
 
   public static final BiConsumer<String, String> LOG_MESSAGE = (l, m) -> FshLogger.logger.logMessage(l, m);
 
-  public final FakePackageCache packageCacheMock;
-  public final FakeRegistryClient registryClientMock;
-  public final FakeCurrentBuildClient currentBuildClientMock;
+  public final FakePackageProvider packageProviderMock;
 
   public TestFHIRDefinitions() {
-    this(new FakePackageCache(), new FakeRegistryClient(), new FakeCurrentBuildClient());
+    this(new FakePackageProvider());
   }
 
-  private TestFHIRDefinitions(FakePackageCache pc, FakeRegistryClient rc, FakeCurrentBuildClient cb) {
-    super(override(pc, rc, cb));
-    this.packageCacheMock = pc;
-    this.registryClientMock = rc;
-    this.currentBuildClientMock = cb;
+  private TestFHIRDefinitions(FakePackageProvider pp) {
+    super(override(pp));
+    this.packageProviderMock = pp;
   }
 
-  private static Override override(PackageCache pc, RegistryClient rc, CurrentBuildClient cb) {
+  private static Override override(PackageProvider pp) {
     Override o = new Override();
-    o.packageCache = pc;
-    o.registryClient = rc;
-    o.currentBuildClient = cb;
+    o.packageProvider = pp;
     return o;
   }
 
@@ -134,7 +124,7 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
 
   /** TS testDefsPath(...): test/testhelpers/testdefs/... in the SUSHI checkout */
   public static String testDefsPath(String... subpathPart) {
-    return Path.of(tsDir(), "test", "testhelpers", "testdefs", subpathPart).toString();
+    return Path.of(Path.of(tsDir(), "test", "testhelpers", "testdefs").toString(), subpathPart).toString();
   }
 
   /** true when the TS checkout (fixtures) is available; tests use it with Assumptions.assumeTrue */
@@ -142,90 +132,53 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
     return Files.isDirectory(Path.of(testDefsPath()));
   }
 
-  // ---------------------------------------------------------------------------------------------- fakes (jest mocks)
+  // ---------------------------------------------------------------------------------------------- fake (jest mocks)
 
-  /** Remembers "cached" packages; every package has an empty resource list and a {name, version} package.json. */
-  public static class FakePackageCache implements PackageCache {
+  /**
+   * The TS test mocks of PackageCache/RegistryClient/CurrentBuildClient folded into one provider: latest -> 9.9.9,
+   * x.y.x -> x.y.9, every package "downloads" and loads with no resources and a {name, version} package.json.
+   */
+  public static class FakePackageProvider implements PackageProvider {
     public final List<String> cachedPackages = new ArrayList<>();
-    public final List<String> cachePackageTarballCalls = new ArrayList<>();
+    /** name#version of every loadPackage call (TS: registryClientMock.download / cachePackageTarball calls) */
+    public final List<String> loadCalls = new ArrayList<>();
+    /** set to make resolution fail (jest mockRejectedValue on resolveVersion) */
+    public RuntimeException resolveError;
+    /** set to make loading fail for every package (download/cache failure) */
+    public RuntimeException loadError;
     private static final Pattern PJ = Pattern.compile("/mock/path/to/([^#]+)#([^/]+)/package/package.json");
 
     @java.lang.Override
-    public String cachePackageTarball(String name, String version, InputStream data) {
-      cachePackageTarballCalls.add(name + "#" + version);
-      cachedPackages.add(name + "#" + version);
-      return "/mock/path/to/" + name + "#" + version;
+    public String resolveLatest(String name) {
+      if (resolveError != null) throw resolveError;
+      return "9.9.9";
     }
 
     @java.lang.Override
-    public boolean isPackageInCache(String name, String version) {
+    public boolean isCached(String name, String version) {
       return cachedPackages.contains(name + "#" + version);
     }
 
     @java.lang.Override
-    public String getPackagePath(String name, String version) {
-      return "/mock/path/to/" + name + "#" + version;
+    public CachedPackage loadPackage(String name, String version) {
+      if (version.endsWith(".x")) {
+        if (resolveError != null) throw resolveError;
+        version = version.replaceFirst("\\.x", ".9");
+      }
+      loadCalls.add(name + "#" + version);
+      if (loadError != null) throw loadError;
+      if (!cachedPackages.contains(name + "#" + version)) cachedPackages.add(name + "#" + version);
+      String path = "/mock/path/to/" + name + "#" + version;
+      return new CachedPackage(name, version, path, path + "/package/package.json", List.of());
     }
 
     @java.lang.Override
-    public String getPackageJSONPath(String name, String version) {
-      return "/mock/path/to/" + name + "#" + version + "/package/package.json";
-    }
-
-    @java.lang.Override
-    public List<String> getPotentialResourcePaths(String name, String version) {
-      return List.of();
-    }
-
-    @java.lang.Override
-    public Object getResourceAtPath(String resourcePath) {
+    public Object readResource(String resourcePath) {
       Matcher m = PJ.matcher(resourcePath);
       if (m.find()) {
         return InMemoryVirtualPackage.packageJSON(m.group(1), m.group(2));
       }
       return null;
-    }
-  }
-
-  /** latest -> 9.9.9; x.y.x -> x.y.9; downloads return a dummy stream. */
-  public static class FakeRegistryClient implements RegistryClient {
-    public final List<String> downloadCalls = new ArrayList<>();
-    public final List<String> resolveVersionCalls = new ArrayList<>();
-    /** set to make resolveVersion throw (jest mockRejectedValue) */
-    public RuntimeException resolveVersionError;
-
-    @java.lang.Override
-    public String resolveVersion(String name, String version) {
-      resolveVersionCalls.add(name + "#" + version);
-      if (resolveVersionError != null) throw resolveVersionError;
-      if ("latest".equals(version)) {
-        return "9.9.9";
-      } else if (version.endsWith(".x")) {
-        return version.replaceFirst("\\.x", ".9");
-      }
-      return version;
-    }
-
-    @java.lang.Override
-    public InputStream download(String name, String version) {
-      downloadCalls.add(name + "#" + version);
-      return new ByteArrayInputStream("mock-data".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    }
-  }
-
-  public static class FakeCurrentBuildClient implements CurrentBuildClient {
-    public final List<String> downloadCalls = new ArrayList<>();
-    public String buildDate = "20240824230227";
-
-    @java.lang.Override
-    public InputStream downloadCurrentBuild(String name, String branch) {
-      downloadCalls.add(name + (branch != null ? "$" + branch : ""));
-      return new ByteArrayInputStream("mock-data".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    }
-
-    @java.lang.Override
-    public String getCurrentBuildDate(String name, String branch) {
-      return buildDate;
     }
   }
 }

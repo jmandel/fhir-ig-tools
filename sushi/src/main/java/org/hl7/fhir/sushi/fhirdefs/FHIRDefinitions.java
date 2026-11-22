@@ -47,9 +47,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
   /** Test/embedding overrides (TS constructor `override` argument); null fields = defaults. */
   public static class Override {
     public PackageDB packageDB;
-    public PackageCache packageCache;
-    public RegistryClient registryClient;
-    public CurrentBuildClient currentBuildClient;
+    public PackageProvider packageProvider;
     public Integer resourceCacheSize;
   }
 
@@ -58,17 +56,12 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     this(null);
   }
 
-  public FHIRDefinitions(Override override) {
-    this(override, CoreServices.lazy());
-  }
-
-  private FHIRDefinitions(Override o, CoreServices core) {
+  public FHIRDefinitions(Override o) {
     super(
         o != null && o.packageDB != null ? o.packageDB : new InMemoryPackageDB(),
-        o != null && o.packageCache != null ? o.packageCache : core.packageCache(),
-        o != null && o.registryClient != null ? o.registryClient : core.registryClient(),
-        o != null && o.currentBuildClient != null ? o.currentBuildClient : core.currentBuildClient(),
+        o != null && o.packageProvider != null ? o.packageProvider : CorePackageProvider.userCache(),
         null,
+        // Analysis of 500 projects shows most only need a cache of 100. Double it for the others.
         o != null && o.resourceCacheSize != null ? o.resourceCacheSize : 200);
     // Use the same logger as SUSHI uses
     this.log = (level, message) -> {
@@ -78,8 +71,6 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
       }
       FshLogger.logger.logMessage(level, message);
     };
-    // the core-backed cache/registry log FPL's download messages through the same function
-    core.log = (level, message) -> this.log.accept(level, message);
   }
 
   /** TS createFHIRDefinitions(override?) (async there). */
