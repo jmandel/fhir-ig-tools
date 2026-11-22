@@ -50,7 +50,28 @@ public final class CorePackageProvider implements PackageProvider {
 
   @Override
   public String resolveLatest(String name) throws Exception {
-    return pcm().getLatestVersion(name, false);
+    // FPL rule R2 (corpus case HL7__cds-hooks-library, docs/package-resolution-differences.md): #latest is the
+    // registry's dist-tags.latest (FPL registry/utils.js lookUpLatestVersion), tried on packages.fhir.org then
+    // packages2.fhir.org (DefaultRegistryClient), or only $FPL_REGISTRY when set. core's getLatestVersion picks the
+    // highest version and can return a prerelease (3.0.0-ballot instead of 2.0.1).
+    String custom = System.getenv("FPL_REGISTRY");
+    List<String> endpoints = custom != null && !custom.isEmpty() ? List.of(custom)
+        : List.of("https://packages.fhir.org", "https://packages2.fhir.org/packages");
+    for (String endpoint : endpoints) {
+      try {
+        org.hl7.fhir.utilities.http.HTTPResult res =
+            org.hl7.fhir.utilities.http.ManagedWebAccess.get(List.of("web"), endpoint + "/" + name);
+        res.checkThrowException();
+        Object data = Json.parse(res.getContentAsString());
+        if (data instanceof Map<?, ?> m && m.get("dist-tags") instanceof Map<?, ?> tags
+            && tags.get("latest") instanceof String latest && !latest.isEmpty()) {
+          return latest;
+        }
+      } catch (Exception e) {
+        // FPL: fall back to the next registry
+      }
+    }
+    return null;
   }
 
   /**

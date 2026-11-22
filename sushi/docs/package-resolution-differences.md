@@ -94,6 +94,18 @@ different; 1 FPL rule ported (R1); 2 message-only differences observed (D7, D8).
   (`CorePackageProviderTest`); everything else stays core's (the current build is then loaded with core's
   `loadPackage(id, "current")`).
 
+### R2 — `latest` resolves to a prerelease (core differs; FPL rule ported)
+
+- IG: HL7 cds-hooks-library (`hl7.fhir.uv.cds-hooks: latest`), from the corpus differential (WP-10).
+- TS: FPL's `lookUpLatestVersion` takes the registry's `dist-tags.latest` (`2.0.1`), trying packages.fhir.org, then
+  packages2.fhir.org (or only `$FPL_REGISTRY`).
+- core: `getLatestVersion` picks the highest listed version, `3.0.0-ballot`.
+- Changes SUSHI output: yes — `ImplementationGuide.dependsOn[].version`, and the `Resolved ... / Loaded ... with N
+  resources` lines.
+- Action: `CorePackageProvider.resolveLatest` ports FPL's lookup (HTTP via core's ManagedWebAccess); when every
+  registry fails, loading `X#latest` fails with FPL's `Failed to resolve version for X#latest` (corpus case
+  HL7__davinci-ecdx). Tests: `regress.CorpusRegressionTest` (network test opt-in: `-Dsushi.network.tests=true`).
+
 ## Known design-level differences (core as is; kept)
 
 These follow from using core as is; D7 and D8 occurred (log lines only, no lookup differs), the others did not. Each is listed so a probe hit can be

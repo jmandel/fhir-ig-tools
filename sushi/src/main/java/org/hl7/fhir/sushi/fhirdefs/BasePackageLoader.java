@@ -69,7 +69,7 @@ public class BasePackageLoader {
 
   /**
    * Loads a package. {@code latest} is resolved first and a failure propagates (TS: the promise rejects with
-   * LatestVersionUnavailableError; the caller logs {@code e.getMessage()}); every other failure is logged and
+   * RedundantRegistryClient's "Failed to resolve version for X#latest"; the caller logs {@code e.getMessage()}); every other failure is logged and
    * returns FAILED, as in FPL.
    */
   public LoadStatus loadPackage(String name, String version) {
@@ -82,7 +82,8 @@ public class BasePackageLoader {
         version = null;
       }
       if (version == null || version.isEmpty()) {
-        throw new FplErrors.LatestVersionUnavailableError(name, false);
+        // FPL's RedundantRegistryClient.resolveVersion: every registry failed (corpus case HL7__davinci-ecdx)
+        throw new RuntimeException("Failed to resolve version for " + packageLabel);
       }
     }
     if (!Objects.equals(version, originalVersion)) {
