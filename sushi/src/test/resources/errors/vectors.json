@@ -1,0 +1,457 @@
+{
+  "AbstractInstanceOf": {
+    "name": "AbstractInstanceOfError",
+    "message": "The definition for Inst is an instance of an abstract resource: DomainResource",
+    "specReferences": null,
+    "severity": null
+  },
+  "BindingStrength": {
+    "name": "BindingStrengthError",
+    "message": "Cannot override required binding with example binding.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/terminologies.html#strength"
+    ],
+    "severity": null
+  },
+  "CannotResolvePath": {
+    "name": "CannotResolvePathError",
+    "message": "The element or path you referenced does not exist: foo.bar",
+    "specReferences": null,
+    "severity": null
+  },
+  "ClosedSlicing": {
+    "name": "ClosedSlicingError",
+    "message": "Cannot add a, b to Observation.component since its slicing was closed by a parent definition. New slices can only be added by the definition that closes the slicing.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#reslicing"
+    ],
+    "severity": null
+  },
+  "CodeAndSystemMismatch": {
+    "name": "CodeAndSystemMismatchError",
+    "message": "The quantities must have matching codes and systems, but their codes are mm and cm and their systems are s1 and undefined.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes.html#Range"
+    ],
+    "severity": null
+  },
+  "CodedTypeNotFound": {
+    "name": "CodedTypeNotFoundError",
+    "message": "Cannot bind value set to boolean,integer; must be coded (code, Coding, CodeableConcept, Quantity, CodeableReference), the data types (string, uri), or a logical model with the #can-bind characteristic.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.binding"
+    ],
+    "severity": null
+  },
+  "ConstrainingCardinality": {
+    "name": "ConstrainingCardinalityError",
+    "message": "Cannot constrain cardinality to 2..*, as it does not fit within the original 0..1 cardinality.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#cardinality"
+    ],
+    "severity": null
+  },
+  "DuplicateSlice": {
+    "name": "DuplicateSliceError",
+    "message": "Slice named sl already exists on element el of SD",
+    "specReferences": null,
+    "severity": null
+  },
+  "ElementAlreadyDefined": {
+    "name": "ElementAlreadyDefinedError",
+    "message": "Cannot define element LM.x on LM because it has already been defined",
+    "specReferences": null,
+    "severity": null
+  },
+  "FixedToPattern": {
+    "name": "FixedToPatternError",
+    "message": "Cannot assign this element using a pattern; as it is already assigned in the StructureDefinition using fixedCode. Since fixed[x] requires exact matches, while pattern[x] allows for variation in unspecified properties, fixed[x] cannot be replaced by pattern[x] since it would loosen the constraint.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "InstanceOfNotDefined": {
+    "name": "InstanceOfNotDefinedError",
+    "message": "InstanceOf Foo not found for Inst",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidCanonicalUrl": {
+    "name": "InvalidCanonicalUrlError",
+    "message": "Cannot use canonical URL of Ent because it does not exist. Be sure that Ent exists and it has a URL.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidCardinality": {
+    "name": "InvalidCardinalityError",
+    "message": "The min must be <= max, but min 3 is > max 2.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.min"
+    ],
+    "severity": null
+  },
+  "InvalidChoiceTypeRulePath": {
+    "name": "InvalidChoiceTypeRulePathError",
+    "message": "As a FHIR choice data type, the specified value for CardRule must end with '[x]'.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/formats.html#choice"
+    ],
+    "severity": null
+  },
+  "InvalidDateTime": {
+    "name": "InvalidDateTimeError",
+    "message": "The string 2020-13 does not represent a valid FHIR dateTime.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes.html#dateTime"
+    ],
+    "severity": null
+  },
+  "InvalidElementAccess": {
+    "name": "InvalidElementAccessError",
+    "message": "Cannot directly access differential or snapshot with path: snapshot. Elements should be targeted for modification by their path.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidElementForSlicing": {
+    "name": "InvalidElementForSlicingError",
+    "message": "Cannot slice element 'Patient.gender' since FHIR only allows slicing on choice elements (e.g., value[x]) or elements with max > 1",
+    "specReferences": [
+      "http://hl7.org/fhir/elementdefinition-definitions.html#ElementDefinition.slicing"
+    ],
+    "severity": null
+  },
+  "InvalidExtensionParent": {
+    "name": "InvalidExtensionParentError",
+    "message": "Invalid parent Patient specified for extension Ext. The parent of an extension must be the base Extension or another defined extension.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidFHIRId": {
+    "name": "InvalidFHIRIdError",
+    "message": "The string \"bad id\" does not represent a valid FHIR id. FHIR ids may contain any combination of upper- or lower-case ASCII letters ('A'..'Z', and 'a'..'z'), numerals ('0'..'9'), '-' and '.', with a length limit of 64 characters.",
+    "specReferences": [
+      "https://www.hl7.org/fhir/datatypes.html#id"
+    ],
+    "severity": null
+  },
+  "InvalidLogicalParent": {
+    "name": "InvalidLogicalParentError",
+    "message": "Invalid parent Foo specified for logical model LM. The parent of a logical model must be Element, Base, another logical model, a resource, or a type.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidMapping": {
+    "name": "InvalidMappingError",
+    "message": "Invalid mapping, mapping.identity and mapping.map are 1..1 and must be set. Ensure mapping rules specify map: {path} -> {map}",
+    "specReferences": [
+      "https://www.hl7.org/fhir/elementdefinition-definitions.html#ElementDefinition.mapping"
+    ],
+    "severity": null
+  },
+  "InvalidMustSupport": {
+    "name": "InvalidMustSupportError",
+    "message": "The MustSupport flag is not permitted on element el of SD (allowed only in profiles and extensions).",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#mustsupport",
+      "https://www.hl7.org/fhir/elementdefinition.html#interpretation"
+    ],
+    "severity": null
+  },
+  "InvalidPeriod": {
+    "name": "InvalidPeriodError",
+    "message": "The start 2020 cannot come before the end 2019.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes-definitions.html#Period"
+    ],
+    "severity": null
+  },
+  "InvalidPeriodUndef": {
+    "name": "InvalidPeriodError",
+    "message": "The start 2020 cannot come before the end undefined.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes-definitions.html#Period"
+    ],
+    "severity": null
+  },
+  "InvalidRangeValue": {
+    "name": "InvalidRangeValueError",
+    "message": "The low must be <= high, but low 1.5 is > high 0.25.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes-definitions.html#Range"
+    ],
+    "severity": null
+  },
+  "InvalidResourceParent": {
+    "name": "InvalidResourceParentError",
+    "message": "Invalid parent Patient specified for resource R. The parent of a resource must be Resource or DomainResource.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidResourceType": {
+    "name": "InvalidResourceTypeError",
+    "message": "A resourceType of Patient cannot be set on an element of type Observation.",
+    "specReferences": [
+      "https://www.hl7.org/fhir/resourcelist.html"
+    ],
+    "severity": null
+  },
+  "InvalidSumOfSliceMins": {
+    "name": "InvalidSumOfSliceMinsError",
+    "message": "The sum of mins of slices must be <= max of sliced element, but sum of mins (5) > max (3) of Obs.component.",
+    "specReferences": [
+      "http://www.hl7.org/fhir/profiling.html#slice-cardinality"
+    ],
+    "severity": null
+  },
+  "InvalidTypeAccess": {
+    "name": "InvalidTypeAccessError",
+    "message": "Cannot directly change type. StructureDefinitions will naturally inherit their Parent type.",
+    "specReferences": null,
+    "severity": null
+  },
+  "InvalidTypeNone": {
+    "name": "InvalidTypeError",
+    "message": "The type \"Foo\" does not match any of the allowed types: <none>",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.type"
+    ],
+    "severity": null
+  },
+  "InvalidTypeMixed": {
+    "name": "InvalidTypeError",
+    "message": "The type \"Foo\" does not match any of the allowed types: Condition or http://e.org/SP or Reference(http://a/Patient | http://a/Pract) or CodeableReference(http://a/X) or Canonical() or p1 or p2",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.type"
+    ],
+    "severity": null
+  },
+  "InvalidUri": {
+    "name": "InvalidUriError",
+    "message": "Resolved value \"not a uri\" is not a valid URI.",
+    "specReferences": null,
+    "severity": null
+  },
+  "MismatchedBindingTypeCS": {
+    "name": "MismatchedBindingTypeError",
+    "message": "Cannot assign X at path code. A CodeSystem must be used.",
+    "specReferences": null,
+    "severity": null
+  },
+  "MismatchedBindingTypeVS": {
+    "name": "MismatchedBindingTypeError",
+    "message": "Cannot bind X at path code. A ValueSet must be used.",
+    "specReferences": null,
+    "severity": null
+  },
+  "MismatchedTypeNum": {
+    "name": "MismatchedTypeError",
+    "message": "Cannot assign Number value: 1.5e-7. Value does not match element type: string",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "MismatchedTypeBool": {
+    "name": "MismatchedTypeError",
+    "message": "Cannot assign Boolean value: true. Value does not match element type: string",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "MismatchedTypeStr": {
+    "name": "MismatchedTypeError",
+    "message": "Cannot assign String value: hello. Value does not match element type: boolean",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "MissingSnapshot": {
+    "name": "MissingSnapshotError",
+    "message": "Structure Definition http://x is missing a snapshot. Snapshot is required for import.",
+    "specReferences": null,
+    "severity": null
+  },
+  "MultipleStandardsStatus": {
+    "name": "MultipleStandardsStatusError",
+    "message": "Cannot apply multiple standards status on el",
+    "specReferences": [
+      "http://hl7.org/fhir/extension-structuredefinition-standards-status.html"
+    ],
+    "severity": null
+  },
+  "NarrowingRootCardinality": {
+    "name": "NarrowingRootCardinalityError",
+    "message": "Cardinality on root cannot be narrowed to 0..1 due to existing slice sl with cardinality 1..2.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#cardinality"
+    ],
+    "severity": null
+  },
+  "NoSingleType": {
+    "name": "NoSingleTypeError",
+    "message": "Cannot assign Code value on this element since this element does not have a single type",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "NonAbstractParentOfSpecialization": {
+    "name": "NonAbstractParentOfSpecializationError",
+    "message": "The type Parent is not abstract, so it cannot be constrained to the specialization Spec.",
+    "specReferences": null,
+    "severity": null
+  },
+  "ParentDeclaredAsIdUrl": {
+    "name": "ParentDeclaredAsIdError",
+    "message": "Profile \"N\" cannot declare \"i\" as both Parent and Id. It looks like the parent is an external resource; use its URL (e.g., http://hl7.org/fhir/StructureDefinition/i).",
+    "specReferences": null,
+    "severity": null
+  },
+  "ParentDeclaredAsIdNoUrl": {
+    "name": "ParentDeclaredAsIdError",
+    "message": "Profile \"N\" cannot declare \"i\" as both Parent and Id.",
+    "specReferences": null,
+    "severity": null
+  },
+  "ParentDeclaredAsNameUrl": {
+    "name": "ParentDeclaredAsNameError",
+    "message": "Extension \"N\" cannot declare itself as a Parent. It looks like the parent is an external resource; use its URL (e.g., http://u).",
+    "specReferences": null,
+    "severity": null
+  },
+  "ParentDeclaredAsNameNoUrl": {
+    "name": "ParentDeclaredAsNameError",
+    "message": "Extension \"N\" cannot declare itself as a Parent. ",
+    "specReferences": null,
+    "severity": null
+  },
+  "ParentNotDefined": {
+    "name": "ParentNotDefinedError",
+    "message": "Parent P not found for C",
+    "specReferences": [
+      "https://www.hl7.org/fhir/R4/profiling.html#resources"
+    ],
+    "severity": null
+  },
+  "ParentNotProvided": {
+    "name": "ParentNotProvidedError",
+    "message": "The definition for D does not include a Parent",
+    "specReferences": [
+      "https://www.hl7.org/fhir/R4/profiling.html#resources"
+    ],
+    "severity": null
+  },
+  "RequiredMetadata": {
+    "name": "RequiredMetadataError",
+    "message": "Metadata field url required when declaring Mapping M.",
+    "specReferences": null,
+    "severity": null
+  },
+  "SliceTypeRemoval": {
+    "name": "SliceTypeRemovalError",
+    "message": "Type constraint on value[x] would eliminate all types on slice value[x]:valueString",
+    "specReferences": null,
+    "severity": null
+  },
+  "SlicingDefinition": {
+    "name": "SlicingDefinitionError",
+    "message": "Cannot constraint slicing property 'ordered' from true to false.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#reslicing"
+    ],
+    "severity": null
+  },
+  "SlicingNotDefined": {
+    "name": "SlicingNotDefinedError",
+    "message": "Cannot create sys slice. No slicing found for Obs.component.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/profiling.html#slicing"
+    ],
+    "severity": null
+  },
+  "TypeNotFound": {
+    "name": "TypeNotFoundError",
+    "message": "No definition for the type \"Foo\" could be found.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.type"
+    ],
+    "severity": null
+  },
+  "UnitMismatch": {
+    "name": "UnitMismatchError",
+    "message": "The quantities must have matching units, but their units are mm and cm.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/datatypes.html#Range"
+    ],
+    "severity": null
+  },
+  "ValidationErrorDefault": {
+    "name": "ValidationError",
+    "message": "a.b: is bad",
+    "specReferences": null,
+    "severity": "error"
+  },
+  "ValidationErrorWarn": {
+    "name": "ValidationError",
+    "message": "a.c: is iffy",
+    "specReferences": null,
+    "severity": "warn"
+  },
+  "ValueAlreadyAssigned": {
+    "name": "ValueAlreadyAssignedError",
+    "message": "Cannot assign 2 to this element; a different integer is already assigned: 1.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.fixed_x_",
+      "http://hl7.org/fhir/R4/elementdefinition-definitions.html#ElementDefinition.pattern_x_"
+    ],
+    "severity": null
+  },
+  "ValueConflictsWithClosedSlicing": {
+    "name": "ValueConflictsWithClosedSlicingError",
+    "message": "Cannot assign x to this element since it conflicts with all values of the closed slicing.",
+    "specReferences": null,
+    "severity": null
+  },
+  "ValueSetCompose": {
+    "name": "ValueSetComposeError",
+    "message": "ValueSet VS must contain at least one inclusion rule or be empty.",
+    "specReferences": [
+      "http://hl7.org/fhir/R4/valueset-definitions.html#ValueSet.compose.include"
+    ],
+    "severity": null
+  },
+  "ValueSetFilterMissingValue": {
+    "name": "ValueSetFilterMissingValueError",
+    "message": "Not applying value set filter: missing value for operator \"is-a\".",
+    "specReferences": null,
+    "severity": null
+  },
+  "ValueSetFilterOperator": {
+    "name": "ValueSetFilterOperatorError",
+    "message": "Operator \"nope\" not available in value set filter.",
+    "specReferences": [
+      "https://www.hl7.org/fhir/valueset-filter-operator.html"
+    ],
+    "severity": null
+  },
+  "ValueSetFilterValueType": {
+    "name": "ValueSetFilterValueTypeError",
+    "message": "Not applying value set filter: operator \"=\" requires a string value.",
+    "specReferences": null,
+    "severity": null
+  },
+  "ValueSetFilterValueTypeAllowed": {
+    "name": "ValueSetFilterValueTypeError",
+    "message": "Not applying value set filter: operator \"exists\" requires a boolean or code value or a string value of \"true\" or \"false\".",
+    "specReferences": null,
+    "severity": null
+  }
+}
