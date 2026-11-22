@@ -32,11 +32,11 @@ def coverage(inv, reports):
     for f in glob.glob(os.path.join(reports, 'TEST-*.xml')):
         for tc in ET.parse(f).getroot().iter('testcase'):
             if tc.find('failure') is None and tc.find('error') is None and tc.find('skipped') is None:
-                names.add(tc.get('name'))
+                names.add(tc.get('name').strip())
     tot, done = collections.Counter(), collections.Counter()
     for line in open(inv).read().splitlines()[1:]:
         w, rel, name, status = line.split('\t')
-        tot[w] += 1; done[w] += name in names
+        tot[w] += 1; done[w] += name.strip() in names  # surefire trims display names
     for w in sorted(tot): print(f'{w}\t{done[w]}/{tot[w]}')
 if __name__ == '__main__':
     coverage(sys.argv[2], sys.argv[3]) if sys.argv[1] == '--coverage' else inventory(sys.argv[1])
