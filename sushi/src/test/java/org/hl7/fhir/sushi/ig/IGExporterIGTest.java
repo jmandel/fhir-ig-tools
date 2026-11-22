@@ -93,21 +93,21 @@ class IGExporterIGTest {
     var instanceDef = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(examples, f))));
     // since instance meta isn't encoded in the JSON, add some here (usually done in the FSH import)
     if (Js.truthy(Objects.equals(at(instanceDef, "id"), "patient-example-two"))) {
-      setProp(at(instanceDef, "_instanceMeta"), "title", "Another Patient Example");
-      setProp(at(instanceDef, "_instanceMeta"), "description", "Another example of a Patient");
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
-      setProp(at(instanceDef, "_instanceMeta"), "instanceOfUrl", "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient");
+      instanceDef._instanceMeta.title = "Another Patient Example";
+      instanceDef._instanceMeta.description = "Another example of a Patient";
+      instanceDef._instanceMeta.usage = "Example";
+      instanceDef._instanceMeta.instanceOfUrl = "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient";
     }
     if (Js.truthy(Objects.equals(at(instanceDef, "id"), "patient-example-three"))) {
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Inline");
-      setProp(at(instanceDef, "_instanceMeta"), "instanceOfUrl", "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient");
+      instanceDef._instanceMeta.usage = "Inline";
+      instanceDef._instanceMeta.instanceOfUrl = "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient";
     }
     if (Js.truthy(Objects.equals(at(instanceDef, "id"), "capability-statement-example"))) {
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Definition");
+      instanceDef._instanceMeta.usage = "Definition";
     }
     if (Js.truthy(Objects.equals(at(instanceDef, "id"), "patient-example"))) {
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
-      setProp(at(instanceDef, "_instanceMeta"), "instanceOfUrl", "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient");
+      instanceDef._instanceMeta.usage = "Example";
+      instanceDef._instanceMeta.instanceOfUrl = "http://hl7.org/fhir/sushi-test/StructureDefinition/sample-patient";
     }
     pkgInstances.add(instanceDef);
   }
@@ -1448,7 +1448,7 @@ class IGExporterIGTest {
     @DisplayName("IGExporter #simple-ig-plus should generate an implementation guide for simple-ig with package containing logical model and custom resource and logical model instance")
     void shouldGenerateAnImplementationGuideForSimpleIgWithPackageContainingLogicalModelA2() {
       // Remove custom resources
-      setProp(pkg.resources, "length", 0);
+      pkg.resources.clear();
       // Add instance of logical model
       InstanceDefinition customLogicalInstance = new InstanceDefinition();
       setProp(customLogicalInstance, "resourceType", "http://hl7.org/fhir/sushi-test/StructureDefinition/CustomLogicalModel");
@@ -1546,11 +1546,11 @@ class IGExporterIGTest {
     var instanceDef = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(examples, f))));
     // since instance meta isn't encoded in the JSON, add some here (usually done in the FSH import)
     if (Js.truthy(exampleIds.contains(at(instanceDef, "id")))) {
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
+      instanceDef._instanceMeta.usage = "Example";
     }
     if (Js.truthy(Objects.equals(at(instanceDef, "id"), "patient-example-two"))) {
-      setProp(at(instanceDef, "_instanceMeta"), "title", "Another Patient Example");
-      setProp(at(instanceDef, "_instanceMeta"), "description", "Another example of a Patient");
+      instanceDef._instanceMeta.title = "Another Patient Example";
+      instanceDef._instanceMeta.description = "Another example of a Patient";
     }
     pkgInstances.add(instanceDef);
   }
@@ -3275,7 +3275,7 @@ class IGExporterIGTest {
       exporter.export(tempOut);
       assertEquals(1, loggerSpy.getAllMessages("warn").size());
       String warning = loggerSpy.getFirstMessage("warn");
-      var warningLines = warning.split("\n");
+      var warningLines = Arrays.asList(warning.split("\n", -1));
       List<Object> johnLine = filter(warningLines, (w) -> Js.truthy(((String) w).contains(path.join("path-resource-double-nest", "john", "Patient-John.json"))));
       List<Object> jackLine = filter(warningLines, (w) -> Js.truthy(((String) w).contains(path.join("path-resource-double-nest", "john", "Patient-John.json"))));
       // Check that both nested files are logged in the warning, but check that they're only there once
@@ -3624,7 +3624,7 @@ class IGExporterIGTest {
     }
     Object doGroupTest(String profile, String extension, String codeSystem, String example) { return doGroupTest(profile, extension, codeSystem, example, false); }
     Object doGroupTest(String profile, String extension, String codeSystem, String example, boolean skipExpectations) {
-  pkg.config.groups = groups(groups(arr(obj("id", "MyPatientGroup", "name", "My Patient Group", "description", "Group of patient things.", "resources", new ArrayList<>(Arrays.asList(profile, example))), obj("id", "MyOtherGroup", "name", "My Other Group", "description", "Group of other things.", "resources", new ArrayList<>(Arrays.asList(extension, codeSystem))))));
+  pkg.config.groups = groups(arr(obj("id", "MyPatientGroup", "name", "My Patient Group", "description", "Group of patient things.", "resources", new ArrayList<>(Arrays.asList(profile, example))), obj("id", "MyOtherGroup", "name", "My Other Group", "description", "Group of other things.", "resources", new ArrayList<>(Arrays.asList(extension, codeSystem)))));
   var fixtures = path.join(__dirname, "fixtures", "simple-ig");
   IGExporter exporter = new IGExporter(pkg, defs, fixtures);
   exporter.export(tempOut);
@@ -3728,7 +3728,7 @@ class IGExporterIGTest {
       pkg.codeSystems.add(codeSystemDef);
       // Example: Patient/patient-example
       var instanceDef = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example.json"))));
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
+      instanceDef._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef);
     }
 
@@ -4383,21 +4383,21 @@ class IGExporterIGTest {
       pkg.profiles.add(StructureDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "profiles", "StructureDefinition-sample-patient.json")))));
       // Example: Patient/patient-example
       var instanceDef = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example.json"))));
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
+      instanceDef._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef);
       // Example: Patient/patient-example-two
       var instanceDef2 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-two.json"))));
-      setProp(at(instanceDef2, "_instanceMeta"), "usage", "Example");
+      instanceDef2._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef2);
       // Example: Patient/patient-example-three
       var instanceDef3 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-three.json"))));
-      setProp(at(instanceDef3, "_instanceMeta"), "usage", "Example");
+      instanceDef3._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef3);
       // Example: Patient/patient-example-four
       var instanceDef4 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-three.json"))));
       setProp(instanceDef4, "id", "patient-example-four");
-      setProp(at(instanceDef4, "_instanceMeta"), "name", "patient-example-four");
-      setProp(at(instanceDef4, "_instanceMeta"), "usage", "Example");
+      instanceDef4._instanceMeta.name = "patient-example-four";
+      instanceDef4._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef4);
       // CodeSystem: CodeSystem/sample-code-system
       CodeSystem codeSystemDef = new CodeSystem();
@@ -4801,27 +4801,27 @@ class IGExporterIGTest {
       Package pkg = new Package(r4WithR5propsConfig);
       // Example: Patient/patient-example
       var instanceDef = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example.json"))));
-      setProp(at(instanceDef, "_instanceMeta"), "usage", "Example");
+      instanceDef._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef);
       // Example: Patient/patient-example-two
       var instanceDef2 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-two.json"))));
-      setProp(at(instanceDef2, "_instanceMeta"), "usage", "Example");
+      instanceDef2._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef2);
       // Example: Patient/patient-example-three
       var instanceDef3 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-three.json"))));
-      setProp(at(instanceDef3, "_instanceMeta"), "usage", "Example");
+      instanceDef3._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef3);
       // Example: Patient/patient-example-four
       var instanceDef4 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-three.json"))));
       setProp(instanceDef4, "id", "patient-example-four");
-      setProp(at(instanceDef4, "_instanceMeta"), "name", "patient-example-four");
-      setProp(at(instanceDef4, "_instanceMeta"), "usage", "Example");
+      instanceDef4._instanceMeta.name = "patient-example-four";
+      instanceDef4._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef4);
       // Example: Patient/patient-example-five
       var instanceDef5 = InstanceDefinition.fromJSON(jm(fs.readJSONSync(path.join(fixtures, "examples", "Patient-example-three.json"))));
       setProp(instanceDef5, "id", "patient-example-five");
-      setProp(at(instanceDef5, "_instanceMeta"), "name", "patient-example-five");
-      setProp(at(instanceDef5, "_instanceMeta"), "usage", "Example");
+      instanceDef5._instanceMeta.name = "patient-example-five";
+      instanceDef5._instanceMeta.usage = "Example";
       pkg.instances.add(instanceDef5);
       IGExporter exporter = new IGExporter(pkg, defs, fixtures);
       // No need to regenerate the IG on every test -- generate it once and inspect what you
