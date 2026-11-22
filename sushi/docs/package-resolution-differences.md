@@ -33,9 +33,9 @@ A probe records, for one IG, everything SUSHI's package layer is asked and answe
 | HL7 genomics-reporting | yes | identical | 1,238 | 1,238 | 40,835 | — |
 | EEHRxF logical-model (R5) | yes | identical | 271 | 271 | 13,332 | — |
 | ahdis ch-ekm (3 `x.y.x` deps) | yes | identical | 859 | 859 | 9,144 | — |
-| hl7ch ch-term | yes | differ only in predefined XML files (below) | 95 | 93 | 65,734 | 2 (X1) |
-| WHO smart-anc | yes | differ only in predefined XML files (below) | 2,349 | 2,344 | 44,983 | 5 (X1) |
-| **total** | **6/6** | | **5,497** | **5,490** | **182,059** | **7** |
+| hl7ch ch-term (93 predefined XML files) | yes | identical | 95 | 95 | 65,734 | — |
+| WHO smart-anc (32 predefined XML files) | yes | identical | 2,349 | 2,349 | 44,983 | — |
+| **total** | **6/6** | **6/6** | **5,497** | **5,497** | **182,059** | **0** |
 
 Core and FPL agree on every package and version (`latest` for the automatic dependencies, `x.y.x` patch wildcards
 in ch-ekm, exact versions), on the resource count of every package (so core's `.index.json` list equals FPL's
@@ -47,7 +47,7 @@ in ch-ekm, exact versions), on the resource count of every package (so core's `.
 
 ## Differences
 
-### X1 — predefined resources in FHIR XML (not a core-vs-FPL difference; Java gap)
+### X1 — predefined resources in FHIR XML (not a core-vs-FPL difference; was a Java gap, fixed)
 
 - IGs: ch-term (93 XML files), smart-anc (32), 27 corpus IGs in total.
 - Lookups: e.g. `fishForPredefinedResource('urn:oid:0.4.0.127.0.16.1.1.2.1', CodeSystem)` in ch-term,
@@ -56,7 +56,10 @@ in ch-ekm, exact versions), on the resource count of every package (so core's `.
   (e.g. `CodeSystem/edqm-standardterms` from `edqm-standardterms.xml`). Java: no XML converter yet, so each file logs
   `Failed to register resource at path ...` and is missing (`sushi-local#LOCAL with 1 resources` instead of 94).
 - Changes SUSHI output: yes (errors in the log, IG resource entries, lookups of predefined code systems).
-- Action: port fhir-tool 5.0.2's xmlToObj (with xml-js/sax 1.2.4 semantics) in `fhirdefs.xml` — in progress.
+- Action: ported fhir-tool 5.0.2's xmlToObj (with xml-js 1.6.11 / sax 1.2.4 semantics, fhir-tool's own R4 type
+  data) in `fhirdefs.xml`. Differential vs the JS library (`scripts/fhirtool/diff.sh`): all 798 XML files in the
+  corpus IGs' predefined-resource folders + 13,331 mutations, 0 differences (JSON text, error messages, stdout).
+  First probe run (before the port): ch-term 2 and smart-anc 5 of their lookups differed; after: 0.
 
 ## Known design-level differences not observed so far
 
