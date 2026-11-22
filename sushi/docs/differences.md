@@ -14,7 +14,7 @@ only on invalid input; **open** = decision pending.
 | KD-5 | WP-6 | coloured "non-conformant resource" box | diag | coloured only when `FshLogger.colorEnabled()` (TTY/FORCE_COLOR), as chalk; uncoloured otherwise | matches TS when colour state matches |
 | KD-6 | WP-6 | debug stack traces | diag | `--log-level debug` stack traces are Java's, not V8's | accepted |
 | KD-7 | WP-6 | applyDeferredRules TypeError branch | diag | the TS TypeError branch surfaces as an uncaught `Common.JsTypeError` | accepted (crash in both; message text may differ) |
-| KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md) | n/a |
+| KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md); log-only D7/D8 there. The FPL warning "Failed to download most recent X#current from current builds. Using most recent cached package instead." (build not listed on build.fhir.org/ig/qas.json) is reproduced (corpus case HL7-cz__ps) | n/a; D7 info line still open |
 | KD-9 | WP-3 | typed Configuration | malformed, none | 42 mutation inputs with a raw YAML value of the wrong type (e.g. `title: 2023`): the TS-shaped configuration and all output/messages are identical, but the typed `Configuration` object cannot hold the raw value (see `ConfigurationJs`); none in the 266-config corpus | **accepted** (owner, 2026-11-22) |
 
 

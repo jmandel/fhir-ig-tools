@@ -109,6 +109,20 @@ public class BasePackageLoader {
     boolean wildcard = PATCH_WILDCARD.matcher(version).matches();
     boolean current = isCurrentVersion(version);
     boolean wasCached = current || wildcard || packageProvider.isCached(name, version);
+    // FPL: for a current build, the "download most recent" step fails when build.fhir.org lists no such build (or
+    // can't be reached); if a cached build then loads, FPL warns that it used the cached one. core refreshes current
+    // builds itself, so only that failure (the observable part) is derived here.
+    String currentDownloadError = null;
+    if (current && packageProvider.isCached(name, version)) {
+      String branch = version.indexOf('$') != -1 ? version.split("\\$", -1)[1] : null;
+      try {
+        String base = packageProvider.currentBuildBaseUrl(name, branch);
+        if (base != null && base.isEmpty()) currentDownloadError = "Failed to download most recent " + packageLabel + " from current builds";
+      } catch (Exception e) {
+        currentDownloadError = "Failed to download most recent " + packageLabel + " from current builds";
+        if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) currentDownloadError += CERTIFICATE_MESSAGE;
+      }
+    }
     PackageProvider.CachedPackage pkg;
     try {
       pkg = packageProvider.loadPackage(name, version);
@@ -157,6 +171,10 @@ public class BasePackageLoader {
           log.accept("debug", "JSON file at path " + resourcePath + " was not FHIR resource");
         }
       }
+    }
+    if (currentDownloadError != null) {
+      // Loading succeeded despite a download error: the stale build is used
+      log.accept("warn", currentDownloadError + ". Using most recent cached package instead.");
     }
     PackageStats stats = packageDB.getPackageStats(name, version);
     log.accept("info", "Loaded " + stats.name() + "#" + stats.version() + " with " + stats.resourceCount()

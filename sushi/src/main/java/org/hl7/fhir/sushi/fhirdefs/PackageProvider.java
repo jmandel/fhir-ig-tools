@@ -23,4 +23,13 @@ public interface PackageProvider {
 
   /** The JSON (JS value model) of a package file; throws when it cannot be read or parsed. */
   Object readResource(String path);
+
+  /**
+   * FPL BuildDotFhirDotOrgClient.getCurrentBuildBaseURL: the build.fhir.org base URL of the newest current build of
+   * {@code name} (branch null = master/main), "" when build.fhir.org lists none; throws when qas.json can't be read.
+   * Returns null when the provider can't check (test fakes): then no freshness warning is derived.
+   */
+  default String currentBuildBaseUrl(String name, String branch) throws Exception {
+    return null;
+  }
 }
