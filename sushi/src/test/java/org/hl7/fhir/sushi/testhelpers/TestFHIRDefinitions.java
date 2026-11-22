@@ -40,8 +40,8 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
     this.packageProviderMock = pp;
   }
 
-  private static Override override(PackageProvider pp) {
-    Override o = new Override();
+  private static Overrides override(PackageProvider pp) {
+    Overrides o = new Overrides();
     o.packageProvider = pp;
     return o;
   }
@@ -148,18 +148,18 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
     public RuntimeException loadError;
     private static final Pattern PJ = Pattern.compile("/mock/path/to/([^#]+)#([^/]+)/package/package.json");
 
-    @java.lang.Override
+    @Override
     public String resolveLatest(String name) {
       if (resolveError != null) throw resolveError;
       return "9.9.9";
     }
 
-    @java.lang.Override
+    @Override
     public boolean isCached(String name, String version) {
       return cachedPackages.contains(name + "#" + version);
     }
 
-    @java.lang.Override
+    @Override
     public CachedPackage loadPackage(String name, String version) {
       if (version.endsWith(".x")) {
         if (resolveError != null) throw resolveError;
@@ -172,7 +172,7 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
       return new CachedPackage(name, version, path, path + "/package/package.json", List.of());
     }
 
-    @java.lang.Override
+    @Override
     public Object readResource(String resourcePath) {
       Matcher m = PJ.matcher(resourcePath);
       if (m.find()) {

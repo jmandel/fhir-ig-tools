@@ -45,7 +45,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
   private BiPredicate<String, String> fplLogInterceptor;
 
   /** Test/embedding overrides (TS constructor `override` argument); null fields = defaults. */
-  public static class Override {
+  public static class Overrides {
     public PackageDB packageDB;
     public PackageProvider packageProvider;
     public Integer resourceCacheSize;
@@ -56,7 +56,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     this(null);
   }
 
-  public FHIRDefinitions(Override o) {
+  public FHIRDefinitions(Overrides o) {
     super(
         o != null && o.packageDB != null ? o.packageDB : new InMemoryPackageDB(),
         o != null && o.packageProvider != null ? o.packageProvider : CorePackageProvider.userCache(),
@@ -78,7 +78,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     return createFHIRDefinitions(null);
   }
 
-  public static FHIRDefinitions createFHIRDefinitions(Override override) {
+  public static FHIRDefinitions createFHIRDefinitions(Overrides override) {
     FHIRDefinitions defs = new FHIRDefinitions(override);
     defs.initialize();
     return defs;
@@ -120,7 +120,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     return infos.stream().map(FHIRDefinitions::convertInfoToMetadata).toList();
   }
 
-  @java.lang.Override
+  @Override
   public Object fishForFHIR(String item, FishableType... types) {
     Object def = findResourceJSON(item, new FindResourceInfoOptions(normalizeTypes(types), null, DEFAULT_SORT, null));
     if (def != null) {
@@ -138,7 +138,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     return null;
   }
 
-  @java.lang.Override
+  @Override
   public Metadata fishForMetadata(String item, FishableType... types) {
     ResourceInfo info = findResourceInfo(item, new FindResourceInfoOptions(normalizeTypes(types), null, DEFAULT_SORT,
         null));
@@ -155,7 +155,7 @@ public class FHIRDefinitions extends BasePackageLoader implements Fishable {
     return null;
   }
 
-  @java.lang.Override
+  @Override
   public List<Metadata> fishForMetadatas(String item, FishableType... types) {
     List<ResourceInfo> infos = findResourceInfos(item, new FindResourceInfoOptions(normalizeTypes(types), null,
         DEFAULT_SORT, null));
