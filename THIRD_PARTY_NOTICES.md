@@ -1,6 +1,6 @@
 # Third-party notices
 
-The Java code under `shim/src/main/java` contains ports (translations into Java) of the projects
+The Java code under `jekyll/src/main/java` and `common/src/main/java` contains ports (translations into Java) of the projects
 below. Their copyright notices and licenses follow. The upstream sources themselves are not
 redistributed here; `third_party/` holds them as optional git submodules for developers.
 
@@ -13,11 +13,11 @@ redistributed here; `third_party/` holds them as optional git submodules for dev
 | Rouge (incl. Pygments-derived lexers) | 4.7.0 | MIT; Pygments BSD-2-Clause | `org.hl7.fhir.jekyll.rouge` |
 | SafeYAML | 1.0.5 | MIT | `org.hl7.fhir.jekyll.yaml` |
 | Psych | 5.0.1 | MIT | `org.hl7.fhir.jekyll.yaml` |
-| libyaml | 0.2.5 | MIT | `org.hl7.fhir.jekyll.yaml` |
+| libyaml | 0.2.5 | MIT | `org.hl7.fhir.common.yaml` (event layer), `org.hl7.fhir.jekyll.yaml` |
 | Ruby date | 3.3.3 | BSD-2-Clause (Ruby BSDL) | `org.hl7.fhir.jekyll.yaml` |
 | Ruby (numeric parsing/formatting: object.c, numeric.c, missing/dtoa.c, util.c, string.c, bignum.c, pack.c, time.c) | 3.2.3 | Ruby License / BSD-2-Clause | `org.hl7.fhir.jekyll.yaml` (RubyNumbers, RubyBase64) |
 | Addressable (URI unescape) | 2.9.1 | Apache-2.0 | `org.hl7.fhir.jekyll.site.JekyllStrings` |
-| yaml-test-suite (test data only) | data-2022-01-17 | MIT | `shim/tests/yaml` |
+| yaml-test-suite (test data only) | data-2022-01-17 | MIT | `jekyll/tests/yaml` |
 
 ---
 

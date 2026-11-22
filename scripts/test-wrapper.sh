@@ -1,14 +1,14 @@
 #!/bin/bash
-# Check the self-downloading wrappers (shim/jekyll-shim, shim/jekyll-shim.cmd) as a release ships them:
+# Check the self-downloading wrappers (jekyll/jekyll-shim, jekyll/jekyll-shim.cmd) as a release ships them:
 # a local HTTP server stands in for GitHub Releases.
 #   1. a stamped wrapper alone in a folder downloads shim.jar, verifies it, caches it, and renders the
 #      end-to-end site (scripts/e2e.sh) identically to real Jekyll;
 #   2. the next run uses the cache, with the server unreachable;
 #   3. a wrapper stamped with the wrong SHA-256 refuses to run and caches nothing.
-# usage: scripts/test-wrapper.sh [shim.jar, default shim/build/shim.jar]
+# usage: scripts/test-wrapper.sh [shim.jar, default jekyll/target/shim.jar]
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-JAR="$(cd "$(dirname "${1:-$ROOT/shim/build/shim.jar}")" && pwd)/$(basename "${1:-shim.jar}")"
+JAR="$(cd "$(dirname "${1:-$ROOT/jekyll/target/shim.jar}")" && pwd)/$(basename "${1:-shim.jar}")"
 T="$(mktemp -d)"
 PY=python3; command -v python3 >/dev/null 2>&1 || PY=python
 win() { case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) cygpath -w "$1" ;; *) echo "$1" ;; esac; }

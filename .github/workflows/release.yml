@@ -35,8 +35,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'   # class files target Java 17; runs on 17+
-      - name: Build
-        run: shim/build.sh
+          cache: maven
+      - name: Build (Maven; jekyll/target/shim.jar is the self-contained release jar, common shaded in)
+        run: ./build.sh -B -ntp package
       - name: Test
         run: |
           git submodule update --init --depth 1 third_party/yaml-test-suite   # YAML suite case data
@@ -46,12 +47,12 @@ jobs:
         run: |
           D=dist/fhir-ig-jekyll
           mkdir -p "$D"
-          scripts/stamp-wrappers.sh "${TAG#v}" shim/build/shim.jar "$D"
-          cp shim/build/shim.jar "$D/"
-          cp README.md LICENSE THIRD_PARTY_NOTICES.md shim/INTEGRATION.md "$D/"
+          scripts/stamp-wrappers.sh "${TAG#v}" jekyll/target/shim.jar "$D"
+          cp jekyll/target/shim.jar "$D/"
+          cp README.md LICENSE THIRD_PARTY_NOTICES.md jekyll/INTEGRATION.md "$D/"
           scripts/e2e.sh "$D"
           (cd dist && zip -qr fhir-ig-jekyll.zip fhir-ig-jekyll)
-          cp shim/build/shim.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
+          cp jekyll/target/shim.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
           (cd dist && sha256sum shim.jar jekyll-shim jekyll-shim.cmd fhir-ig-jekyll.zip > SHA256SUMS)
       - name: Publish
         env:

@@ -56,7 +56,7 @@ current context (Docker Desktop), exactly as before.
 ```bash
 DOCKER_CONTEXT=igbuild scripts/golden-build.sh <repo-name> [6g]
 DOCKER_CONTEXT=igbuild scripts/golden-batch.sh -j 8 -m -Xmx8g -f names.txt
-DOCKER_CONTEXT=igbuild shim/build.sh liquid        # shim/run.sh, shim/oracle/oracle.sh likewise
+DOCKER_CONTEXT=igbuild ./build.sh --fast liquid        # jekyll/run.sh, jekyll/oracle/oracle.sh likewise
 # or: DOCKER_HOST=unix://$HOME/.lima/igbuild/sock/docker.sock ...
 ```
 

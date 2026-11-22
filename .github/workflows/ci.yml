@@ -24,8 +24,9 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
-      - name: Build
-        run: shim/build.sh
+          cache: maven
+      - name: Build (Maven, all modules; unit tests; jekyll/target/shim.jar)
+        run: ./build.sh -B -ntp package
       - name: YAML test-suite data + the repo at /w (the YAML file cases hold oracle-container paths)
         if: runner.os == 'Linux'
         run: |
@@ -35,7 +36,7 @@ jobs:
       - name: Differential suites (vs recorded Ruby output)
         run: SHIM_NO_BUILD=1 scripts/test-suites.sh
       - name: In-process API and IncludeProvider checks
-        run: java -cp "shim/build/classes${{ runner.os == 'Windows' && ';' || ':' }}shim/build/test-classes" org.hl7.fhir.jekyll.test.site.ShimApiCheck
+        run: java -cp "jekyll/target/shim.jar${{ runner.os == 'Windows' && ';' || ':' }}jekyll/target/test-classes" org.hl7.fhir.jekyll.test.site.ShimApiCheck
       - name: End to end through the wrapper (vs real Jekyll output)
         run: scripts/e2e.sh
       - name: Wrapper bootstrap (download, verify, cache; local server stands in for Releases)

@@ -153,8 +153,9 @@ repository (like `gradlew`) or put it on your `PATH`. To move to a newer version
   [`shim.jar`](https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/shim.jar), run in a
   Jekyll source folder: `java -jar shim.jar build --destination ../output`.
 
-From source: `shim/build.sh` builds `shim/build/shim.jar`. It uses your JDK, or the reference Docker image
-if there is no `javac`.
+From source: `./build.sh` (Maven) builds `jekyll/target/shim.jar`. It uses your JDK and Maven, or the reference
+Docker image if there is no working JDK or `mvn`; `./build.sh --fast` is a plain-`javac` build that needs only a
+JDK. See [`docs/MONOREPO.md`](docs/MONOREPO.md).
 
 Knobs (all optional): `SHIM_RENDER_THREADS`, `SHIM_IO_THREADS`, `SHIM_TIMING=1`.
 
@@ -169,13 +170,15 @@ Knobs (all optional): `SHIM_RENDER_THREADS`, `SHIM_IO_THREADS`, `SHIM_TIMING=1`.
    `_includes` files are never included (UTG: 134k of 166k, 1.25 of 2.06 GB), so this skips most of the
    fragment generation and `temp/pages` writing. Also being prototyped on the publisher side.
 
-Details: [`shim/INTEGRATION.md`](shim/INTEGRATION.md).
+Details: [`jekyll/INTEGRATION.md`](jekyll/INTEGRATION.md).
 
 ## Repository layout
 
 | Path | What |
 |---|---|
-| `shim/` | Java sources (`org.hl7.fhir.jekyll.{liquid,kramdown,rouge,yaml,site,util}`), tests, the differential oracle, porting notes (`NOTES-*.md`), integration notes |
+| `pom.xml`, `build.sh` | the multi-module build ([`docs/MONOREPO.md`](docs/MONOREPO.md)): Maven aggregator and its wrapper script |
+| `common/` | zero-dependency code shared by the modules (`org.hl7.fhir.common.yaml`: the libyaml event layer) |
+| `jekyll/` | the shim: Java sources (`org.hl7.fhir.jekyll.{liquid,kramdown,rouge,yaml,site,util}`), tests, the differential oracle, porting notes (`NOTES-*.md`), integration notes, the `jekyll-shim` wrappers |
 | `scripts/` | corpus sampling, golden builds, the `domdiff.py` comparator, timing / memory / locale tools |
 | `docker/` | the reference image: the autobuilder's localdev image pinned by digest, plus optional extra CAs |
 | `lima/` | Lima VM definition for large corpus runs |
@@ -185,16 +188,17 @@ Details: [`shim/INTEGRATION.md`](shim/INTEGRATION.md).
 
 ## Developing
 
-Building and testing need only a JDK:
+Building and testing need a JDK 17+ and Maven 3.6.3+ (or Docker; `./build.sh --fast` needs only a JDK):
 
 ```sh
+./build.sh                 # all modules; jekyll/target/shim.jar
 scripts/test-suites.sh     # differential suites vs recorded Ruby output (~19.5k cases)
 scripts/e2e.sh             # a fixture site through the wrapper vs real Jekyll's output
 ```
 
-CI runs both, plus `scripts/test-wrapper.sh` (wrapper download, verify, cache), on Linux, macOS and
+CI runs these, plus the in-process API check and `scripts/test-wrapper.sh` (wrapper download, verify, cache), on Linux, macOS and
 Windows, with JDK 17 and 21. A few cases have documented, expected
-differences, listed with their reason in `shim/tests/**/<cases>.jsonl.known`: lexers no IG uses, UTC
+differences, listed with their reason in `jekyll/tests/**/<cases>.jsonl.known`: lexers no IG uses, UTC
 offsets beyond ±18:00, and clock-dependent cases. Those are reported as `known`, and any other
 difference fails the run.
 
@@ -205,8 +209,8 @@ some test cases:
 git submodule update --init --depth 1     # optional, ~26 MB
 ```
 
-The oracle (`shim/oracle/oracle.sh`) runs the *real* gems inside the pinned image, and every module has
-a case runner (`DiffRunner`) that compares against those outputs. [`shim/README.md`](shim/README.md)
+The oracle (`jekyll/oracle/oracle.sh`) runs the *real* gems inside the pinned image, and every module has
+a case runner (`DiffRunner`) that compares against those outputs. [`jekyll/README.md`](jekyll/README.md)
 describes the module contracts. Golden-corpus runs use `scripts/golden-build.sh`, `scripts/corpus-run.sh`
 and `scripts/shim-all.sh`.
 

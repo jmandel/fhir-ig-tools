@@ -4,13 +4,13 @@
 # alternating (jekyll, shim, jekyll, shim); the second (warm page cache) run of each is reported, so
 # neither side benefits from the other having read the input first. Run on an otherwise idle VM.
 # usage: scripts/bench.sh <golden-name>... > work/bench.tsv   (columns: name tool run wall_s peak_rss_mb exit)
-# SHIM_JAR (default shim/build/shim.jar) picks the shim; it runs as the wrapper does (MaxRAMPercentage=75)
+# SHIM_JAR (default jekyll/target/shim.jar) picks the shim; it runs as the wrapper does (MaxRAMPercentage=75)
 # unless SHIM_HEAP is set, e.g. SHIM_HEAP=512m (to measure what it needs, not what the JVM grows to).
 # TOOLS (default "jekyll shim") limits which tools run.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/scripts/lib/vmdata.sh"
-JAR="${SHIM_JAR:-$ROOT/shim/build/shim.jar}"
+JAR="${SHIM_JAR:-$ROOT/jekyll/target/shim.jar}"
 printf 'name\ttool\trun\twall_s\tpeak_rss_mb\texit\n'
 for n in "$@"; do
   golden_mounts "$n"

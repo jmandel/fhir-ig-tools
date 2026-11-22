@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The Jekyll replacement ("the shim"). Depends only on common (docs/MONOREPO.md "Module rules"); Java 17.
+  `package` writes two jars:
+    target/fhir-ig-jekyll-<version>.jar   this module's classes only (for Maven consumers, with common as a dependency)
+    target/shim.jar                       the release artifact: self-contained (common shaded in), Main-Class set,
+                                          run as `java -jar shim.jar build ...` by the jekyll-shim wrappers
+  The tests under src/test/java are main()-style runners driven by scripts/test-suites.sh (no test framework).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.hl7.fhir</groupId>
+    <artifactId>fhir-ig-tools-parent</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>fhir-ig-jekyll</artifactId>
+  <name>fhir-ig-jekyll</name>
+  <description>Java replacement for the Jekyll stage of the FHIR IG Publisher</description>
+
+  <properties>
+    <shim.mainClass>org.hl7.fhir.jekyll.site.Main</shim.mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.hl7.fhir</groupId>
+      <artifactId>fhir-ig-common</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>only-common</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <message>jekyll may depend only on fhir-ig-common (test scope aside); see docs/MONOREPO.md</message>
+                  <excludes>
+                    <exclude>*:*:*:*:compile</exclude>
+                    <exclude>*:*:*:*:runtime</exclude>
+                    <exclude>*:*:*:*:provided</exclude>
+                    <exclude>*:*:*:*:system</exclude>
+                  </excludes>
+                  <includes>
+                    <include>org.hl7.fhir:fhir-ig-common</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest><mainClass>${shim.mainClass}</mainClass></manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>shim-jar</id>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <outputFile>${project.build.directory}/shim.jar</outputFile>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/maven/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${shim.mainClass}</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
