@@ -1236,7 +1236,7 @@ public class StructureDefinitionExporter implements Fishable {
         exportStructDef((FshStructure) fshDefinition);
         result = fisher.fishForFHIR(item, types);
       } else if (fshDefinition instanceof Instance instance) {
-        // (unreachable in practice: the tank is not asked for Instances above; kept for parity)
+        // the tank returns definitional Instances (e.g. InstanceOf: StructureDefinition) for these types
         InstanceExporter instanceExporter = new InstanceExporter(tank, pkg, fisher);
         instanceExporter.exportInstance(instance);
         result = fisher.fishForFHIR(item, types);
