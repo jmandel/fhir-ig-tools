@@ -105,7 +105,13 @@ parser for FSH.g4/MiniFSH.g4. The ANTLR Java target generated from SUSHI's unmod
 and syntax-error messages + recovery (ANTLR's "mismatched input"/"extraneous input … expecting {…}" text and its
 single-token insertion/deletion recovery are the hard part) on corpus FSH, SUSHI fixtures and mutated FSH. Phase 1
 checked the oracle: 47 files / 545 entities (genomics + SUSHI fixtures) parse; Java ANTLR runtime 4.13.2 vs SUSHI's JS
-runtime 4.13.2 (generated with tool 4.13.0). Note: the JS runtime indexes by UTF-16 code unit, Java CharStreams by
+runtime 4.13.2 (generated with tool 4.13.0). **Deliberate parity with ANTLR's JavaScript runtime** (not differences from TS SUSHI, which runs on it): the hand
+parser reproduces five behaviours where ANTLR's JS runtime 4.13 differs from its Java runtime: (1) the `~(...)`
+follow-set bug in expected-token sets; (2) plain "mismatched input" (not "extraneous"/"missing") on some recoveries;
+(3) `<missing null>` / `<missing undefined>` token names in missing-token messages; (4) lexer error text not escaped
+("token recognition error at: '\n'" with a raw newline); (5) the interleaving of lexer and parser errors in the
+message stream. The test-scope ANTLR **Java** oracle is adjusted for these in the differential (WP-1, `importer.parser`
+package docs). Note: the JS runtime indexes by UTF-16 code unit, Java CharStreams by
 code point — columns after astral characters differ; the hand parser must use UTF-16 columns (JS behaviour).
 
 **D7 Randomness and network.** The summary box's pun (`puns.ts`) is random: port the list and selection, and
