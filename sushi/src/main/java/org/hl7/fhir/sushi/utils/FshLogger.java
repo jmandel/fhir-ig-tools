@@ -23,7 +23,7 @@ import org.hl7.fhir.sushi.fshtypes.TextLocation;
  *   <li>append location lines: "\n  File: f", "\n  Line: a[ - b]", "\n  Applied in File: f",
  *       "\n  Applied on Line: a[ - b]";</li>
  *   <li>print {@code "<level> <message>"} where the level is padded to 5 ("info ", "warn ", "error", "debug"), to
- *       stdout, if the level is enabled (levels: error 0, warn 1, info 2, debug 4; "emerg" silences all), with chalk
+ *       stdout, if the level is enabled (npm levels: error 0, warn 1, info 2, http 3, verbose 4, debug 5, silly 6; "emerg" silences all), with chalk
  *       colors only when stdout is a TTY / FORCE_COLOR (differential runs compare uncolored output).</li>
  * </ol>
  *
@@ -32,7 +32,7 @@ import org.hl7.fhir.sushi.fshtypes.TextLocation;
  */
 public final class FshLogger {
   public enum Level {
-    error(0), warn(1), info(2), debug(4);
+    error(0), warn(1), info(2), debug(5);
 
     final int severity;
 
@@ -162,14 +162,23 @@ public final class FshLogger {
     if (loc.endLine != loc.startLine) sb.append(" - ").append(loc.endLine);
   }
 
+  /**
+   * winston's default (npm) levels: error 0, warn 1, info 2, http 3, verbose 4, debug 5, silly 6. A message prints
+   * when its level is at or below the logger level; "emerg"/"silent"/unknown print nothing (SUSHI's secret logger
+   * uses "emerg").
+   */
   private boolean enabled(Level lvl) {
-    return switch (level) {
-      case "error" -> lvl.severity <= 0;
-      case "warn" -> lvl.severity <= 1;
-      case "info" -> lvl.severity <= 2;
-      case "debug", "silly" -> true;
-      default -> false; // "emerg" etc.: silent
+    int max = switch (level) {
+      case "error" -> 0;
+      case "warn" -> 1;
+      case "info" -> 2;
+      case "http" -> 3;
+      case "verbose" -> 4;
+      case "debug" -> 5;
+      case "silly" -> 6;
+      default -> -1;
     };
+    return lvl.severity <= max;
   }
 
   // ------------------------------------------------------------------------------------------------ config

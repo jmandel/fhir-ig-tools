@@ -63,4 +63,18 @@ class FshLoggerContractTest {
     assertEquals(1, log.stats.numError);
     assertEquals(0, log.stats.numWarn);
   }
+
+  @Test void winstonNpmLevelsHttpAndVerboseShowInfoButNotDebug() {
+    for (String level : java.util.List.of("http", "verbose")) {
+      printed.clear();
+      log.setLevel(level);
+      log.info("i");
+      log.debug("d");
+      assertEquals(List.of("info  i"), printed, level);
+    }
+    printed.clear();
+    log.setLevel("silly");
+    log.debug("d");
+    assertEquals(List.of("debug d"), printed);
+  }
 }
