@@ -245,14 +245,14 @@ public class Package implements Fishable {
                 && Boolean.TRUE.equals(ext.get("valueBoolean"))));
         // if the export is still in progress, there may be unprocessed rules that make this a valid reference
         // target; return undefined to force the metadata to come from the tank
-        if (!metadata.canBeTarget && Boolean.TRUE.equals(sd.getInProgress())) {
+        if (!metadata.canBeTarget && Boolean.TRUE.equals(sd.inProgress)) {
           return null;
         }
         metadata.canBind = hasExtension(sd.getExtension(), ext ->
             org.hl7.fhir.sushi.fhirtypes.Common.TYPE_CHARACTERISTICS_EXTENSION.equals(ext.get("url"))
                 && "can-bind".equals(ext.get("valueCode")));
         // (TS repeats the canBeTarget check here; kept for parity, it is a no-op)
-        if (!metadata.canBeTarget && Boolean.TRUE.equals(sd.getInProgress())) {
+        if (!metadata.canBeTarget && Boolean.TRUE.equals(sd.inProgress)) {
           return null;
         }
       }

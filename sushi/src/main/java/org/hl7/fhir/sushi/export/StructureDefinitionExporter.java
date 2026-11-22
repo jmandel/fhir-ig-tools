@@ -1282,13 +1282,13 @@ public class StructureDefinitionExporter implements Fishable {
 
     StructureDefinition structDef = getStructureDefinition(fshDefinition);
 
-    if (Boolean.TRUE.equals(structDef.getInProgress())) {
+    if (Boolean.TRUE.equals(structDef.inProgress)) {
       logger.warn("The definition of " + fshDefinition.name + " may be incomplete because there is a circular "
           + "dependency with its parent " + fshDefinition.parent + " causing the parent to be used before the "
           + "parent has been fully processed.", fshDefinition.sourceInfo);
     }
 
-    structDef.setInProgress(true);
+    structDef.inProgress = true;
 
     // At this point, 'structDef' contains the parent's metadata and elements; therefore, transform the current
     // 'structDef' from the parent to the new StructureDefinition to be exported.
@@ -1324,7 +1324,7 @@ public class StructureDefinitionExporter implements Fishable {
     // looping. And, the _sliceName and _primitive properties added by SUSHI should be skipped.
     Common.cleanResource(structDef, prop -> List.of("structDef", "treeParent", "treeChildren", "_sliceName",
         "_primitive").contains(prop));
-    structDef.setInProgress(false);
+    structDef.inProgress = false;
 
     for (ValidationError err : structDef.validate()) {
       logger.log(FshLogger.Level.valueOf(err.severity), err.getMessage(), fshDefinition.sourceInfo);
