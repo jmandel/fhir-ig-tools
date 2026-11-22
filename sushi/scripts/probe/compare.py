@@ -32,7 +32,17 @@ def main():
         jv_loads = [(e['ev'], e['name'], e['version'], e.get('status')) for e in jv if e['ev'] in ('load', 'vload')]
         ts_q = {qkey(e): e for e in ts if e['ev'] == 'q'}
         jv_q = {qkey(e): e for e in jv if e['ev'] == 'q'}
-        jv_loaded = [l['line'] for l in jv if l['ev'] == 'log' and re.match(r'(info|warn|error) (Loaded|Resolved|Failed|Falling)', l['line'])]
+        pat = r'(info|warn|error) +(Loaded|Resolved|Failed|Falling|Found|Downloaded|Cached|Attempting to download|.*already loaded)'
+        jv_loaded = [re.sub(r' +', ' ', l['line']) for l in jv if l['ev'] == 'log' and re.match(pat, l['line'])]
+        ts_loaded = []
+        try:
+            with open(f'{pdir}/../../sushi-spike/runs/{ig}-probe/sushi.log', encoding='utf-8') as f:
+                for line in f:
+                    line = re.sub(r'^ *[0-9.]+ ', '', line.rstrip('\n'))
+                    if re.match(pat, line):
+                        ts_loaded.append(re.sub(r' +', ' ', line))
+        except OSError:
+            ts_loaded = None
         same, diff, weighted_same, weighted_diff = 0, [], 0, 0
         for k, e in ts_q.items():
             j = jv_q.get(k)
@@ -49,7 +59,8 @@ def main():
             'calls': weighted_same + weighted_diff, 'calls_identical': weighted_same,
             'diffs': [{'fn': e['fn'], 'key': e['key'], 'opt': e.get('opt'), 'n': e.get('n'), 'ts': e['res'],
                        'java': j['res'] if j else 'MISSING'} for e, j in diff],
-            'java_load_log': jv_loaded,
+            'java_load_log': jv_loaded, 'ts_load_log': ts_loaded,
+            'load_log_identical': ts_loaded == jv_loaded,
         }
         summary[ig] = s
         if not as_json:
@@ -60,6 +71,11 @@ def main():
                     if a is None and b is None:
                         break
                     print(f'    TS {a}  |  Java {b}' + ('' if a == b else '   <==='))
+            print(f'  package-loading log lines identical: {s["load_log_identical"]}')
+            if not s['load_log_identical'] and ts_loaded is not None:
+                import difflib
+                for d in difflib.unified_diff(ts_loaded, jv_loaded, 'TS', 'Java', lineterm='', n=0):
+                    print('    ' + d[:300])
             print(f'  lookups (unique): {s["lookups"]}, identical {same}, different {len(diff)};'
                   f' calls: {s["calls"]}, identical {weighted_same}')
             for d in s['diffs'][:15]:
