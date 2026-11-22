@@ -138,7 +138,12 @@ public final class AntlrOracle {
       if (expectedTokenType == org.antlr.v4.runtime.Token.EOF) {
         tokenText = "<missing EOF>";
       } else {
-        tokenText = "<missing " + recognizer.getVocabulary().getLiteralName(expectedTokenType) + ">";
+        // JS: literalNames[type] -- null inside the array, undefined past its end
+        String[] lits = recognizer instanceof org.hl7.fhir.sushi.importer.antlr.MiniFSHParser
+            ? MiniFSHParser.literalNames : FSHParser.literalNames;
+        String name = expectedTokenType >= 0 && expectedTokenType < lits.length ? String.valueOf(lits[expectedTokenType])
+            : "undefined";
+        tokenText = "<missing " + name + ">";
       }
       org.antlr.v4.runtime.Token current = currentSymbol;
       org.antlr.v4.runtime.Token lookback = recognizer.getInputStream().LT(-1);

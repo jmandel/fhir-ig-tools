@@ -34,6 +34,7 @@ public final class Parsers {
   }
 
   public static ParserBackend byName(String name) {
+    if ("hand".equals(name)) return new HandParserBackend();
     if ("antlr".equals(name)) {
       try {
         return (ParserBackend) Class.forName(ANTLR_BACKEND).getDeclaredConstructor().newInstance();
