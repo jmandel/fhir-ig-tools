@@ -24,7 +24,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should not log any errors for valid FSH")
+  @DisplayName("FSHErrorListener should not log any errors for valid FSH")
   void test00() {
     String input = leftAlign("\n    Profile: MyPatient\n    Parent: Patient\n    * active = true\n    ");
     importSingleText(input, "MyPatient.fsh");
@@ -32,7 +32,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should report mismatched input errors from antlr")
+  @DisplayName("FSHErrorListener should report mismatched input errors from antlr")
   void test01() {
     String input = leftAlign("\n    Profile: MismatchedPizza\n    Pizza: Large\n    ");
     importSingleText(input, "Pizza.fsh");
@@ -40,7 +40,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should report extraneous input errors from antlr")
+  @DisplayName("FSHErrorListener should report extraneous input errors from antlr")
   void test02() {
     String input = leftAlign("\n    Profile: Something Spaced\n    Parent: Spacious\n    ");
     importSingleText(input, "Space.fsh");
@@ -48,7 +48,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space before = in an Alias definition")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space before = in an Alias definition")
   void test03() {
     String input = leftAlign("\n    Alias: $OrgType= http://terminology.hl7.org/CodeSystem/organization-type\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -59,7 +59,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space after = in an Alias definition")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space after = in an Alias definition")
   void test04() {
     String input = leftAlign("\n    Alias: $OrgType =http://terminology.hl7.org/CodeSystem/organization-type\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -67,7 +67,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space around = in an Alias definition")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space around = in an Alias definition")
   void test05() {
     String input = leftAlign("\n    Alias: $OrgType=http://terminology.hl7.org/CodeSystem/organization-type\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -78,7 +78,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space before = in an assignment rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space before = in an assignment rule")
   void test06() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component= FOO#bar\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -90,7 +90,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space after = in an assignment rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space after = in an assignment rule")
   void test07() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component =FOO#bar\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -102,7 +102,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space around = in an assignment rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space around = in an assignment rule")
   void test08() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component=FOO#bar\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -114,7 +114,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space before = in a caret rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space before = in a caret rule")
   void test09() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component ^short= \"Component1\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -126,7 +126,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space after = in a caret rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space after = in a caret rule")
   void test10() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component ^short =\"Component1\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -138,7 +138,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space around = in a caret rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space around = in a caret rule")
   void test11() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    * component ^short=\"Component1\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -150,7 +150,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space after -> in a mapping rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space after -> in a mapping rule")
   void test12() {
     String input = leftAlign("\n    Mapping:  USCorePatientToArgonaut\n    Source:   USCorePatient\n    Target:   \"http://unknown.org/Argonaut-DQ-DSTU2\"\n    Title:    \"Argonaut DSTU2\"\n    Id:       argonaut-dq-dstu2\n    * identifier ->\"Patient.identifier\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -162,7 +162,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space before -> in a mapping rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space before -> in a mapping rule")
   void test13() {
     String input = leftAlign("\n    Mapping:  USCorePatientToArgonaut\n    Source:   USCorePatient\n    Target:   \"http://unknown.org/Argonaut-DQ-DSTU2\"\n    Title:    \"Argonaut DSTU2\"\n    Id:       argonaut-dq-dstu2\n    * identifier-> \"Patient.identifier\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -174,7 +174,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space around -> in a mapping rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space around -> in a mapping rule")
   void test14() {
     String input = leftAlign("\n    Mapping:  USCorePatientToArgonaut\n    Source:   USCorePatient\n    Target:   \"http://unknown.org/Argonaut-DQ-DSTU2\"\n    Title:    \"Argonaut DSTU2\"\n    Id:       argonaut-dq-dstu2\n    * identifier->\"Patient.identifier\"\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -186,7 +186,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to no space after * in a rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to no space after * in a rule")
   void test15() {
     String input = leftAlign("\n    Profile: SampleObservation\n    Parent: Observation\n    *component = FOO#bar\n    ");
     importSingleText(input, "Invalid.fsh");
@@ -194,7 +194,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to using | to list references")
+  @DisplayName("FSHErrorListener should make sense of errors due to using | to list references")
   void test16() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject only Reference(Patient | Practitioner)\n    ");
     importSingleText(input, "Pipes.fsh");
@@ -202,7 +202,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to using | to list references with spaces inside the parentheses")
+  @DisplayName("FSHErrorListener should make sense of errors due to using | to list references with spaces inside the parentheses")
   void test17() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject only Reference( Patient | Practitioner )\n    ");
     importSingleText(input, "Pipes.fsh");
@@ -210,7 +210,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to using | to list references with a space before the parentheses")
+  @DisplayName("FSHErrorListener should make sense of errors due to using | to list references with a space before the parentheses")
   void test18() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject only Reference ( Patient | Practitioner )\n    ");
     importSingleText(input, "Pipes.fsh");
@@ -218,7 +218,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to a flag on an only rule with a reference")
+  @DisplayName("FSHErrorListener should make sense of errors due to a flag on an only rule with a reference")
   void test19() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject only Reference(Patient) MS\n    ");
     importSingleText(input, "OnlyFlag.fsh");
@@ -226,7 +226,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to a flag on an only rule with a data type")
+  @DisplayName("FSHErrorListener should make sense of errors due to a flag on an only rule with a data type")
   void test20() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * value[x] only string MS\n    ");
     importSingleText(input, "OnlyFlag.fsh");
@@ -234,7 +234,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should make sense of errors due to a modifier flag on an only rule")
+  @DisplayName("FSHErrorListener should make sense of errors due to a modifier flag on an only rule")
   void test21() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject only Reference(Patient) ?!\n    ");
     importSingleText(input, "OnlyFlag.fsh");
@@ -242,7 +242,7 @@ class FSHErrorListenerTest {
   }
 
   @Test
-  @DisplayName("should not report a flag error when flags are used on rules that support them")
+  @DisplayName("FSHErrorListener should not report a flag error when flags are used on rules that support them")
   void test22() {
     String input = leftAlign("\n    Profile: MyObservation\n    Parent: Observation\n    * subject MS\n    * category 1..1 SU\n    * extension contains myExtension 0..1 MS\n    ");
     importSingleText(input, "ValidFlags.fsh");

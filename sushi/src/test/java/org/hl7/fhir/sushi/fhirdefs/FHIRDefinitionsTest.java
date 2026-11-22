@@ -208,7 +208,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#fishForFHIR()")
   class FishForFHIR {
     @Test
-    @DisplayName("should find base FHIR resources")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR resources")
     void baseResources() {
       Map<String, Object> conditionByID = fish(defs, "Condition", Resource);
       assertEquals("http://hl7.org/fhir/StructureDefinition/Condition", conditionByID.get("url"));
@@ -217,7 +217,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR logical models")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR logical models")
     void logicals() {
       Map<String, Object> m = fish(defs, "eLTSSServiceModel", Logical);
       assertEquals("http://hl7.org/fhir/us/eltss/StructureDefinition/eLTSSServiceModel", m.get("url"));
@@ -226,7 +226,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR primitive types")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR primitive types")
     void primitives() {
       Map<String, Object> b = fish(defs, "boolean", Type);
       assertEquals("http://hl7.org/fhir/StructureDefinition/boolean", b.get("url"));
@@ -235,7 +235,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR complex types")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR complex types")
     void complexTypes() {
       Map<String, Object> a = fish(defs, "Address", Type);
       assertEquals("http://hl7.org/fhir/StructureDefinition/Address", a.get("url"));
@@ -244,7 +244,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR profiles")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR profiles")
     void profiles() {
       Map<String, Object> v = fish(defs, "vitalsigns", Profile);
       assertEquals("http://hl7.org/fhir/StructureDefinition/vitalsigns", v.get("url"));
@@ -254,7 +254,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR profiles of logical models")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR profiles of logical models")
     void profilesOfLogicals() {
       Map<String, Object> s = fish(defs, "service-profile", Profile);
       assertEquals("http://hl7.org/fhir/some/example/StructureDefinition/ServiceProfile", s.get("url"));
@@ -264,7 +264,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR extensions")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR extensions")
     void extensions() {
       Map<String, Object> e = fish(defs, "patient-mothersMaidenName", Extension);
       assertEquals("http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName", e.get("url"));
@@ -274,25 +274,25 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
     void xverNeeded() {
       xverNeededPackage(u -> fish(defs, u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should log message that cross-version extension was not found in xver package when correct xver package is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should log message that cross-version extension was not found in xver package when correct xver package is loaded")
     void xverNotFound() {
       xverNotFoundInPackage(u -> fish(defs, u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
     void xverChoiceUrl() {
       xverChoice(u -> fish(defs, u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should find base FHIR value sets")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR value sets")
     void valueSets() {
       Map<String, Object> vs = fish(defs, "allergyintolerance-clinical", ValueSet);
       assertEquals("http://hl7.org/fhir/ValueSet/allergyintolerance-clinical", vs.get("url"));
@@ -302,7 +302,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR code sytems")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find base FHIR code sytems")
     void codeSystems() {
       Map<String, Object> cs = fish(defs, "allergyintolerance-clinical", CodeSystem);
       assertEquals("http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical", cs.get("url"));
@@ -312,7 +312,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find other types when the fished type is Type.Instance")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find other types when the fished type is Type.Instance")
     void instance() {
       Map<String, Object> sp = fish(defs, "individual-gender", Instance);
       assertEquals("http://hl7.org/fhir/SearchParameter/individual-gender", sp.get("url"));
@@ -322,7 +322,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR resources when R4 is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find the time-traveling R5 FHIR resources when R4 is loaded")
     void timeTravelR4Resources() {
       for (String r : List.of("ActorDefinition", "Requirements", "SubscriptionTopic", "TestPlan")) {
         Map<String, Object> res = fish(defs, r, Resource);
@@ -336,7 +336,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR types when R4 is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find the time-traveling R5 FHIR types when R4 is loaded")
     void timeTravelR4Types() {
       for (String r : List.of("Base", "CodeableReference", "DataType")) {
         Map<String, Object> t = fish(defs, r, Type);
@@ -350,7 +350,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR resources when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find the time-traveling R5 FHIR resources when R4B is loaded")
     void timeTravelR4BResources() {
       for (String r : List.of("ActorDefinition", "Requirements", "TestPlan")) {
         Map<String, Object> res = fish(r4bDefs, r, Resource);
@@ -364,7 +364,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should overwrite time-traveling R5 FHIR resources that are in R4B when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should overwrite time-traveling R5 FHIR resources that are in R4B when R4B is loaded")
     void overwriteR4BResources() {
       for (String r : List.of("SubscriptionTopic")) {
         Map<String, Object> res = fish(r4bDefs, r, Resource);
@@ -378,7 +378,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR types when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find the time-traveling R5 FHIR types when R4B is loaded")
     void timeTravelR4BTypes() {
       for (String r : List.of("Base", "DataType")) {
         Map<String, Object> t = fish(r4bDefs, r, Type);
@@ -392,7 +392,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should overwrite time-traveling R5 FHIR types that are in R4B when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should overwrite time-traveling R5 FHIR types that are in R4B when R4B is loaded")
     void overwriteR4BTypes() {
       for (String r : List.of("CodeableReference")) {
         Map<String, Object> t = fish(r4bDefs, r, Type);
@@ -406,7 +406,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should overwrite time-traveling R5 FHIR Resources when R5 is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should overwrite time-traveling R5 FHIR Resources when R5 is loaded")
     void overwriteR5Resources() {
       for (String r : List.of("ActorDefinition", "Requirements", "SubscriptionTopic", "TestPlan")) {
         Map<String, Object> res = fish(r5Defs, r, Resource);
@@ -420,7 +420,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should overwrite time-traveling R5 FHIR Types when R5 is loaded")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should overwrite time-traveling R5 FHIR Types when R5 is loaded")
     void overwriteR5Types() {
       // TS: ['Base', 'CodeableReference', , 'DataType'].forEach -- forEach skips the hole
       for (String r : List.of("Base", "CodeableReference", "DataType")) {
@@ -435,7 +435,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find definitions by the enforced type order")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should find definitions by the enforced type order")
     void typeOrder() {
       // NOTE: There are two things with id allergyintolerance-clinical (the ValueSet and CodeSystem)
       assertEquals("ValueSet", fish(defs, "allergyintolerance-clinical", ValueSet, CodeSystem).get("resourceType"));
@@ -443,7 +443,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should not find the definition when the type is not requested")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should not find the definition when the type is not requested")
     void notRequested() {
       assertNull(fish(defs, "Condition", Logical, Type, Profile, Extension, ValueSet, CodeSystem));
       assertNull(fish(defs, "boolean", Resource, Logical, Profile, Extension, ValueSet, CodeSystem));
@@ -457,7 +457,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should globally find any definition")
+    @DisplayName("FHIRDefinitions #fishForFHIR() should globally find any definition")
     void global() {
       Map<String, Object> c = fish(defs, "Condition");
       assertEquals("resource", c.get("kind"));
@@ -585,7 +585,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR resources")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR resources")
     void baseResources() {
       Map<String, Object> c = md(defs, "Condition", Resource);
       assertEquals(conditionMeta(), c);
@@ -593,7 +593,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find profiles with declared imposeProfiles")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find profiles with declared imposeProfiles")
     void imposeProfiles() {
       Map<String, Object> n = md(defs, "named-and-gendered-patient", Profile);
       assertEquals(exp("abstract", false, "id", "named-and-gendered-patient", "name", "NamedAndGenderedPatient",
@@ -608,7 +608,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR logical models")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR logical models")
     void logicals() {
       Map<String, Object> l = md(defs, "eLTSSServiceModel", Logical);
       assertEquals(eltssMeta(), l);
@@ -616,7 +616,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR primitive types")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR primitive types")
     void primitives() {
       Map<String, Object> b = md(defs, "boolean", Type);
       assertEquals(booleanMeta(), b);
@@ -624,7 +624,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR complex types")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR complex types")
     void complexTypes() {
       Map<String, Object> a = md(defs, "Address", Type);
       assertEquals(addressMeta(), a);
@@ -632,7 +632,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR profiles")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR profiles")
     void profiles() {
       Map<String, Object> v = md(defs, "vitalsigns", Profile);
       assertEquals(vitalsMeta(), v);
@@ -641,7 +641,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR extensions")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR extensions")
     void extensions() {
       Map<String, Object> e = md(defs, "patient-mothersMaidenName", Extension);
       assertEquals(maidenMeta(), e);
@@ -650,25 +650,25 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
     void xverNeeded() {
       xverNeededPackage(u -> defs.fishForMetadata(u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should log message that cross-version extension was not found in xver package when correct xver package is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should log message that cross-version extension was not found in xver package when correct xver package is loaded")
     void xverNotFound() {
       xverNotFoundInPackage(u -> defs.fishForMetadata(u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
     void xverChoiceUrl() {
       xverChoice(u -> defs.fishForMetadata(u, Extension) != null);
     }
 
     @Test
-    @DisplayName("should find base FHIR value sets")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR value sets")
     void valueSets() {
       Map<String, Object> vs = md(defs, "allergyintolerance-clinical", ValueSet);
       assertEquals(allergyVsMeta(), vs);
@@ -677,7 +677,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find base FHIR code sytems")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find base FHIR code sytems")
     void codeSystems() {
       Map<String, Object> cs = md(defs, "allergyintolerance-clinical", CodeSystem);
       assertEquals(allergyCsMeta(), cs);
@@ -686,7 +686,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find other types when the fished type is Type.Instance")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find other types when the fished type is Type.Instance")
     void instance() {
       Map<String, Object> sp = md(defs, "individual-gender", Instance);
       assertEquals(genderMeta(), sp);
@@ -695,7 +695,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR resources when R4 is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR resources when R4 is loaded")
     void timeTravelR4Resources() {
       for (String r : List.of("ActorDefinition", "Requirements", "SubscriptionTopic", "TestPlan")) {
         Map<String, Object> m = md(defs, r, Resource);
@@ -708,7 +708,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR types when R4 is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR types when R4 is loaded")
     void timeTravelR4Types() {
       for (String r : List.of("Base", "CodeableReference", "DataType")) {
         Map<String, Object> m = md(defs, r, Type);
@@ -722,7 +722,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR resources when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR resources when R4B is loaded")
     void timeTravelR4BResources() {
       for (String r : List.of("ActorDefinition", "Requirements", "SubscriptionTopic", "TestPlan")) {
         Map<String, Object> m = md(r4bDefs, r, Resource);
@@ -739,7 +739,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR types when R4B is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR types when R4B is loaded")
     void timeTravelR4BTypes() {
       for (String r : List.of("Base", "CodeableReference", "DataType")) {
         Map<String, Object> m = md(r4bDefs, r, Type);
@@ -757,7 +757,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR resources when R5 is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR resources when R5 is loaded")
     void timeTravelR5Resources() {
       for (String r : List.of("ActorDefinition", "Requirements", "SubscriptionTopic", "TestPlan")) {
         Map<String, Object> m = md(r5Defs, r, Resource);
@@ -771,7 +771,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find the time-traveling R5 FHIR types when R5 is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find the time-traveling R5 FHIR types when R5 is loaded")
     void timeTravelR5Types() {
       for (String r : List.of("Base", "CodeableReference", "DataType")) {
         Map<String, Object> m = md(r5Defs, r, Type);
@@ -787,7 +787,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find definitions by the enforced type order")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find definitions by the enforced type order")
     void typeOrder() {
       assertEquals("http://hl7.org/fhir/ValueSet/allergyintolerance-clinical",
           defs.fishForMetadata("allergyintolerance-clinical", ValueSet, CodeSystem).url);
@@ -796,7 +796,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should not find the definition when the type is not requested")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should not find the definition when the type is not requested")
     void notRequested() {
       assertNull(defs.fishForMetadata("Condition", Logical, Type, Profile, Extension, ValueSet, CodeSystem));
       assertNull(defs.fishForMetadata("boolean", Resource, Logical, Profile, Extension, ValueSet, CodeSystem));
@@ -814,7 +814,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should globally find any definition")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should globally find any definition")
     void global() {
       assertEquals(conditionMeta(), md(defs, "Condition"));
       assertEquals(conditionMeta(), md(defs, "http://hl7.org/fhir/StructureDefinition/Condition"));
@@ -847,7 +847,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should find logical models with the can-bind type characteristic extension")
+    @DisplayName("FHIRDefinitions #fishForMetadata() should find logical models with the can-bind type characteristic extension")
     void canBind() {
       Map<String, Object> m = md(defs, "BindableLM", Logical);
       assertEquals(exp("abstract", false, "id", "BindableLM", "name", "BindableLM",
@@ -866,7 +866,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#fishForMetadatas")
   class FishForMetadatas {
     @Test
-    @DisplayName("should return all matches when there are multiple matches")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should return all matches when there are multiple matches")
     void multiple() {
       List<Map<String, Object>> all = metas(defs.fishForMetadatas("allergyintolerance-clinical", ValueSet, CodeSystem));
       assertEquals(List.of(allergyVsMeta(), allergyCsMeta()), all);
@@ -878,7 +878,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return one match when there is a single match")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should return one match when there is a single match")
     void single() {
       List<Map<String, Object>> c = metas(defs.fishForMetadatas("Condition", Resource));
       assertEquals(1, c.size());
@@ -887,25 +887,25 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return empty array when there are no matches")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should return empty array when there are no matches")
     void none() {
       assertTrue(defs.fishForMetadatas("NonExistentThing").isEmpty());
     }
 
     @Test
-    @DisplayName("should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should log message that xver extensions package is needed for cross-version extension URLs without xver package loaded")
     void xverNeeded() {
       xverNeededPackage(u -> !defs.fishForMetadatas(u, Extension).isEmpty());
     }
 
     @Test
-    @DisplayName("should log message that cross-version extension was not found in xver package when correct xver package is loaded")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should log message that cross-version extension was not found in xver package when correct xver package is loaded")
     void xverNotFound() {
       xverNotFoundInPackage(u -> !defs.fishForMetadatas(u, Extension).isEmpty());
     }
 
     @Test
-    @DisplayName("should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
+    @DisplayName("FHIRDefinitions #fishForMetadatas should log message that incorrect cross-version choice extension URL should be fixed and use the correct URL for resolution")
     void xverChoiceUrl() {
       xverChoice(u -> defs.fishForMetadatas(u, Extension).size() == 1);
     }
@@ -917,7 +917,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#allPredefinedResources")
   class AllPredefinedResources {
     @Test
-    @DisplayName("should return all predefined resources")
+    @DisplayName("FHIRDefinitions #allPredefinedResources should return all predefined resources")
     @SuppressWarnings("unchecked")
     void all() {
       List<Object> results = defs.allPredefinedResources();
@@ -936,7 +936,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#fishForPredefinedResource")
   class FishForPredefinedResource {
     @Test
-    @DisplayName("should find a matching predefined resource")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResource should find a matching predefined resource")
     @SuppressWarnings("unchecked")
     void found() {
       Map<String, Object> result = (Map<String, Object>) defs.fishForPredefinedResource("MyPredefinedProfile");
@@ -950,7 +950,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return undefined when there is no match")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResource should return undefined when there is no match")
     void none() {
       assertNull(defs.fishForPredefinedResource("NonExistentItem"));
     }
@@ -966,7 +966,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#fishForPredefinedResourceMetadata")
   class FishForPredefinedResourceMetadata {
     @Test
-    @DisplayName("should find metadata for a matching predefined resource")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResourceMetadata should find metadata for a matching predefined resource")
     void found() {
       Map<String, Object> result = meta(defs.fishForPredefinedResourceMetadata("MyPredefinedProfile"));
       assertEquals(predefProfileMeta(), result);
@@ -976,7 +976,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return undefined when there is no match")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResourceMetadata should return undefined when there is no match")
     void none() {
       assertNull(defs.fishForPredefinedResourceMetadata("NonExistentItem"));
     }
@@ -986,7 +986,7 @@ class FHIRDefinitionsTest {
   @DisplayName("#fishForPredefinedResourceMetadatas")
   class FishForPredefinedResourceMetadatas {
     @Test
-    @DisplayName("should return all matches when there are multiple matches")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResourceMetadatas should return all matches when there are multiple matches")
     void multiple() {
       List<Map<String, Object>> results = metas(defs.fishForPredefinedResourceMetadatas("SomeCodes"));
       assertEquals(2, results.size());
@@ -1004,7 +1004,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return one match when there is a single match")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResourceMetadatas should return one match when there is a single match")
     void single() {
       List<Map<String, Object>> results = metas(defs.fishForPredefinedResourceMetadatas("MyPredefinedProfile"));
       assertEquals(1, results.size());
@@ -1015,7 +1015,7 @@ class FHIRDefinitionsTest {
     }
 
     @Test
-    @DisplayName("should return empty array when there is no match")
+    @DisplayName("FHIRDefinitions #fishForPredefinedResourceMetadatas should return empty array when there is no match")
     void none() {
       assertTrue(defs.fishForPredefinedResourceMetadatas("NonExistentItem").isEmpty());
     }
