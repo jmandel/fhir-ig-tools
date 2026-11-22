@@ -6,7 +6,7 @@ import org.hl7.fhir.sushi.utils.Fishable;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.hl7.fhir.sushi.utils.Metadata;
 
-// port of sushi/src/import/FSHTank.ts -- CONTRACT SKELETON, owned by WP-2 (importer).
+// port of sushi/src/import/FSHTank.ts (SUSHI 3.21.1)
 /** All parsed FSH documents. getAll* return entities in document order, then declaration order within a document. */
 public class FSHTank implements Fishable {
   public final List<FSHDocument> docs;
@@ -33,8 +33,18 @@ public class FSHTank implements Fishable {
   public void checkDuplicateNameEntities() { throw todo(); }
   public RuleSet fishForAppliedRuleSet(String item) { throw todo(); }
 
-  /** Returns the FSH entity (not FHIR JSON), as TS does. */
-  @Override public Object fishForFHIR(String item, FishableType... types) { throw todo(); }
+  /**
+   * The first FSH entity matching item (name, id, url; alias-resolved; optional |version), trying types in the given
+   * order (all tank types when empty: Profile, Extension, Logical, Resource, ValueSet, CodeSystem, Instance,
+   * Invariant, RuleSet, Mapping), or null. Returns Profile | Extension | Logical | Resource | FshValueSet |
+   * FshCodeSystem | Instance | Invariant | RuleSet | Mapping.
+   */
+  public FshEntity fish(String item, FishableType... types) { throw todo(); }
+  /** All matching FSH entities, in the order fish would try them. */
+  public List<FshEntity> fishAll(String item, FishableType... types) { throw todo(); }
+
+  /** Always null: the tank cannot return FHIR definitions (TS returns undefined). */
+  @Override public Object fishForFHIR(String item, FishableType... types) { return null; }
   @Override public Metadata fishForMetadata(String item, FishableType... types) { throw todo(); }
   @Override public List<Metadata> fishForMetadatas(String item, FishableType... types) { throw todo(); }
 
