@@ -247,8 +247,8 @@ was accepted. Accepted contract changes are announced in the `main` commit messa
 
 ## 6b. Known differences
 
-`docs/known-differences.md` lists every accepted/open behaviour difference from TS SUSHI 3.21.1 (KD-n entries with
-scope, evidence, decision). `docs/package-resolution-differences.md` (WP-8) lists FPL rules ported because core
+`docs/differences.md` lists every known behaviour difference from TS SUSHI 3.21.1 (one KD-n table row each: WP,
+area, class, difference, decision; details below the table). Each WP adds its entries when it finishes. `docs/package-resolution-differences.md` (WP-8) lists FPL rules ported because core
 resolved differently. Add entries there, never silently.
 
 ## 7. Monorepo move (planned)

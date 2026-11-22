@@ -1,7 +1,21 @@
-# Known differences from TypeScript SUSHI 3.21.1
+# Differences from TypeScript SUSHI 3.21.1
 
 Behaviour where the Java port knowingly differs from TS SUSHI 3.21.1. Each entry: scope, evidence, decision.
-Differences in `fsh-generated/` output on real inputs are never accepted here; these are diagnostics on malformed input.
+Every WP adds its entries when it finishes (WP-1/2/7/10 pending). Output-affecting differences on real inputs are
+bugs, not entries. Classes: **none** = no observable effect; **diag** = messages/diagnostics only; **malformed** =
+only on invalid input; **open** = decision pending.
+
+| id | WP | area | class | difference | decision |
+|---|---|---|---|---|---|
+| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, open | 49 YAML error-wording differences and 8 accept/reject mismatches out of 1,035 mutations (0 on the 266 real configs); details below | open: accept, or map to yaml@1.10 wording later |
+| KD-2 | WP-4 | ElementDefinition.clone() | none | re-fetches the cached StructureDefinition of the element (`_edStructureDefinition`) instead of deep-copying it | accepted (cache is read-only) |
+| KD-3 | WP-4 | JS TypeError crash paths | diag | where TS crashes with a JS TypeError on unexpected input, the port reproduces it only at a few sites, with V8-style messages (`Cannot read properties of undefined (reading 'x')`); elsewhere Java fails differently | accepted; add sites when the differential finds them |
+| KD-4 | WP-6 | metadata de-duplication (MasterFisher) | none | a missing key is treated like a key whose value is undefined; cannot change results | accepted |
+| KD-5 | WP-6 | coloured "non-conformant resource" box | diag | coloured only when `FshLogger.colorEnabled()` (TTY/FORCE_COLOR), as chalk; uncoloured otherwise | matches TS when colour state matches |
+| KD-6 | WP-6 | debug stack traces | diag | `--log-level debug` stack traces are Java's, not V8's | accepted |
+| KD-7 | WP-6 | applyDeferredRules TypeError branch | diag | the TS TypeError branch surfaces as an uncaught `Common.JsTypeError` | accepted (crash in both; message text may differ) |
+| KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md) | n/a |
+
 
 ## KD-1 Malformed sushi-config.yaml: YAML error wording and accept/reject (WP-3)
 
