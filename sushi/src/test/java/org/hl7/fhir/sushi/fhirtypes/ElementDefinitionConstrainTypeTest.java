@@ -316,7 +316,6 @@ class ElementDefinitionConstrainTypeTest {
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a profile to be constrained to a profile that declares it in an imposeProfile extension")
     void t17() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       StructureDefinition bundle = fisher.fishForStructureDefinition("Bundle");
       ElementDefinition entryResource = el(bundle, "Bundle.entry.resource");
       setAt(entryResource, "type[0]", new ElementDefinitionType("Observation").withProfiles("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -336,7 +335,6 @@ class ElementDefinitionConstrainTypeTest {
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a profile to be constrained to a profile that declares it in an imposeProfile extension using FshCanonical")
     void t18() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       StructureDefinition bundle = fisher.fishForStructureDefinition("Bundle");
       ElementDefinition entryResource = el(bundle, "Bundle.entry.resource");
       setAt(entryResource, "type[0]", new ElementDefinitionType("Observation").withProfiles("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -375,7 +373,6 @@ entryResource.constrainType(profileConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a profile to be constrained to multiple profiles that declare it in imposeProfile extensions")
     void t20() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       StructureDefinition bundle = fisher.fishForStructureDefinition("Bundle");
       ElementDefinition entryResource = el(bundle, "Bundle.entry.resource");
       setAt(entryResource, "type[0]", new ElementDefinitionType("Observation").withProfiles("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -399,7 +396,6 @@ entryResource.constrainType(profileConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a profile to be constrained to multiple profiles that declare it in imposeProfile extensions with and without FshCanonical")
     void t21() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       StructureDefinition bundle = fisher.fishForStructureDefinition("Bundle");
       ElementDefinition entryResource = el(bundle, "Bundle.entry.resource");
       setAt(entryResource, "type[0]", new ElementDefinitionType("Observation").withProfiles("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -445,7 +441,6 @@ entryResource.constrainType(profileConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a profile to be constrained to multiple profiles when one formally extends from it and the other declares it in an imposeProfile extension")
     void t23() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       StructureDefinition bundle = fisher.fishForStructureDefinition("Bundle");
       ElementDefinition entryResource = el(bundle, "Bundle.entry.resource");
       setAt(entryResource, "type[0]", new ElementDefinitionType("Observation").withProfiles("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -841,7 +836,6 @@ entryResource.constrainType(profileConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a reference to a profile to be constrained to a reference to a profile that declares it in an imposeProfile extension")
     void t50() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       var profile = new Profile("SomeOtherObsProfile");
       profile.parent = "Observation";
       profile.rules.add(imposeProfileRule("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -880,7 +874,6 @@ hasMember.constrainType(hasMemberConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a reference to a profile to be constrained to multiple references to profiles that declare it in imposeProfile extensions")
     void t52() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       var profile1 = new Profile("AnObsProfile");
       profile1.parent = "Observation";
       profile1.rules.add(imposeProfileRule("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -926,7 +919,6 @@ hasMember.constrainType(hasMemberConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a reference to a profile to be constrained to multiple references to a profile when some formally extend it and some declare it in imposeProfile extensions")
     void t54() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       var profile = new Profile("SomeOtherObsProfile");
       profile.parent = "Observation";
       profile.rules.add(imposeProfileRule("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -1028,7 +1020,6 @@ hasMember.constrainType(hasMemberConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a reference to multiple resource types to be constrained such that only the target reference is constrained and others remain as-is including those who declare imposeProfile extensions")
     void t61() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       var profile = new Profile("SomeOtherObsProfile");
       profile.parent = "Observation";
       profile.rules.add(imposeProfileRule("http://hl7.org/fhir/StructureDefinition/bp"));
@@ -1190,7 +1181,6 @@ hasMember.constrainType(hasMemberConstraint, fisher);
     @Test
     @DisplayName("ElementDefinition #constrainType() should allow a canonical to a profile to be constrained to a canonical to a profile that declares it in an imposeProfile extension")
     void t72() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       var constrainedPlanDefinition = Js.cloneDeep(planDefinition);
       ElementDefinition actionDef = el(constrainedPlanDefinition, "PlanDefinition.action.definition[x]");
       setAt(actionDef, "type", list(new ElementDefinitionType("canonical").withTargetProfiles("http://hl7.org/fhir/StructureDefinition/shareableplandefinition")));
@@ -1468,7 +1458,6 @@ clone.constrainType(hasMemberConstraint, fisher, "VitalBillboards");
     @Test
     @DisplayName("ElementDefinition #constrainType() should throw NonAbstractParentError when constraining a non-abstract parent to a specialization of it")
     void t92() {
-      TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
       ElementDefinition valueX = el(observation, "Observation.value[x]");
       ElementDefinition clone = valueX.clone(false);
       assertThrowsMatching("The type Quantity is not abstract, so it cannot be constrained to the specialization Duration", () -> { var valueConstraint = new OnlyRule("value[x]");
@@ -1773,7 +1762,6 @@ class ElementDefinitionConstrainTypeR5Test {
       @Test
       @DisplayName("ElementDefinition R5 #constrainType() CodeableReference() keyword should allow a CodeableReference to a profile to be constrained to a CodeableReference to a profile that declares it in an imposeProfile extension")
       void t112() {
-        TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
         var constrainedR5CarePlan = Js.cloneDeep(r5CarePlan);
         ElementDefinition performedActivity = el(constrainedR5CarePlan, "CarePlan.activity.performedActivity");
         setAt(performedActivity, "type", list(new ElementDefinitionType("CodeableReference").withTargetProfiles("http://hl7.org/fhir/StructureDefinition/actualgroup")));

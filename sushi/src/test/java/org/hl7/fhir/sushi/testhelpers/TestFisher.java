@@ -17,17 +17,6 @@ public class TestFisher extends MasterFisher {
     super(tank, fhir, pkg);
   }
 
-  /**
-   * TEMPORARY (until WP-2's FSHTank implementation is on main): skips the calling test while FSHTank is still the
-   * day-1 stub, so WP-6's exporter tests can merge before it. Remove with its call sites once FSHTank lands.
-   */
-  public static void assumeTankImplemented() {
-    try {
-      new FSHTank(new java.util.ArrayList<>(), new org.hl7.fhir.sushi.fshtypes.Configuration()).resolveAlias("x");
-    } catch (UnsupportedOperationException e) {
-      org.junit.jupiter.api.Assumptions.assumeTrue(false, "FSHTank not implemented on this branch yet (WP-2)");
-    }
-  }
 
   public TestFisher withTank(FSHTank tank) {
     this.tank = tank;

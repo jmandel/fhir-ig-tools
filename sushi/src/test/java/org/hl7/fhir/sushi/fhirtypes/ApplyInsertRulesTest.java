@@ -47,7 +47,6 @@ class ApplyInsertRulesTest {
 
   @BeforeEach
   void beforeEach() {
-    TestFisher.assumeTankImplemented();
     doc = new FSHDocument("fileName");
     tank = new FSHTank(List.of(doc), MinimalConfig.minimalConfig());
     loggerSpy.reset();

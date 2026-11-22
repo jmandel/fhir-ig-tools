@@ -86,7 +86,6 @@ class FHIRExporterTest {
   @DisplayName("FHIRExporter should output empty results with empty input")
   void emptyInput() {
     Assumptions.assumeTrue(TestFHIRDefinitions.tsFixturesAvailable(), "TS SUSHI checkout not found");
-    TestFisher.assumeTankImplemented();
     FSHTank input = new FSHTank(new ArrayList<>(), minimalConfig());
     Package result = ExportFHIR.exportFHIR(input, getTestFHIRDefinitions());
     // toEqual(new Package({...minimal config...})): empty lists and maps, and an equal config
@@ -121,7 +120,6 @@ class FHIRExporterTest {
 
     @BeforeEach
     void setUp() {
-      TestFisher.assumeTankImplemented();
       loggerSpy.reset();
       doc = new FSHDocument("fileName");
       FSHTank input = new FSHTank(new ArrayList<>(List.of(doc)), minimalConfig());

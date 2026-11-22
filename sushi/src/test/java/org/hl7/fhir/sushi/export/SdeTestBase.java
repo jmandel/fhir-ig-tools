@@ -62,7 +62,6 @@ abstract class SdeTestBase {
 
   @BeforeEach
   void sdeSetUp() {
-    TestFisher.assumeTankImplemented();
     defs = loadDefs();
     loggerSpy.reset();
     doc = new FSHDocument("fileName");

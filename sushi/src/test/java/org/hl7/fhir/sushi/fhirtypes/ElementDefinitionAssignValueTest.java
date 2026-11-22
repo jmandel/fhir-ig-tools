@@ -174,7 +174,6 @@ authoredOn.assignValue(new Date(), true);
       StructureDefinition carePlan;
       @BeforeEach
       void beforeEach11() {
-        TestFisher.assumeTankImplemented(); // TEMPORARY until WP-2 FSHTank lands
         doc = new FSHDocument("Conditions.fsh");
         var input = new FSHTank(list(doc), minimalConfig());
         var r5Defs = r5Defs();

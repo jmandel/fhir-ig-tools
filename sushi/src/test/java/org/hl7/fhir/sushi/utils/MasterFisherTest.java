@@ -46,7 +46,6 @@ class MasterFisherTest {
   @BeforeAll
   void setUpAll() {
     Assumptions.assumeTrue(TestFHIRDefinitions.tsFixturesAvailable(), "TS SUSHI checkout not found");
-    org.hl7.fhir.sushi.testhelpers.TestFisher.assumeTankImplemented();
     FSHDocument doc1 = new FSHDocument("doc.fsh");
     doc1.aliases.put("TankProfile1", "http://hl7.org/fhir/us/minimal/StructureDefinition/prf1");
     doc1.aliases.put("PkgProfile3", "http://hl7.org/fhir/us/minimal/StructureDefinition/profile3");
