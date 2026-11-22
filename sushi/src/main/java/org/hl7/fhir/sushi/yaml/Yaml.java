@@ -137,7 +137,7 @@ public final class Yaml {
     Object compose(String src, byte[] input) {
       this.src = src;
       Parser parser = new Parser(input, Reader.ANY_ENCODING);
-      parser.tabsInBlankLines = true;
+      parser.yaml110 = true;
       try {
         while (true) {
           Event e = parser.parse();
@@ -478,6 +478,12 @@ public final class Yaml {
     char ch = at >= 0 && at < src.length() ? src.charAt(at) : '\0';
     String line = lineAt(src, at);
     int col = at - lineStart(src, at);
+    // node properties libyaml rejects as a parse error, yaml 1.10 as a semantic one
+    String props = line.replaceFirst("(^|[ \\t])#.*$", "");
+    if (props.matches(".*(^|[\\s:\\-\\[{,])&[^\\s,\\[\\]{}]+[ \\t]+&.*")) return "A node can have at most one anchor";
+    if (props.matches(".*(^|[\\s:\\-\\[{,])[&!][^\\s,\\[\\]{}]*[ \\t]+\\*.*")) {
+      return "An alias node must not specify any properties";
+    }
     switch (p) {
       case "found character that cannot start any token" -> {
         if (ch == '\t') return tabMessage(src, at);
@@ -487,8 +493,15 @@ public final class Yaml {
       case "found a tab character that violates indentation" -> {
         return tabMessage(src, at);
       }
-      case "did not find expected key", "did not find expected '-' indicator",
-          "did not find expected comment or line break" -> {
+      case "did not find expected key" -> {
+        // a "- " item at the column of the mapping's keys
+        int lineCol = col - (line.length() - line.stripLeading().length());
+        if (line.stripLeading().startsWith("- ") && lineCol == 0 && previousSiblingIsKey(src, at, col)) {
+          return "A collection cannot be both a mapping and a sequence";
+        }
+        return "All collection items must start at the same column";
+      }
+      case "did not find expected '-' indicator", "did not find expected comment or line break" -> {
         return "All collection items must start at the same column";
       }
       case "mapping values are not allowed in this context" -> {
@@ -557,6 +570,25 @@ public final class Yaml {
       int start = lineStart(src, end);
       String l = src.substring(start, end).replaceFirst("(^|[ \\t])#.*$", "").strip();
       if (!l.isEmpty()) return l.endsWith(":");
+      i = start;
+    }
+    return false;
+  }
+
+  /** Whether the closest earlier non-blank, non-comment line indented exactly {@code col} is a "key:" entry. */
+  private static boolean previousSiblingIsKey(String src, int at, int col) {
+    int i = lineStart(src, at);
+    while (i > 0) {
+      int end = i - 1;
+      if (end > 0 && src.charAt(end) == '\n' && src.charAt(end - 1) == '\r') end--;
+      int start = lineStart(src, end);
+      String l = src.substring(start, end);
+      String content = l.strip();
+      int indent = l.length() - l.stripLeading().length();
+      if (!content.isEmpty() && !content.startsWith("#")) {
+        if (indent == col) return !content.startsWith("- ") && content.replaceFirst("(^|[ \\t])#.*$", "").contains(":");
+        if (indent < col) return false;
+      }
       i = start;
     }
     return false;

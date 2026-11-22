@@ -15,8 +15,22 @@ logger.transports[0].write = info => {
   logs.push({ level: info.level, message: info.message });
   return true;
 };
-// tagged JSON: objects as {"$o": [[k, v], ...]} in own-key order; undefined {"$u":1}; non-finite/-0 numbers {"$n": s}
+// tagged JSON: objects as {"$o": [[k, v], ...]} in own-key order; undefined {"$u":1}; non-finite/-0 numbers {"$n": s};
+// a reference back to an enclosing object/array (YAML alias cycles) {"$cycle":1}
+const onStack = new Set();
 function dump(v) {
+  if (v !== null && typeof v === 'object') {
+    if (onStack.has(v)) return { $cycle: 1 };
+    onStack.add(v);
+    try {
+      return dump0(v);
+    } finally {
+      onStack.delete(v);
+    }
+  }
+  return dump0(v);
+}
+function dump0(v) {
   if (v === undefined) return { $u: 1 };
   if (v === null || typeof v === 'string' || typeof v === 'boolean') return v;
   if (typeof v === 'number') {

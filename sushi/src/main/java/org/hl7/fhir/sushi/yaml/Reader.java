@@ -1,5 +1,6 @@
 // Vendored from fhir-ig-jekyll@ecd3c065 shim/src/main/java/org/hl7/fhir/jekyll/yaml/Reader.java (libyaml 0.2.5 event layer),
-// unchanged except the package line, until the monorepo move puts it in common (PORTING.md section 7).
+// unchanged except the package line and the opt-in yaml110 switch (marked "SUSHI:"), until the monorepo move puts
+// it in common (PORTING.md section 7).
 package org.hl7.fhir.sushi.yaml;
 
 import java.util.Arrays;
@@ -30,6 +31,13 @@ abstract class Reader {
   private boolean eof;
 
   int encoding;
+
+  /**
+   * SUSHI: yaml@1.10 (YAML 1.2) compatibility, off by default so the Jekyll shim's libyaml behaviour is unchanged.
+   * Reader: any character is accepted (libyaml rejects C0/C1 controls and DEL), and only CR and LF are line breaks
+   * (libyaml, YAML 1.1, also breaks on NEL, LS and PS). Scanner and Parser read it for their own relaxations.
+   */
+  boolean yaml110;
 
   byte[] buffer = new byte[INPUT_RAW_BUFFER_SIZE * 3 + 8];
   int pointer;
@@ -210,7 +218,7 @@ abstract class Reader {
         if (incomplete) {
           break;
         }
-        if (!(value == 0x09 || value == 0x0A || value == 0x0D || (value >= 0x20 && value <= 0x7E) || (value == 0x85)
+        if (!yaml110 && !(value == 0x09 || value == 0x0A || value == 0x0D || (value >= 0x20 && value <= 0x7E) || (value == 0x85)
             || (value >= 0xA0 && value <= 0xD7FF) || (value >= 0xE000 && value <= 0xFFFD) || (value >= 0x10000 && value <= 0x10FFFF))) {
           throw readerError("control characters are not allowed", offset, value);
         }
@@ -312,7 +320,8 @@ abstract class Reader {
 
   final boolean isBreakAt(int k) {
     int c = at(k);
-    return c == '\r' || c == '\n' || (c == 0xC2 && at(k + 1) == 0x85) || (c == 0xE2 && at(k + 1) == 0x80 && (at(k + 2) == 0xA8 || at(k + 2) == 0xA9));
+    return c == '\r' || c == '\n' || (!yaml110 && ((c == 0xC2 && at(k + 1) == 0x85)
+        || (c == 0xE2 && at(k + 1) == 0x80 && (at(k + 2) == 0xA8 || at(k + 2) == 0xA9))));
   }
 
   final boolean isBreak() {

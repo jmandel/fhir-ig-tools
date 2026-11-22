@@ -7,7 +7,7 @@ only on invalid input; **open** = decision pending.
 
 | id | WP | area | class | difference | decision |
 |---|---|---|---|---|---|
-| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, open | 49 YAML error-wording differences and 6 accept/reject mismatches out of 1,035 mutations (0 on the 266 real configs); details below | open: accept, or map to yaml@1.10 wording later |
+| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, diag | on 1,035 malformed/unusual configs: same accept/reject and same configuration everywhere; 44 YAML error messages worded differently (0 on the 266 real configs); details below | accepted (owner decision 2026-11-22: fix accept/reject, wording where straightforward) |
 | KD-2 | WP-4 | ElementDefinition.clone() | none | re-fetches the cached StructureDefinition of the element (`_edStructureDefinition`) instead of deep-copying it | accepted (cache is read-only) |
 | KD-3 | WP-4 | JS TypeError crash paths | diag | where TS crashes with a JS TypeError on unexpected input, the port reproduces it only at a few sites, with V8-style messages (`Cannot read properties of undefined (reading 'x')`); elsewhere Java fails differently | accepted; add sites when the differential finds them |
 | KD-4 | WP-6 | metadata de-duplication (MasterFisher) | none | a missing key is treated like a key whose value is undefined; cannot change results | accepted |
@@ -17,82 +17,79 @@ only on invalid input; **open** = decision pending.
 | KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md) | n/a |
 
 
-## KD-1 Malformed sushi-config.yaml: YAML error wording and accept/reject (WP-3)
+## KD-1 Malformed sushi-config.yaml: YAML error wording (WP-3)
 
-**Scope.** Only YAML that is *not* valid for yaml@1.10 (the npm `yaml` package SUSHI uses) or that libyaml and
-yaml@1.10 judge differently. All 266 real corpus `sushi-config.yaml` files import identically (CorpusConfigTest),
-and none of the 1,035 mutation inputs differs in the imported configuration.
+**Scope.** Only YAML that yaml@1.10 (the npm `yaml` package SUSHI uses) rejects. All 266 real corpus
+`sushi-config.yaml` files import identically (CorpusConfigTest); on the 1,035-input mutation set every input is
+accepted/rejected the same way and imports to the same configuration and log messages, except the wording of 44
+YAML errors.
 
-**Evidence.** `MutationConfigTest` (scripts/oracle/config-mutations.py, oracle = TS SUSHI 3.21.1 on node 22):
-1,035 inputs: 938 identical, 42 typed-lossy (same TS-shaped configuration; the typed `Configuration` can't hold a
-raw value of an unexpected type, see `ConfigurationJs`), **49 yaml-wording** (both reject, different message),
-**6 accept/reject mismatches** (1 only TS rejects, 5 only Java rejects), 0 import differences.
+**Evidence.** `MutationConfigTest` (scripts/oracle/config-mutations.py; oracle = TS SUSHI 3.21.1 on node 22,
+scripts/oracle/config-oracle.js): 1,035 inputs: **949 identical**, 42 typed-lossy (identical TS-shaped configuration;
+the typed `Configuration` can't hold a raw YAML value of an unexpected type such as `title: 2023`, see
+`ConfigurationJs`), **44 yaml-wording** (both reject the YAML; the `Error parsing configuration: <message>.` line
+differs), 0 accept/reject mismatches, 0 import differences.
 
-**Cause.** The YAML scanner/parser is the libyaml 0.2.5 port vendored from fhir-ig-jekyll (shared with the Jekyll
-shim); yaml@1.10 has its own parser with its own error detection and messages. The composer on top already follows
-yaml@1.10 (core schema, duplicate keys, etc.). Consequence for users: the `Error parsing configuration: <message>`
-line differs, or (6 cases) a config with control characters, NEL, a stray `: x` line, a plain value starting with `%`, or a self-referencing alias is accepted by one side only.
+**What was done (owner decision: fix accept/reject, wording where straightforward).** The YAML layer is the libyaml
+0.2.5 event layer vendored from fhir-ig-jekyll plus a yaml@1.10 composer. Accept/reject now matches yaml@1.10 via an
+opt-in `yaml110` switch in the vendored Reader/Scanner/Parser (off for the Jekyll shim): any character accepted, only
+CR/LF are line breaks (NEL/LS/PS are content), tabs on blank lines (also inside plain scalars), `%` may start a plain
+value after column 0, a value without a key in a block mapping has an empty key. The composer adds yaml@1.10's
+semantic errors (duplicate keys, unknown aliases, multiple documents incl. content after `...`, comment glued to a
+quoted value, excessive aliases, wrong-type tags). libyaml's syntax errors are mapped to yaml@1.10's message text
+(`Yaml.syntaxMessage`): 185 differing messages before, 44 now.
 
-**Decision (open, for the owner):**
-- *Accept* (current state): documented here; malformed configs still fail (or pass) with an error at the same place
-  in 49 of 55 cases; cost zero; risk: users comparing error text, and 8 edge inputs where the build outcome differs.
-- *Fix later*: map libyaml's errors to yaml@1.10's wording and add yaml@1.10's extra checks as a SUSHI-only layer over the shared event layer; the mutation set is the regression test.
-  Recommended for the 6 accept/reject cases at least (they change the exit status); wording can follow.
+**What is left and why.** For a malformed line yaml@1.10 reports the *first* error of its own CST/resolution pass,
+which depends on how its parser re-groups the following lines (e.g. a tab-indented line yields "Plain value cannot
+start with a tab character" or, depending on the shape and even the spaces of the next lines, "All collection items
+must start at the same column" reported on the enclosing collection). libyaml stops at its first error with no
+equivalent of that regrouping, so the remaining 44 cases (tab-indented lines 23, mis-indented continuation lines 12,
+other 9) can't be mapped by a local rule. Exact parity would need a port of yaml@1.10's CST parser (parse-cst,
+~1,500 JS lines) as the error-detection pass; not done. The build outcome is the same (both reject the file).
 
-| class | case | TS (yaml@1.10) | Java (libyaml port) |
-|---|---|---|---|
-| yaml-wording | `hand/tab-indent` | Plain value cannot start with a tab character | All collection items must start at the same column |
-| yaml-java-only-rejects | `hand/control-char` | (parses) | control characters are not allowed |
-| yaml-java-only-rejects | `hand/del-char` | (parses) | control characters are not allowed |
-| yaml-java-only-rejects | `hand/nel-char` | (parses) | Implicit map keys need to be followed by map values |
-| yaml-ts-only-rejects | `hand/circular` | Maximum call stack size exceeded | (parses) |
-| yaml-wording | `hand/stray-dash` | A collection cannot be both a mapping and a sequence | All collection items must start at the same column |
-| yaml-java-only-rejects | `hand/stray-colon` | (parses) | All collection items must start at the same column |
-| yaml-java-only-rejects | `hand/percent-plain` | (parses) | All collection items must start at the same column |
-| yaml-wording | `hand/directive-in-body` | Implicit map keys need to be followed by map values | Document contains trailing content not separated by a ... or --- line |
-| yaml-wording | `hand/anchor-twice` | A node can have at most one anchor | All collection items must start at the same column |
-| yaml-wording | `hand/alias-with-anchor` | An alias node must not specify any properties | All collection items must start at the same column |
-| yaml-wording | `syn/CoBHA__CoBHRM-FHIR-IG/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/CoBHA__CoBHRM-FHIR-IG/10-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__DeviceAlerting/13-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7-cz__cz-ems/05-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7-cz__cz-ems/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7NZ__nzbase/00-lswap` | A collection cannot be both a mapping and a sequence | All collection items must start at the same column |
-| yaml-wording | `syn/FHIR__MADFSH/00-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/FHIR__MADFSH/01-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/ehealthsuisse__ch-health-dossier/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__case-reporting/00-del` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__case-reporting/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__case-reporting/13-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__emedicinal-product-info/01-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/hl7-be__core-clinical/06-indent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/vadi2__VadimTestIG/02-tabline` | Plain value cannot start with a tab character | All collection items must start at the same column |
-| yaml-wording | `syn/HL7__imaging-service-request-ig/04-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__imaging-service-request-ig/09-indent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__cds-hooks-library/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__cds-hooks-library/12-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__davinci-pct/00-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/euridice-org__eu-health-data-api/00-lswap` | Implicit map keys need to be on a single line | Implicit map keys need to be followed by map values |
-| yaml-wording | `syn/euridice-org__eu-health-data-api/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__davinci-ra/01-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/WorldHealthOrganization__smart-base-clinical/00-quote` | All collection items must start at the same column | The ""# look ...e, the "" key is too long |
-| yaml-wording | `syn/HL7__smart-scheduling-links/01-indent` | A collection cannot be both a mapping and a sequence | All collection items must start at the same column |
-| yaml-wording | `syn/HL7__smart-scheduling-links/08-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/HL7__smart-scheduling-links/12-quote` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
-| yaml-wording | `syn/HL7__ebm/08-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/medcomdk__dk-medcom-xds-metadata/00-quote` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
-| yaml-wording | `syn/medcomdk__dk-medcom-xds-metadata/07-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/medcomdk__dk-medcom-xds-metadata/12-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/Minsal-CL__tei/07-tabline` | Plain value cannot start with a tab character | All collection items must start at the same column |
-| yaml-wording | `syn/argonautproject__smart-imaging/10-ins` | All collection items must start at the same column | Aliased anchor not found: title |
-| yaml-wording | `syn/hl7ch__agentic-ig/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/medcomdk__dk-medcom-acknowledgement/01-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/medcomdk__dk-medcom-acknowledgement/04-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
-| yaml-wording | `syn/medcomdk__dk-medcom-acknowledgement/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/hl7-be__mycarenet/00-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/hl7-be__mycarenet/04-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/hl7-be__mycarenet/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/HL7__US-Core/09-ins` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
-| yaml-wording | `syn/fut-infrastructure__implementation-guide-test-data/07-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
-| yaml-wording | `syn/fut-infrastructure__implementation-guide-test-data/10-quote` | All collection items must start at the same column | The ""      -... name: "" key is too long |
-| yaml-wording | `syn/fut-infrastructure__implementation-guide-test-data/12-del` | Unexpected PLAIN node in sequence | Implicit map keys need to be followed by map values |
+| case | TS (yaml@1.10) | Java |
+|---|---|---|
+| `hand/tab-indent` | Plain value cannot start with a tab character | All collection items must start at the same column |
+| `hand/directive-in-body` | Implicit map keys need to be followed by map values | Document contains trailing content not separated by a ... or --- line |
+| `syn/CoBHA__CoBHRM-FHIR-IG/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/CoBHA__CoBHRM-FHIR-IG/10-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__DeviceAlerting/13-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7-cz__cz-ems/05-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7-cz__cz-ems/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/FHIR__MADFSH/00-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/FHIR__MADFSH/01-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/ehealthsuisse__ch-health-dossier/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__case-reporting/00-del` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__case-reporting/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__case-reporting/13-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__emedicinal-product-info/01-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/hl7-be__core-clinical/06-indent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/vadi2__VadimTestIG/02-tabline` | Plain value cannot start with a tab character | All collection items must start at the same column |
+| `syn/HL7__imaging-service-request-ig/04-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__imaging-service-request-ig/09-indent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__cds-hooks-library/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__cds-hooks-library/12-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__davinci-pct/00-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/euridice-org__eu-health-data-api/00-lswap` | Implicit map keys need to be on a single line | Implicit map keys need to be followed by map values |
+| `syn/euridice-org__eu-health-data-api/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__davinci-ra/01-dedent` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/WorldHealthOrganization__smart-base-clinical/00-quote` | All collection items must start at the same column | The ""# look ...e, the "" key is too long |
+| `syn/HL7__smart-scheduling-links/08-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/HL7__smart-scheduling-links/12-quote` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
+| `syn/HL7__ebm/08-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/medcomdk__dk-medcom-xds-metadata/00-quote` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
+| `syn/medcomdk__dk-medcom-xds-metadata/07-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/medcomdk__dk-medcom-xds-metadata/12-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/Minsal-CL__tei/07-tabline` | Plain value cannot start with a tab character | All collection items must start at the same column |
+| `syn/argonautproject__smart-imaging/10-ins` | All collection items must start at the same column | Aliased anchor not found: title |
+| `syn/hl7ch__agentic-ig/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/medcomdk__dk-medcom-acknowledgement/01-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/medcomdk__dk-medcom-acknowledgement/04-lswap` | All collection items must start at the same column | Nested mappings are not allowed in compact mappings |
+| `syn/medcomdk__dk-medcom-acknowledgement/10-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/hl7-be__mycarenet/00-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/hl7-be__mycarenet/04-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/hl7-be__mycarenet/06-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/HL7__US-Core/09-ins` | All collection items must start at the same column | Implicit map keys need to be followed by map values |
+| `syn/fut-infrastructure__implementation-guide-test-data/07-tabline` | All collection items must start at the same column | Plain value cannot start with a tab character |
+| `syn/fut-infrastructure__implementation-guide-test-data/10-quote` | All collection items must start at the same column | The ""      -... name: "" key is too long |
+| `syn/fut-infrastructure__implementation-guide-test-data/12-del` | Unexpected PLAIN node in sequence | Implicit map keys need to be followed by map values |

@@ -1,6 +1,6 @@
 // Vendored from fhir-ig-jekyll@ecd3c065 shim/src/main/java/org/hl7/fhir/jekyll/yaml/Scanner.java (libyaml 0.2.5 event layer),
-// unchanged except the package line and the opt-in tabsInBlankLines switch (marked "SUSHI:"), until the monorepo
-// move puts it in common (PORTING.md section 7).
+// unchanged except the package line and the opt-in yaml110 relaxations (marked "SUSHI:"; Reader#yaml110), until the
+// monorepo move puts it in common (PORTING.md section 7).
 package org.hl7.fhir.sushi.yaml;
 
 import java.util.ArrayList;
@@ -42,11 +42,6 @@ abstract class Scanner extends Reader {
   private final List<Long> indents = new ArrayList<>();
   long indent;
   boolean simpleKeyAllowed;
-  /**
-   * SUSHI: accept tabs on otherwise blank lines (YAML 1.2 / yaml@1.10 do; libyaml reports "found character that
-   * cannot start any token"). Off by default, so the Jekyll shim's libyaml behaviour is unchanged.
-   */
-  boolean tabsInBlankLines;
   private final List<SimpleKey> simpleKeys = new ArrayList<>();
 
   Scanner(byte[] input, int encoding) {
@@ -298,7 +293,7 @@ abstract class Scanner extends Reader {
     }
     if (!(isBlankz() || check('-') || check('?') || check(':') || check(',') || check('[') || check(']') || check('{')
         || check('}') || check('#') || check('&') || check('*') || check('!') || check('|') || check('>') || check('\'')
-        || check('"') || check('%') || check('@') || check('`'))
+        || check('"') || (check('%') && !(yaml110 && markColumn > 0)) || check('@') || check('`'))
         || (check('-') && !isBlankAt(1))
         || (flowLevel == 0 && (check('?') || check(':')) && !isBlankzAt(1))) {
       fetchPlainScalar();
@@ -553,7 +548,7 @@ abstract class Scanner extends Reader {
   }
 
   /** yaml_parser_scan_to_next_token */
-  /** SUSHI: only blanks up to the next line break or the end of the input (tabsInBlankLines). */
+  /** SUSHI: only blanks up to the next line break or the end of the input (yaml110). */
   private boolean restOfLineBlank() {
     int k = 0;
     while (true) {
@@ -577,8 +572,9 @@ abstract class Scanner extends Reader {
         skip();
         cache(1);
       }
-      if (tabsInBlankLines && check('\t')) {
-        // SUSHI: skip a run of blanks if only a line break, a comment or the end follows
+      if (yaml110 && check('\t')) {
+        // SUSHI: tabs on otherwise blank lines (yaml@1.10 accepts them): skip a run of blanks if only a line break,
+        // a comment or the end follows
         int k = 0;
         while (true) {
           cache(k + 2);
@@ -1217,7 +1213,7 @@ abstract class Scanner extends Reader {
       cache(1);
       while (isBlank() || isBreak()) {
         if (isBlank()) {
-          if (leadingBlanks && (int) markColumn < indentLimit && isTab() && !(tabsInBlankLines && restOfLineBlank())) {
+          if (leadingBlanks && (int) markColumn < indentLimit && isTab() && !(yaml110 && restOfLineBlank())) {
             throw scannerError("while scanning a plain scalar", startMark, "found a tab character that violates indentation");
           }
           if (!leadingBlanks) {

@@ -1,5 +1,6 @@
 // Vendored from fhir-ig-jekyll@ecd3c065 shim/src/main/java/org/hl7/fhir/jekyll/yaml/Parser.java (libyaml 0.2.5 event layer),
-// unchanged except the package line, until the monorepo move puts it in common (PORTING.md section 7).
+// unchanged except the package line and the opt-in yaml110 relaxation (marked "SUSHI:"; Reader#yaml110), until the
+// monorepo move puts it in common (PORTING.md section 7).
 package org.hl7.fhir.sushi.yaml;
 
 import java.util.ArrayList;
@@ -407,6 +408,10 @@ final class Parser extends Scanner {
       Event event = new Event(Event.Type.MAPPING_END, token.startMark, token.endMark);
       skipToken();
       return event;
+    } else if (yaml110 && token.type == Token.Type.VALUE) {
+      // SUSHI: a value without a key (": x" in a block mapping) has an empty key in yaml@1.10
+      state = State.BLOCK_MAPPING_VALUE;
+      return processEmptyScalar(token.startMark);
     } else {
       throw parserErrorContext("while parsing a block mapping", pop(marks), "did not find expected key", token.startMark);
     }

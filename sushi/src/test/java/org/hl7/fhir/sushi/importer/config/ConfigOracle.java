@@ -115,6 +115,22 @@ final class ConfigOracle {
 
   /** The oracle's tagged JSON (config-oracle.js dump()). */
   static Object dump(Object v) {
+    return dump(v, java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()));
+  }
+
+  private static Object dump(Object v, java.util.Set<Object> onStack) {
+    if (v instanceof Map<?, ?> || v instanceof List<?>) {
+      if (!onStack.add(v)) return new JsObject().with("$cycle", 1.0);
+      try {
+        return dump0(v, onStack);
+      } finally {
+        onStack.remove(v);
+      }
+    }
+    return dump0(v, onStack);
+  }
+
+  private static Object dump0(Object v, java.util.Set<Object> onStack) {
     if (v == Js.UNDEFINED) return new JsObject().with("$u", 1.0);
     if (v == null || v instanceof String || v instanceof Boolean) return v;
     if (v instanceof Double d) {
@@ -125,13 +141,13 @@ final class ConfigOracle {
     }
     if (v instanceof List<?> l) {
       List<Object> out = new ArrayList<>();
-      for (Object o : l) out.add(dump(o));
+      for (Object o : l) out.add(dump(o, onStack));
       return out;
     }
     if (v instanceof Map<?, ?> m) {
       @SuppressWarnings("unchecked") Map<String, Object> mm = (Map<String, Object>) m;
       List<Object> entries = new ArrayList<>();
-      for (String k : Js.ownKeys(mm)) entries.add(java.util.Arrays.asList(k, dump(mm.get(k))));
+      for (String k : Js.ownKeys(mm)) entries.add(java.util.Arrays.asList(k, dump(mm.get(k), onStack)));
       return new JsObject().with("$o", entries);
     }
     return new JsObject().with("$other", String.valueOf(v));
