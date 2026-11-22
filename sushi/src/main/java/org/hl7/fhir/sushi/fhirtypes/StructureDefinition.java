@@ -155,7 +155,7 @@ public class StructureDefinition implements FhirResource, PropertyHolder, HasNam
 
   private String str(String key) {
     Object v = getProperty(key);
-    return v == null ? null : (v instanceof String s ? s : Js.toStr(v));
+    return v == null || v == Js.UNDEFINED ? null : (v instanceof String s ? s : Js.toStr(v));
   }
 
   @SuppressWarnings("unchecked")
@@ -164,8 +164,13 @@ public class StructureDefinition implements FhirResource, PropertyHolder, HasNam
     return v instanceof List<?> l ? (List<Object>) l : null;
   }
 
+  /**
+   * Typed setters take Java values where null means JS undefined (e.g. an absent config.version): stored as
+   * {@link Js#UNDEFINED}, so toJSON omits the key as TS does ({@code if (this[prop] !== undefined)}), rather than
+   * writing {@code "version": null}. JSON nulls from fromJSON are kept as null.
+   */
   private void set(String key, Object v) {
-    props.put(key, v);
+    props.put(key, v == null ? Js.UNDEFINED : v);
   }
 
   public String getResourceType() { return resourceType; }
