@@ -40,6 +40,17 @@ public final class FshToFhir {
   /** {fhir, errors, warnings}; fhir is null when the options are invalid. */
   public record Result(List<Object> fhir, List<FshLogger.Tracked> errors, List<FshLogger.Tracked> warnings) {}
 
+  /** Loads the configured dependencies (Processing.loadExternalDependencies); tests substitute it (TS: jest.spyOn). */
+  public static java.util.function.BiConsumer<FHIRDefinitions, Configuration> dependencyLoader =
+      Processing::loadExternalDependencies;
+
+  private static volatile boolean silent;
+
+  /** TS logger.transports[0].silent: true while a call with logLevel 'silent' runs. */
+  public static boolean loggerSilent() {
+    return silent;
+  }
+
   // Winston levels: https://github.com/winstonjs/winston#logging-levels plus a silent option
   private static final List<String> LEVELS =
       List.of("silly", "debug", "verbose", "http", "info", "warn", "error", "silent");
@@ -67,6 +78,7 @@ public final class FshToFhir {
     try {
       if ("silent".equals(opts.logLevel)) {
         originalSink = logger.setSink(e -> {});
+        silent = true;
       } else if (opts.logLevel != null) {
         if (!LEVELS.contains(opts.logLevel)) {
           FshLogger.Tracked err = new FshLogger.Tracked("Invalid logLevel: " + opts.logLevel
@@ -88,7 +100,7 @@ public final class FshToFhir {
 
       // load dependencies
       FHIRDefinitions defs = FHIRDefinitions.createFHIRDefinitions();
-      Processing.loadExternalDependencies(defs, config);
+      dependencyLoader.accept(defs, config);
 
       // load FSH text into memory
       List<RawFSH> rawFSHes = new ArrayList<>();
@@ -114,6 +126,7 @@ public final class FshToFhir {
       return new Result(fhir, logger.errorsAndWarnings.errors, logger.errorsAndWarnings.warnings);
     } finally {
       if (originalSink != null) logger.setSink(originalSink);
+      silent = false;
       logger.setLevel(originalLevel);
     }
   }
