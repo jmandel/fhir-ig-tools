@@ -28,7 +28,7 @@ class TankDumpCorpusTest {
       if (!Files.isDirectory(fsh)) continue;
       try {
         TankDump.run(fsh, Path.of(out, ig.getFileName().toString()));
-      } catch (RuntimeException e) {
+      } catch (RuntimeException | IOException e) {
         Files.createDirectories(Path.of(out, ig.getFileName().toString()));
         Files.writeString(Path.of(out, ig.getFileName().toString(), "crash.txt"), String.valueOf(e) + "\n");
         e.printStackTrace();

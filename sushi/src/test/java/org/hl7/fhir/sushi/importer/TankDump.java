@@ -66,7 +66,7 @@ public final class TankDump {
     try {
       List<RawFSH> raws = new ArrayList<>();
       for (Path f : filesRecursive(in.toAbsolutePath())) {
-        if (f.toString().endsWith(".fsh")) raws.add(new RawFSH(Files.readString(f, StandardCharsets.UTF_8), f.toString()));
+        if (f.toString().endsWith(".fsh")) raws.add(new RawFSH(new String(Files.readAllBytes(f), StandardCharsets.UTF_8), f.toString()));
       }
       List<FSHDocument> docs = ImportText.importText(raws);
       Configuration config = new Configuration();
