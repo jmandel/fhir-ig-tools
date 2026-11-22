@@ -285,6 +285,12 @@ final class Prediction {
     int size() { return configs.size(); }
 
     boolean isEmpty() { return configs.isEmpty(); }
+
+    @Override public boolean equals(Object o) {
+      return o instanceof ConfigSet c && c.fullCtx == fullCtx && c.configs.equals(configs);
+    }
+
+    @Override public int hashCode() { return configs.hashCode(); }
   }
 
   // ---------------------------------------------------------------- PredictionMode
@@ -356,47 +362,89 @@ final class Prediction {
   }
 
   private final Atn atn;
+  /** The SLL DFA per decision (ANTLR's DFA cache): memoises reach sets; results are those of the plain simulation. */
+  private final Map<Atn.State, Dfa> dfas = new java.util.concurrent.ConcurrentHashMap<>();
 
   Prediction(Atn atn) {
     this.atn = atn;
+  }
+
+  /** A DFA state: an SLL configuration set, what it predicts, and its outgoing edges per token type. */
+  private static final class DState {
+    final ConfigSet configs;
+    /** INVALID_ALT: keep reading; otherwise the unique alternative */
+    final int prediction;
+    final boolean requiresFullContext;
+    final Map<Integer, DState> edges = new java.util.concurrent.ConcurrentHashMap<>();
+
+    DState(ConfigSet configs, int prediction, boolean requiresFullContext) {
+      this.configs = configs;
+      this.prediction = prediction;
+      this.requiresFullContext = requiresFullContext;
+    }
+  }
+
+  private static final DState ERROR = new DState(null, INVALID_ALT, false);
+
+  private static final class Dfa {
+    final DState s0;
+    final Map<ConfigSet, DState> states = new java.util.concurrent.ConcurrentHashMap<>();
+
+    Dfa(DState s0) { this.s0 = s0; }
   }
 
   /** adaptivePredict(input, decision, outerContext): the predicted alternative (1-based). */
   int adaptivePredict(CommonTokenStream input, Atn.State decisionState, ParserRuleContext outerContext) {
     int index = input.index();
     try {
-      ConfigSet s0 = computeStartState(decisionState, null, false);
-      return execAtn(decisionState, s0, input, index, outerContext);
+      Dfa dfa = dfas.computeIfAbsent(decisionState,
+          d -> new Dfa(new DState(computeStartState(d, null, false), INVALID_ALT, false)));
+      return execAtn(dfa, decisionState, input, index, outerContext);
     } finally {
       input.seek(index);
     }
   }
 
-  private int execAtn(Atn.State decisionState, ConfigSet s0, CommonTokenStream input, int startIndex,
+  private int execAtn(Dfa dfa, Atn.State decisionState, CommonTokenStream input, int startIndex,
       ParserRuleContext outerContext) {
-    ConfigSet previous = s0;
+    DState previous = dfa.s0;
     int t = input.LA(1);
     while (true) {
-      ConfigSet reach = computeReachSet(previous, t, false);
-      if (reach == null) {
+      DState d = previous.edges.get(t);
+      if (d == null) {
+        d = computeTargetState(dfa, previous, t);
+        previous.edges.put(t, d);
+      }
+      if (d == ERROR) {
         NoViableAlt e = new NoViableAlt(input.get(startIndex), input.LT(1));
         input.seek(startIndex);
-        int alt = getAltThatFinishedDecisionEntryRule(previous);
+        int alt = getAltThatFinishedDecisionEntryRule(previous.configs);
         if (alt != INVALID_ALT) return alt;
         throw e;
       }
-      int predictedAlt = getUniqueAlt(reach);
-      if (predictedAlt != INVALID_ALT) return predictedAlt;
-      if (hasSLLConflictTerminatingPrediction(reach)) {
+      if (d.prediction != INVALID_ALT) return d.prediction;
+      if (d.requiresFullContext) {
         ConfigSet fullS0 = computeStartState(decisionState, outerContext, true);
         return execAtnWithFullContext(fullS0, input, startIndex, outerContext);
       }
-      previous = reach;
+      previous = d;
       if (t != Token.EOF) {
         input.consume();
         t = input.LA(1);
       }
     }
+  }
+
+  private DState computeTargetState(Dfa dfa, DState previous, int t) {
+    ConfigSet reach = computeReachSet(previous.configs, t, false);
+    if (reach == null) return ERROR;
+    DState existing = dfa.states.get(reach);
+    if (existing != null) return existing;
+    int predictedAlt = getUniqueAlt(reach);
+    DState d = predictedAlt != INVALID_ALT ? new DState(reach, predictedAlt, false)
+        : new DState(reach, INVALID_ALT, hasSLLConflictTerminatingPrediction(reach));
+    DState prior = dfa.states.putIfAbsent(reach, d);
+    return prior != null ? prior : d;
   }
 
   private int execAtnWithFullContext(ConfigSet s0, CommonTokenStream input, int startIndex,

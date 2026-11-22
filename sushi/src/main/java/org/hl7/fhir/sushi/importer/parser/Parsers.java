@@ -1,19 +1,15 @@
 package org.hl7.fhir.sushi.importer.parser;
 
 /**
- * Selects the parser backend. Production: the hand-written parser. Tests may run on the ANTLR oracle instead
- * ({@code -Dsushi.parser=antlr}, or {@link #setBackend}); the oracle adapter is the test-scope class
+ * Selects the parser backend: the hand-written parser ({@code hand}, default). Tests may run on the ANTLR oracle
+ * instead ({@code -Dsushi.parser=antlr}, or {@link #setBackend}); the oracle adapter is the test-scope class
  * {@code org.hl7.fhir.sushi.importer.parser.AntlrCstBackend}.
- *
- * <p>Until the hand-written parser is complete, the default is the ANTLR oracle when it is on the classpath (test
- * runs), so the importer (WP-2) can be developed and tested against the final CST shape.
  */
 public final class Parsers {
   private Parsers() {}
 
   static final String ANTLR_BACKEND = "org.hl7.fhir.sushi.importer.parser.AntlrCstBackend";
-  /** Default backend name; becomes "hand" when the hand-written parser lands. */
-  static final String DEFAULT = "antlr";
+  static final String DEFAULT = "hand";
 
   private static volatile ParserBackend backend;
 

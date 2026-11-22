@@ -163,31 +163,58 @@ final class LexPattern {
 
   static final Match NONE = new Match(-1, 0);
 
+  /** A lazily built DFA state (subset of NFA states) with memoised transitions; dead = no NFA state. */
+  private final class DState {
+    final int[] nfa;
+    final boolean accepting;
+    final DState[] ascii = new DState[128];
+    final java.util.concurrent.ConcurrentHashMap<Character, DState> other = new java.util.concurrent.ConcurrentHashMap<>();
+
+    DState(int[] nfa) {
+      this.nfa = nfa;
+      boolean a = false;
+      for (int s : nfa) if (s == accept) a = true;
+      this.accepting = a;
+    }
+
+    DState step(char c) {
+      DState d = c < 128 ? ascii[c] : other.get(c);
+      if (d == null) {
+        int[] buf = new int[n];
+        int bn = 0;
+        for (int s : nfa) if (pred[s] != null && pred[s].test(c)) buf[bn++] = next[s];
+        d = bn == 0 ? DEAD : intern(closure(buf, bn));
+        if (c < 128) ascii[c] = d;
+        else other.put(c, d);
+      }
+      return d;
+    }
+  }
+
+  private final java.util.concurrent.ConcurrentHashMap<String, DState> dstates =
+      new java.util.concurrent.ConcurrentHashMap<>();
+  private final DState DEAD = new DState(new int[0]);
+  private volatile DState startState;
+
+  private DState intern(int[] closure) {
+    int[] set = Arrays.copyOf(closure, count(closure));
+    Arrays.sort(set);
+    return dstates.computeIfAbsent(Arrays.toString(set), k -> new DState(set));
+  }
+
   Match match(String input, int pos) {
     int len = input.length();
     if (pos >= len || !firstChars[input.charAt(pos)]) return NONE;
-    int[] cur = closure(new int[] {start}, 1);
-    int curCount = count(cur);
+    DState cur = startState;
+    if (cur == null) startState = cur = intern(closure(new int[] {start}, 1));
     int accepted = -1;
     int k = 0;
-    int[] buf = new int[n];
     while (true) {
-      for (int i = 0; i < curCount; i++) {
-        if (cur[i] == accept) {
-          accepted = k;
-          break;
-        }
-      }
+      if (cur.accepting) accepted = k;
       if (pos + k >= len) return new Match(accepted, k);
-      char c = input.charAt(pos + k);
-      int bn = 0;
-      for (int i = 0; i < curCount; i++) {
-        int s = cur[i];
-        if (pred[s] != null && pred[s].test(c)) buf[bn++] = next[s];
-      }
-      if (bn == 0) return new Match(accepted, k);
-      cur = closure(buf, bn);
-      curCount = count(cur);
+      DState nxt = cur.step(input.charAt(pos + k));
+      if (nxt == DEAD) return new Match(accepted, k);
+      cur = nxt;
       k++;
     }
   }
