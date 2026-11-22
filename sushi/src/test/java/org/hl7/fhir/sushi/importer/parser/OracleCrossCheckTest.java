@@ -20,6 +20,7 @@ class OracleCrossCheckTest {
   static void check(String set, String ext) throws IOException {
     Path in = DATA.resolve(set), dumps = DATA.resolve("jsdump").resolve(set);
     Assumptions.assumeTrue(Files.isDirectory(in) && Files.isDirectory(dumps), "no " + set + " data");
+    Assumptions.assumeTrue(Differential.heavy(set), "heavy set " + set + ": run with -Dwp1.heavy=true");
     Differential.Report r = Differential.compare(in, dumps, ext,
         ext.equals(".mini") ? Differential::miniDump : s -> Differential.fshDump(s, AntlrOracle::parseDoc));
     System.out.println(r.summary("ANTLR oracle vs JS [" + set + "]"));

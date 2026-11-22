@@ -36,12 +36,13 @@ class LexerDifferentialTest {
   static void check(String set, String ext) throws IOException {
     Path in = OracleCrossCheckTest.DATA.resolve(set), dumps = OracleCrossCheckTest.DATA.resolve("jsdump").resolve(set);
     Assumptions.assumeTrue(Files.isDirectory(in) && Files.isDirectory(dumps), "no " + set + " data");
+    Assumptions.assumeTrue(Differential.heavy(set), "heavy set " + set + ": run with -Dwp1.heavy=true");
     List<Path> inputs;
     try (Stream<Path> s = Files.walk(in)) {
       inputs = s.filter(p -> p.toString().endsWith(ext) && Files.isRegularFile(p)).sorted().toList();
     }
     List<Differential.Diff> diffs = Collections.synchronizedList(new ArrayList<>());
-    inputs.parallelStream().forEach(p -> {
+    Differential.forEach(inputs, p -> {
       try {
         String exp = expected(Files.readString(dumps.resolve(in.relativize(p) + ".dump"), StandardCharsets.UTF_8));
         String act;

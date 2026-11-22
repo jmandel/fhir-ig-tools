@@ -64,7 +64,7 @@ final class Differential {
     }
     List<Diff> diffs = Collections.synchronizedList(new ArrayList<>());
     List<Path> missing = Collections.synchronizedList(new ArrayList<>());
-    inputs.parallelStream().forEach(p -> {
+    forEach(inputs, p -> {
       Path d = dumpRoot.resolve(inputRoot.relativize(p).toString() + ".dump");
       if (!Files.exists(d)) {
         missing.add(p);
@@ -86,6 +86,26 @@ final class Differential {
     List<Diff> sorted = new ArrayList<>(diffs);
     sorted.sort((a, b) -> a.input().compareTo(b.input()));
     return new Report(inputs.size(), sorted, missing);
+  }
+
+  /**
+   * Heavy sets (corpus, fuzz) run only with -Dwp1.heavy=true, on -Dwp1.threads (default 2) threads, so the default
+   * build stays light on the shared VM.
+   */
+  static boolean heavy(String set) {
+    return !(set.equals("corpus") || set.contains("fuzz")) || Boolean.getBoolean("wp1.heavy");
+  }
+
+  static void forEach(List<Path> inputs, java.util.function.Consumer<Path> action) {
+    int threads = Integer.getInteger("wp1.threads", 2);
+    java.util.concurrent.ForkJoinPool pool = new java.util.concurrent.ForkJoinPool(threads);
+    try {
+      pool.submit(() -> inputs.parallelStream().forEach(action)).get();
+    } catch (InterruptedException | java.util.concurrent.ExecutionException e) {
+      throw new IllegalStateException(e.getCause() != null ? e.getCause() : e);
+    } finally {
+      pool.shutdown();
+    }
   }
 
   static Diff firstDiff(Path p, String expected, String actual) {
