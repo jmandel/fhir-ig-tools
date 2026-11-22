@@ -175,7 +175,16 @@ public final class Yaml {
             if (!src.substring(Math.min(after, src.length())).isBlank()) documents++;
           }
         }
-        case SCALAR -> add(scalar(e), e);
+        case SCALAR -> {
+          if (e.style == Token.SINGLE_QUOTED_SCALAR_STYLE || e.style == Token.DOUBLE_QUOTED_SCALAR_STYLE) {
+            // yaml 1.10: a comment right after a quoted value ('x'#c) is an error; libyaml takes it as a comment
+            int after = charIndex(src, e.endMark.index);
+            if (after < src.length() && src.charAt(after) == '#') {
+              errors.add(YamlError.semantic("Comments must be separated from other tokens by white space characters"));
+            }
+          }
+          add(scalar(e), e);
+        }
         case ALIAS -> {
           String name = cstr(e.anchor);
           Node src = anchors.get(name);

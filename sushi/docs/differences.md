@@ -7,7 +7,7 @@ only on invalid input; **open** = decision pending.
 
 | id | WP | area | class | difference | decision |
 |---|---|---|---|---|---|
-| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, open | 49 YAML error-wording differences and 8 accept/reject mismatches out of 1,035 mutations (0 on the 266 real configs); details below | open: accept, or map to yaml@1.10 wording later |
+| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, open | 49 YAML error-wording differences and 6 accept/reject mismatches out of 1,035 mutations (0 on the 266 real configs); details below | open: accept, or map to yaml@1.10 wording later |
 | KD-2 | WP-4 | ElementDefinition.clone() | none | re-fetches the cached StructureDefinition of the element (`_edStructureDefinition`) instead of deep-copying it | accepted (cache is read-only) |
 | KD-3 | WP-4 | JS TypeError crash paths | diag | where TS crashes with a JS TypeError on unexpected input, the port reproduces it only at a few sites, with V8-style messages (`Cannot read properties of undefined (reading 'x')`); elsewhere Java fails differently | accepted; add sites when the differential finds them |
 | KD-4 | WP-6 | metadata de-duplication (MasterFisher) | none | a missing key is treated like a key whose value is undefined; cannot change results | accepted |
@@ -24,27 +24,24 @@ yaml@1.10 judge differently. All 266 real corpus `sushi-config.yaml` files impor
 and none of the 1,035 mutation inputs differs in the imported configuration.
 
 **Evidence.** `MutationConfigTest` (scripts/oracle/config-mutations.py, oracle = TS SUSHI 3.21.1 on node 22):
-1,035 inputs: 936 identical, 42 typed-lossy (same TS-shaped configuration; the typed `Configuration` can't hold a
+1,035 inputs: 938 identical, 42 typed-lossy (same TS-shaped configuration; the typed `Configuration` can't hold a
 raw value of an unexpected type, see `ConfigurationJs`), **49 yaml-wording** (both reject, different message),
-**8 accept/reject mismatches** (2 only TS rejects, 6 only Java rejects), 0 import differences.
+**6 accept/reject mismatches** (1 only TS rejects, 5 only Java rejects), 0 import differences.
 
 **Cause.** The YAML scanner/parser is the libyaml 0.2.5 port vendored from fhir-ig-jekyll (shared with the Jekyll
 shim); yaml@1.10 has its own parser with its own error detection and messages. The composer on top already follows
 yaml@1.10 (core schema, duplicate keys, etc.). Consequence for users: the `Error parsing configuration: <message>`
-line differs, or (8 cases) a config with stray tabs/control characters/odd indentation is accepted by one side only.
+line differs, or (6 cases) a config with control characters, NEL, a stray `: x` line, a plain value starting with `%`, or a self-referencing alias is accepted by one side only.
 
 **Decision (open, for the owner):**
 - *Accept* (current state): documented here; malformed configs still fail (or pass) with an error at the same place
-  in 49 of 57 cases; cost zero; risk: users comparing error text, and 8 edge inputs where the build outcome differs.
-- *Fix later*: map libyaml's errors to yaml@1.10's wording and add yaml@1.10's extra checks (e.g. tab-started plain
-  values, comment spacing) as a SUSHI-only layer over the shared event layer; the mutation set is the regression test.
-  Recommended for the 8 accept/reject cases at least (they change the exit status); wording can follow.
+  in 49 of 55 cases; cost zero; risk: users comparing error text, and 8 edge inputs where the build outcome differs.
+- *Fix later*: map libyaml's errors to yaml@1.10's wording and add yaml@1.10's extra checks as a SUSHI-only layer over the shared event layer; the mutation set is the regression test.
+  Recommended for the 6 accept/reject cases at least (they change the exit status); wording can follow.
 
 | class | case | TS (yaml@1.10) | Java (libyaml port) |
 |---|---|---|---|
-| yaml-ts-only-rejects | `hand/comment-no-space` | Comments must be separated from other tokens by white space characters | (parses) |
 | yaml-wording | `hand/tab-indent` | Plain value cannot start with a tab character | All collection items must start at the same column |
-| yaml-java-only-rejects | `hand/tab-blank-line` | (parses) | Plain value cannot start with a tab character |
 | yaml-java-only-rejects | `hand/control-char` | (parses) | control characters are not allowed |
 | yaml-java-only-rejects | `hand/del-char` | (parses) | control characters are not allowed |
 | yaml-java-only-rejects | `hand/nel-char` | (parses) | Implicit map keys need to be followed by map values |

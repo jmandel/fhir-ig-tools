@@ -553,6 +553,19 @@ abstract class Scanner extends Reader {
   }
 
   /** yaml_parser_scan_to_next_token */
+  /** SUSHI: only blanks up to the next line break or the end of the input (tabsInBlankLines). */
+  private boolean restOfLineBlank() {
+    int k = 0;
+    while (true) {
+      cache(k + 2);
+      if (checkAt(' ', k) || checkAt('\t', k)) {
+        k++;
+      } else {
+        return isBreakzAt(k);
+      }
+    }
+  }
+
   private void scanToNextToken() {
     while (true) {
       cache(1);
@@ -1204,7 +1217,7 @@ abstract class Scanner extends Reader {
       cache(1);
       while (isBlank() || isBreak()) {
         if (isBlank()) {
-          if (leadingBlanks && (int) markColumn < indentLimit && isTab()) {
+          if (leadingBlanks && (int) markColumn < indentLimit && isTab() && !(tabsInBlankLines && restOfLineBlank())) {
             throw scannerError("while scanning a plain scalar", startMark, "found a tab character that violates indentation");
           }
           if (!leadingBlanks) {
