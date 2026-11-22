@@ -17,11 +17,18 @@
     <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
     <antlr.version>4.13.2</antlr.version>
     <junit.version>5.11.4</junit.version>
+    <!-- org.hl7.fhir.core release matching the publisher toolchain (7.0.7-SNAPSHOT) -->
+    <hl7.fhir.core.version>7.0.6</hl7.fhir.core.version>
   </properties>
 
   <dependencies>
-    <!-- Runtime: no third-party libraries (PORTING.md "Dependencies"). org.hl7.fhir.utilities (package cache) is added
-         by WP-7 at the version the IG Publisher ships. -->
+    <!-- Runtime: no third-party libraries except org.hl7.fhir.core modules the IG Publisher ships (PORTING.md D1).
+         org.hl7.fhir.utilities: package cache/registry/NpmPackage, used as is (D1a, WP-8). -->
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.utilities</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
     <!-- Test only: the ANTLR parser generated from SUSHI's grammar is the oracle for the hand-written FSH parser. -->
     <dependency>
       <groupId>org.antlr</groupId>
