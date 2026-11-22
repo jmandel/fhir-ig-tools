@@ -35,7 +35,7 @@ SUSHI_EXCLUDE="src/main/java/org/hl7/fhir/sushi/foo" scripts/build.sh ...  # bui
 code. No other third-party libraries, and **no ANTLR at runtime**.
 | dependency | scope | version | why |
 |---|---|---|---|
-| `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (added by WP-8) | the publisher's core (toolchain: 7.0.7-SNAPSHOT; pin the matching release) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, `VersionUtilities`, ini |
+| `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (added by WP-8) | the publisher's core (toolchain: 7.0.7-SNAPSHOT; pin the matching release) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
 | `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | compile, **only if** WP-3 needs it | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
@@ -46,6 +46,13 @@ SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapsh
 npm libraries are replaced by in-tree code: yaml 1.10 (WP-3, on the shared YAML event layer), ajv messages (WP-3),
 html-minifier-terser + sax (WP-9), lodash (`js.Js`), winston/chalk (`utils.FshLogger`), text-table, title-case,
 sanitize-filename, valid-url, junk, semver, ini, commander (WP-10), fhir-package-loader (WP-8).
+
+**D1a Package resolution: core as is, measured, patched only where it differs (owner decision).** WP-8 does not
+port fhir-package-loader's precedence rules up front. It uses core's package resolution (which packages/versions load,
+`#latest`/`#current`, which resource wins for an id/name/url) unchanged, then measures, for every lookup the
+exporters make on the reference IGs and the corpus, which definition wins in Java vs TS (log-and-compare probe), and
+ports an FPL rule only where core picks differently. Every such rule is listed in `fhirdefs` with the probe case that
+required it. Log *messages* about package loading must still match SUSHI/FPL's.
 
 **D2 FHIR model: SUSHI's own classes over an ordered JS value model, not core's model.** The output bytes depend on JS
 object key order, which in SUSHI comes from three different mechanisms, all verified on real output:
@@ -159,7 +166,7 @@ LOC = nonblank TS lines; tests = Jest tests (`tests/inventory.tsv`, generated fr
 | utils/PathUtils | 311 | `utils` | 44 | fshtypes | WP-5 |
 | export/StructureDefinitionExporter, Package, FHIRExporter, exportFHIR; utils/MasterFisher, FishingUtils | 2,194 | `export`, `utils` | 656 | WP-4/5, tank, fhirdefs | WP-6 |
 | export/InstanceExporter, ValueSetExporter, CodeSystemExporter, MappingExporter | 2,218 | `export` | 562 | WP-4/5/6 | WP-7 |
-| fhirdefs/FHIRDefinitions (+R5DefsForR4 json), fhir-package-loader 2.2.4 subset (~2.3k JS: loader, db/SQL precedence, cache, registry, current builds, virtual packages, byLoadOrder), utils/FHIRVersionUtils, axiosUtils, Processing.load*/fixCrossVersionDependencies | ~1,000 TS + FPL | `fhirdefs`, `fhirdefs.fpl` | 80 + FPL's semantics tests (new) | core utilities npm, js | WP-8 |
+| fhirdefs/FHIRDefinitions (+R5DefsForR4 json) over core's package layer as is (D1a; FPL rules ported only where the probe shows core differs), utils/FHIRVersionUtils, axiosUtils, Processing.load*/fixCrossVersionDependencies | ~1,000 TS | `fhirdefs` | 80 + probe | core utilities npm, js | WP-8 |
 | html-minifier-terser 5.1.1 subset (collapseWhitespace, keepClosingSlash…), sax well-formedness check (as used by ElementDefinition/InstanceExporter xhtml) | (JS lib) | `xhtml` | new: differential vs JS lib | – | WP-9 |
 | ig/IGExporter, predefinedResources; app.ts; run/FshToFhir; utils/Processing (rest), puns, text-table/title-case/sanitize-filename/ini/semver/junk equivalents | ~3,580 | `ig`, `run`, `utils`, root `App` | 319 (ig/**, run, Processing, puns, FSHLogger, axios) | everything | WP-10 |
 
@@ -183,11 +190,12 @@ rebased on main; plus the WP-specific gate below.
 | **WP-5 StructureDefinition + fhirtypes common** | StructureDefinition, common (setPropertyByPath, applyInsertRules, replaceReferences, orderedCloneDeep…), dataTypes/mixins/…, CodeSystem/ValueSet/IG/InstanceDefinition models, PathUtils | 3,873 | 260 | WP-4 ED (publish method signatures day 1) | key-order fidelity per D2 on reference output |
 | **WP-6 SD export core** | StructureDefinitionExporter, Package, FHIRExporter/exportFHIR, MasterFisher, FishingUtils | 2,194 | 656 | WP-4/5, FSHTank, FHIRDefinitions (test defs) | profiles/extensions/logicals/resources byte-identical on the 6 reference IGs |
 | **WP-7 instance + terminology export** | InstanceExporter, ValueSetExporter, CodeSystemExporter, MappingExporter | 2,218 | 562 | WP-4/5/6 | instances/VS/CS byte-identical on the 6 reference IGs |
-| **WP-8 packages** | FHIRDefinitions; FPL replacement: core `org.hl7.fhir.utilities.npm` for cache/registry/reading + ported FPL precedence (load order, SQL query order, version/`#latest`/`#current` resolution, virtual + predefined packages, R5-for-R4 defs, FPL log messages); FHIRVersionUtils; Processing dependency loading | ~1,000 + ~1.5k FPL | 80 + new | core utilities | for every corpus IG: same loaded-package list and same `fishForFHIR` winner as TS for every id/name/url queried by the exporters (log-and-compare probe) |
+| **WP-8 packages** (+ WP-9 xhtml, same agent) | FHIRDefinitions on core's package resolution **as is** (D1a): cache/registry/reading/version resolution from `org.hl7.fhir.utilities.npm`; virtual + predefined packages, R5-for-R4 defs, FPL-compatible log messages; a lookup probe (TS vs Java winner per id/name/url/type) and FPL rules ported only where core differs; FHIRVersionUtils; Processing dependency loading | ~1,000 | 80 + probe | core utilities | for every reference IG then corpus IG: same loaded-package list and same winner for every lookup the exporters make; each ported FPL rule justified by a probe case |
 | **WP-9 xhtml** | html-minifier-terser 5.1.1 subset SUSHI uses + sax-based xhtml well-formedness messages | (JS lib) | new | – | differential vs the JS library on all `text.div`/xhtml values in the 82 corpus IGs + fuzz; identical messages for malformed xhtml |
 | **WP-10 IG, CLI, glue** | IGExporter, predefinedResources, App (commander options), run/FshToFhir, Processing (rest: inputs, writing, fsh-index.txt via text-table, preprocessed), puns, title-case, sanitize-filename, ini; logger tests | ~3,580 | 319 | all | full differential: `fsh-generated/` byte-identical + log identical (minus pun/version lines) + same exit status on the 6 reference IGs, then the corpus |
 
-Ten packages for 6–8 agents: WP-9 is small (pair it with WP-3 or WP-8), WP-1 can be followed by WP-2 work by the same
+Ten packages, run by 8 agents (phase 2 staffing): WP-8+WP-9 share an agent; WP-10 starts later, its leaf parts
+(puns, text-table, title-case, sanitize-filename, `testhelpers.LoggerSpy`) are done by the integrator. Originally: WP-9 is small (pair it with WP-3 or WP-8), WP-1 can be followed by WP-2 work by the same
 agent, and WP-10 can start late (its first weeks: puns/text-table/title-case/sanitize + Processing). Critical path:
 WP-5 ↔ WP-4 → WP-6 → WP-7 → WP-10. Day 1 for every WP: replace its skeletons' `TODO` bodies with **real
 signatures** (public methods other WPs call), commit to main, then implement.
@@ -213,6 +221,14 @@ signatures** (public methods other WPs call), commit to main, then implement.
   ignoring the pun/version lines) to `../work/sushi-port/diff/<IG>-<label>.json`. Inputs: the 6-IG reference set at
   `/srv/ig/sushi-spike/runs/*-ref-*` (genomics-reporting, ITI.MHD, ch-term, EEHRxF logical, ch-ekm, smart-anc), then
   the 267 FSH IGs of the corpus (`work/sushi-spike/fsh-repos.txt`). The Java half runs once `App` works (WP-10).
+
+## 6a. Integration (phase 2)
+
+The integrator (phase-1 agent) owns `main` and the contract packages. WPs file `<UTC> | <wp> | merge <branch>@<commit>`
+or `| <wp> | contract: <what/why>` lines in `../progress/sushi-port-requests.log`. Merge rule: the branch rebased on
+`main` builds green (`scripts/build.sh`), touches only the WP's own packages (plus its tests), or the contract change
+was accepted. Accepted contract changes are announced in the `main` commit message and as
+`| integrator | contract changed: …` in the requests log. Merges are fast-forward/rebase merges (linear history).
 
 ## 7. Monorepo move (planned)
 
@@ -241,8 +257,8 @@ shim, `sushi` = this port). This repo is laid out to move as is:
    both land. Mitigation: signatures on day 1, small frequent merges to main.
 2. **Hand-written parser parity (WP-1)**: ANTLR error recovery and message text; WP-2 must not wait (CST contract +
    ANTLR adapter first).
-3. **Package precedence (WP-8)**: a wrong winner silently changes base definitions everywhere; needs its own probe
-   against TS before exporters' differential results mean anything.
+3. **Package precedence (WP-8)**: core's resolution is used as is (D1a); a wrong winner silently changes base definitions everywhere, so the probe
+   against TS must run before exporters' differential results mean anything.
 4. **Hidden JS semantics** (key order from assignment order, `Number` formatting in messages, regex, sort
    comparators, `localeCompare`): conventions above; reviewers check them.
 5. **YAML**: shared layer refactor in the shim is outside this repo; WP-3 can vendor the event layer temporarily
