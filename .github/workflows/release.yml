@@ -7,6 +7,9 @@ name: Release
 #   shim.jar                       the shim itself (java -jar shim.jar build --destination <dir>)
 #   fhir-ig-jekyll.zip             offline bundle: shim.jar + both wrappers + docs and licenses
 # Asset names don't carry the version, so .../releases/latest/download/<asset> always works.
+# The build uses JDK 21 for all modules; shim.jar's class files still target Java 17 (--release 17).
+# sushi/target/sushi.jar (the SUSHI port) is built and tested too, but is NOT published: whether to ship it is the
+# owner's decision. The disabled "Publish sushi.jar" step at the end shows how it would be added.
 on:
   push:
     tags: ['v*']
@@ -34,9 +37,9 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'   # class files target Java 17; runs on 17+
+          java-version: '21'   # sushi needs 21; common and jekyll are compiled with --release 17, so shim.jar runs on 17+
           cache: maven
-      - name: Build (Maven; jekyll/target/shim.jar is the self-contained release jar, common shaded in)
+      - name: Build (Maven, all modules; jekyll/target/shim.jar is the self-contained release jar, common shaded in)
         run: ./build.sh -B -ntp package
       - name: Test
         run: |
@@ -75,3 +78,10 @@ jobs:
         run: |
           W=$(mktemp -d); cp dist/jekyll-shim "$W/"
           FHIR_IG_JEKYLL_HOME=$(mktemp -d) scripts/e2e.sh "$W"
+      # Disabled: publishing the SUSHI port's jar is the owner's decision (docs/MONOREPO.md). To ship it, remove the
+      # `if: false` line, and add sushi.jar to SHA256SUMS in the Package step so the checksums cover it.
+      - name: Publish sushi.jar (disabled)
+        if: false
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" sushi/target/sushi.jar --clobber
