@@ -1,7 +1,7 @@
 # Differences from TypeScript SUSHI 3.21.1
 
 Behaviour where the Java port knowingly differs from TS SUSHI 3.21.1. Each entry: scope, evidence, decision.
-Every WP adds its entries when it finishes (WP-1/2/7/10 pending). Output-affecting differences on real inputs are
+Every WP adds its entries when it finishes (WP-1/2/7 pending). Output-affecting differences on real inputs are
 bugs, not entries. Classes: **none** = no observable effect; **diag** = messages/diagnostics only; **malformed** =
 only on invalid input; **open** = decision pending.
 
@@ -16,6 +16,12 @@ only on invalid input; **open** = decision pending.
 | KD-7 | WP-6 | applyDeferredRules TypeError branch | diag | the TS TypeError branch surfaces as an uncaught `Common.JsTypeError` | accepted (crash in both; message text may differ) |
 | KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md); log-only D7/D8 there. The FPL warning "Failed to download most recent X#current from current builds. Using most recent cached package instead." (build not listed on build.fhir.org/ig/qas.json) is reproduced (corpus case HL7-cz__ps) | n/a; D7 info line still open |
 | KD-9 | WP-3 | typed Configuration | malformed, none | 42 mutation inputs with a raw YAML value of the wrong type (e.g. `title: 2023`): the TS-shaped configuration and all output/messages are identical, but the typed `Configuration` object cannot hold the raw value (see `ConfigurationJs`); none in the 266-config corpus | **accepted** (owner, 2026-11-22) |
+| KD-10 | WP-10 | latest-SUSHI-version check | diag | off by default (PORTING D7): the summary box then shows no version block, as TS does when its `npm view` check finds the running release is the latest; enable with `-Dsushi.versionCheck=true` / `SUSHI_VERSION_CHECK=true` (`--require-latest` always checks). The Java port runs no `npm view`: its first source fails (`Unable to determine the latest version of sushi: npm is not used by the Java port of SUSHI`, info) and the registry fallback (https://registry.npmjs.org/fsh-sushi) is used, with TS's messages | accepted (D7) |
+| KD-11 | WP-10 | `sushi update-dependencies` rewrite of sushi-config.yaml | none | TS re-serialises the whole file with the yaml library (its prompt warns this "may affect the formatting of your file"); the port edits only the version scalars of the top-level `dependencies` block in place and keeps every other byte | accepted (no information lost; same resulting configuration) |
+| KD-12 | WP-10 | `sushi init` sushi-config.yaml | none | the template is shipped as the yaml library re-serialises it (TS: `YAML.parseDocument` + `set` + `toString`); answered values are substituted in place and quoted when a plain YAML scalar would not read back as the same string. The ported init tests compare with the TS fixtures | accepted |
+| KD-13 | WP-10 | page ordering in auto-generated IG pages (`localeCompare`) | none | TS sorts unprefixed page file names with ICU collation (`String.prototype.localeCompare`); the port approximates ICU root collation (ASCII punctuation/digits/letters in CLDR order, case- and accent-insensitive first, then accents, then lowercase-before-uppercase); identical on all reference/corpus IGs measured | accepted; revisit if the differential finds a page-order difference |
+| KD-14 | WP-10 | "history" error text | malformed, diag | the deprecated `history` property is reported with the package-list JSON in importConfiguration's key order (the typed Configuration keeps no raw object); TS prints the raw object, which only differs for hand-built configurations (a unit test) | accepted |
+| KD-15 | WP-10 | ini parsing quirks (ig.ini) | none | `ini` 5.0.0 decode/encode ported (`ig.Ini`); a quoted value that JSON-parses to a non-string (e.g. `'5'`) becomes its string form, which only feeds "is it null" checks | accepted |
 
 
 ## KD-1 Malformed sushi-config.yaml: YAML error wording (WP-3)
