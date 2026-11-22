@@ -22,7 +22,7 @@ final class Atn {
   }
 
   static final class State {
-    final int number;
+    int number;
     final StateType type;
     final int ruleIndex;
     final List<Transition> transitions = new ArrayList<>(2);
@@ -93,12 +93,17 @@ final class Atn {
       };
     }
 
-    /** The token types this transition matches (LL1Analyzer: NOT_SET is complemented over 1..maxTokenType). */
-    TokenSet label(int maxTokenType) {
+    /**
+     * The token types LL1Analyzer adds for this transition: NOT_SET is complemented over 1..maxTokenType, correctly
+     * by the tool (which decides LL(1) codegen), with the JS runtime's IntervalSet at parse time
+     * ({@link JsIntervalSet}).
+     */
+    TokenSet label(int maxTokenType, boolean runtime) {
       return switch (type) {
         case ATOM -> TokenSet.of(label);
         case SET -> set;
-        case NOT_SET -> set.complement(maxTokenType);
+        case NOT_SET -> runtime ? JsIntervalSet.ofTypes(set, maxTokenType).complement(1, maxTokenType).members()
+            : set.complement(maxTokenType);
         default -> null;
       };
     }
@@ -129,6 +134,15 @@ final class Atn {
       epsilon(ruleToStart[r], h.left);
       epsilon(h.right, ruleToStop[r]);
     }
+    // the tool's addEOFTransitionToStartRules target (its EOF edges from rule stop states are not serialized)
+    newState(StateType.BASIC);
+    // ATNOptimizer.optimizeStates: drop removed states and renumber in creation order
+    for (State s : building) {
+      if (removed.contains(s)) continue;
+      s.number = states.size();
+      states.add(s);
+    }
+    building = null;
     // the runtime's deserializer adds the follow links (stop state -> follow state of every invocation) in state order
     for (State s : states) {
       for (Transition t : s.transitions) {
@@ -142,11 +156,17 @@ final class Atn {
   }
 
   private int currentRule;
+  private List<State> building = new ArrayList<>();
+  private final Set<State> removed = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
   private State newState(StateType type, int rule) {
-    State s = new State(states.size(), type, rule);
-    states.add(s);
+    State s = new State(building.size(), type, rule);
+    building.add(s);
     return s;
+  }
+
+  private void removeState(State s) {
+    removed.add(s);
   }
 
   private State newState(StateType type) {
@@ -276,6 +296,7 @@ final class Atn {
           && q.transition(0).type != TransitionType.RULE) {
         State blockEnd = q.transition(0).target;
         if (blockEnd.type == StateType.BLOCK_END) {
+          removeState(q);
           if (pt.type == TransitionType.RULE) pt.followState = blockEnd;
           else pt.target = blockEnd;
         }
@@ -294,6 +315,7 @@ final class Atn {
           && (isRule && tr.followState == el.right || tr.target == el.right)) {
         if (isRule) tr.followState = els.get(i + 1).left;
         else tr.target = els.get(i + 1).left;
+        removeState(el.right);
       } else {
         epsilon(el.right, els.get(i + 1).left);
       }
@@ -307,7 +329,7 @@ final class Atn {
   TokenSet nextTokens(State s) {
     if (s.next == null) {
       TokenSet r = new TokenSet();
-      look(s, null, LookCtx.NONE, r, new HashSet<>(), new BitSet(), false);
+      look(s, null, LookCtx.NONE, r, new HashSet<>(), new BitSet(), false, true);
       s.next = r;
     }
     return s.next;
@@ -316,7 +338,7 @@ final class Atn {
   /** atn.nextTokens(s, ctx) = LL1Analyzer.LOOK(s, null, ctx) with the parser's actual rule context (addEOF). */
   TokenSet nextTokens(State s, ParserRuleContext ctx) {
     TokenSet r = new TokenSet();
-    look(s, null, LookCtx.fromRuleContext(this, ctx), r, new HashSet<>(), new BitSet(), true);
+    look(s, null, LookCtx.fromRuleContext(this, ctx), r, new HashSet<>(), new BitSet(), true, true);
     return r;
   }
 
@@ -346,7 +368,7 @@ final class Atn {
     TokenSet[] look = new TokenSet[s.size()];
     for (int alt = 0; alt < s.size(); alt++) {
       look[alt] = new TokenSet();
-      look(s.transition(alt).target, null, LookCtx.EMPTY, look[alt], new HashSet<>(), new BitSet(), false);
+      look(s.transition(alt).target, null, LookCtx.EMPTY, look[alt], new HashSet<>(), new BitSet(), false, false);
       if (look[alt].isEmpty()) look[alt] = null;
     }
     return look;
@@ -397,7 +419,7 @@ final class Atn {
   private record Busy(State s, LookCtx ctx) {}
 
   private void look(State s, State stopState, LookCtx ctx, TokenSet look, Set<Busy> busy, BitSet calledRuleStack,
-      boolean addEOF) {
+      boolean addEOF, boolean runtime) {
     if (!busy.add(new Busy(s, ctx))) return;
     if (s == stopState) {
       if (ctx == null) {
@@ -420,7 +442,7 @@ final class Atn {
         boolean removed = calledRuleStack.get(s.ruleIndex);
         try {
           calledRuleStack.clear(s.ruleIndex);
-          look(states.get(ctx.returnState), stopState, ctx.parent, look, busy, calledRuleStack, addEOF);
+          look(states.get(ctx.returnState), stopState, ctx.parent, look, busy, calledRuleStack, addEOF, runtime);
         } finally {
           if (removed) calledRuleStack.set(s.ruleIndex);
         }
@@ -434,14 +456,14 @@ final class Atn {
         // SingletonPredictionContext.create(null ctx, ...) is a context whose parent is null (not EMPTY)
         try {
           calledRuleStack.set(t.target.ruleIndex);
-          look(t.target, stopState, newContext, look, busy, calledRuleStack, addEOF);
+          look(t.target, stopState, newContext, look, busy, calledRuleStack, addEOF, runtime);
         } finally {
           calledRuleStack.clear(t.target.ruleIndex);
         }
       } else if (t.isEpsilon()) {
-        look(t.target, stopState, ctx, look, busy, calledRuleStack, addEOF);
+        look(t.target, stopState, ctx, look, busy, calledRuleStack, addEOF, runtime);
       } else {
-        look.addAll(t.label(maxTokenType));
+        look.addAll(t.label(maxTokenType, runtime));
       }
     }
   }

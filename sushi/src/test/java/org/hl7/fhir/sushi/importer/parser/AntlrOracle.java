@@ -35,11 +35,56 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  *     {@code <missing null>} for tokens without a literal (Java: the display name);</li>
  * <li>exitRule always sets {@code ctx.stop = LT(-1)} (Java uses the EOF token once EOF was matched);</li>
  * <li>BufferedTokenStream.getText(interval) lexes the whole remaining input first (JS fill(); Java syncs to stop),
- *     which decides where lexer errors appear among parser errors.</li>
+ *     which decides where lexer errors appear among parser errors;</li>
+ * <li>LL(1) lookahead through ~(...) uses the JS IntervalSet.complement, which is buggy (JsIntervalSet).</li>
  * </ul>
  */
 public final class AntlrOracle {
   private AntlrOracle() {}
+
+  static {
+    jsNotSetLookahead(org.hl7.fhir.sushi.importer.antlr.FSHParser._ATN);
+    jsNotSetLookahead(org.hl7.fhir.sushi.importer.antlr.MiniFSHParser._ATN);
+  }
+
+  /**
+   * The JS runtime's IntervalSet.complement is buggy (see JsIntervalSet), which changes what LL1Analyzer computes
+   * through ~(...) transitions; make the Java ATN's NOT_SET transitions report a label whose (correct) complement
+   * is the JS result. Matching still uses the real set.
+   */
+  private static void jsNotSetLookahead(org.antlr.v4.runtime.atn.ATN atn) {
+    for (org.antlr.v4.runtime.atn.ATNState st : atn.states) {
+      if (st == null) continue;
+      st.nextTokenWithinRule = null;
+      for (int i = 0; i < st.getNumberOfTransitions(); i++) {
+        org.antlr.v4.runtime.atn.Transition t = st.transition(i);
+        if (t instanceof org.antlr.v4.runtime.atn.NotSetTransition ns && !(t instanceof JsNotSet)) {
+          TokenSet real = new TokenSet();
+          for (int x : ns.set.toList()) real.add(x);
+          TokenSet jsComplement = JsIntervalSet.ofTypes(real, atn.maxTokenType).complement(1, atn.maxTokenType).members();
+          IntervalSet label = new IntervalSet();
+          for (int x = 1; x <= atn.maxTokenType; x++) if (jsComplement.contains(x)) label.add(x);
+          st.setTransition(i, new JsNotSet(ns.target, ns.set, label));
+        }
+      }
+    }
+  }
+
+  /** A ~(set) transition whose LL1Analyzer lookahead is the JS runtime's (buggy) complement. */
+  static final class JsNotSet extends org.antlr.v4.runtime.atn.SetTransition {
+    final IntervalSet real;
+
+    JsNotSet(org.antlr.v4.runtime.atn.ATNState target, IntervalSet real, IntervalSet jsComplement) {
+      super(target, jsComplement); // LL1Analyzer adds label() as is (not instanceof NotSetTransition)
+      this.real = real;
+    }
+
+    @Override public int getSerializationType() { return NOT_SET; }
+
+    @Override public boolean matches(int symbol, int minVocabSymbol, int maxVocabSymbol) {
+      return symbol >= minVocabSymbol && symbol <= maxVocabSymbol && !real.contains(symbol);
+    }
+  }
 
   /** One parse: the CST plus all tokens (all channels) in stream order. */
   public record Result<T extends ParserRuleContext>(T tree, List<Token> tokens) {}
