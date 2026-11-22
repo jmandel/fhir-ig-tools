@@ -3,6 +3,7 @@ package org.hl7.fhir.sushi.utils;
 import static org.hl7.fhir.sushi.testhelpers.JsAssert.assertMatches;
 import static org.hl7.fhir.sushi.testhelpers.JsAssert.at;
 import static org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy;
+import static org.hl7.fhir.sushi.testhelpers.MetadataAssert.*;
 import static org.hl7.fhir.sushi.testhelpers.MinimalConfig.minimalConfig;
 import static org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.getTestFHIRDefinitions;
 import static org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.testDefsPath;
@@ -10,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,48 +97,6 @@ class MasterFisherTest {
   @BeforeEach
   void setUp() {
     loggerSpy.reset();
-  }
-
-  /** A Metadata built like a TS object literal: md("id", "x", "name", "y", ...); TS `abstract` = "_abstract". */
-  static Metadata md(Object... kv) {
-    Metadata m = new Metadata();
-    for (int i = 0; i < kv.length; i += 2) {
-      try {
-        Metadata.class.getField((String) kv[i]).set(m, kv[i + 1]);
-      } catch (ReflectiveOperationException e) {
-        throw new IllegalArgumentException((String) kv[i], e);
-      }
-    }
-    return m;
-  }
-
-  /** Jest toEqual on Metadata (undefined properties ignored = Java null). */
-  static void assertMetadataEquals(Metadata expected, Metadata actual) {
-    if (!MasterFisher.metadataEquals(expected, actual)) {
-      fail("expected: " + show(expected) + "\n but was: " + show(actual));
-    }
-  }
-
-  static void assertMetadatasEqual(List<Metadata> expected, List<Metadata> actual) {
-    assertEquals(expected.size(), actual.size(), () -> "lengths differ; actual: " + actual.stream().map(
-        MasterFisherTest::show).toList());
-    for (int i = 0; i < expected.size(); i++) {
-      assertMetadataEquals(expected.get(i), actual.get(i));
-    }
-  }
-
-  static String show(Metadata m) {
-    if (m == null) return "undefined";
-    StringBuilder sb = new StringBuilder("{");
-    for (var f : Metadata.class.getFields()) {
-      try {
-        Object v = f.get(m);
-        if (v != null) sb.append(f.getName()).append(": ").append(v).append(", ");
-      } catch (IllegalAccessException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-    return sb.append("}").toString();
   }
 
   static String r4Path(String file) {
