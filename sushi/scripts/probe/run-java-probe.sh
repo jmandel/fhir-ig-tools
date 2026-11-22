@@ -5,10 +5,10 @@
 # usage: scripts/probe/run-java-probe.sh <IG>       (TS half first: run-sushi.sh -n "-r .../probe.js" <IG> probe)
 # Prereq: scripts/build.sh -B -q -DskipTests test-compile dependency:build-classpath -Dmdep.outputFile=$BUILD/cp.txt
 set -eu
-ROOT=$ROOT; . "$ROOT/scripts/lib/vmdata.sh"
+ROOT="${ROOT:-$(cd "$(dirname "$0")/../../.." && pwd)}"; . "$ROOT/scripts/lib/vmdata.sh"
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 NAME=$1; LABEL=${2:-probe}
-SP=$VMDATA/sushi-spike; BUILD=$VMDATA/sushi-port/build/$(basename "$HERE"); P=$VMDATA/sushi-port/probe
+SP=$VMDATA/sushi-spike; BUILD=${SUSHI_BUILD_DIR:-$VMDATA/sushi-port/build/$(basename "$HERE")}; P=$VMDATA/sushi-port/probe
 SNAP=$VMDATA/determinism/snap/baseline-20261120
 SUB=$(awk -F'\t' -v n="$NAME" '$1==n{print $8}' "$ROOT/work/sushi-spike/corpus.tsv"); [ "$SUB" = . ] && SUB=""
 vm "[ -d '$SP/src/$NAME' ]" || to_vm "$ROOT/repos/$NAME" "$SP/src/$NAME" --exclude .git --exclude output --exclude temp --exclude input-cache/txcache

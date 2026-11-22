@@ -5,7 +5,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
 IN="$1"; MAX="${2:-10}"
 NM=/srv/ig/sushi-spike/sushi/node_modules
-OUT=/srv/ig/sushi-port/build/$(basename "$HERE")
+OUT=${SUSHI_BUILD_DIR:-/srv/ig/sushi-port/build/$(basename "$HERE")}
 docker run --rm -v /srv/ig:/srv/ig -v "$HERE/scripts:/scripts:ro" --entrypoint bash "${IMAGE:-ig-publisher-localdev-ca}" -c "
   set -e; cd \$(dirname '$IN'); b=\$(basename '$IN' .ndjson)
   node /scripts/xhtml/oracle.js $NM < '$IN' > \$b.js.out

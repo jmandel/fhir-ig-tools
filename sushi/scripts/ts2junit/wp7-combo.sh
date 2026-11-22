@@ -6,7 +6,7 @@
 # Overlay order: wp7 checkout <- wp2, wp8, wp6, wp4, wp5 (branch commits vs merge-base, then uncommitted files) <- wp7 src
 set -e
 NAME="$1"; KEEP="$2"; shift 2
-R=$ROOT; C=$R/work/wp7-combo-$NAME
+R="${ROOT:-$(cd "$(dirname "$0")/../../.." && pwd)}"; C=$R/work/wp7-combo-$NAME
 rm -rf $C && mkdir -p $C
 (cd $R/sushi-java-wp7 && tar --exclude .git -cf - .) | tar -xf - -C $C
 for w in ${COMBO_WPS:-wp2 wp8 wp6 wp4 wp5}; do

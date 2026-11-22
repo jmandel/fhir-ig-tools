@@ -4,9 +4,9 @@
 # when the result is identical. Results: work/sushi-port/diff/<IG>-corpus.json; one summary line per IG appended to
 # work/sushi-port/diff/corpus-summary.txt.
 # usage: scripts/corpus-diff.sh [-j N] [list-file]    (default list: work/sushi-spike/fsh-repos.txt, N=3)
-# Already-reported IGs are skipped (delete the report to redo one). JAR=... as for diff-run.sh.
+# Already-reported IGs are skipped (delete the report to redo one). JAR=... and ROOT as for diff-run.sh.
 set -u
-HERE="$(cd "$(dirname "$0")/.." && pwd)"; ROOT="${ROOT:-$ROOT}"; . "$ROOT/scripts/lib/vmdata.sh"
+HERE="$(cd "$(dirname "$0")/.." && pwd)"; ROOT="${ROOT:-$(cd "$HERE/.." && pwd)}"; . "$ROOT/scripts/lib/vmdata.sh"
 J=3; [ "${1:-}" = -j ] && { J=$2; shift 2; }
 LIST=${1:-$ROOT/work/sushi-spike/fsh-repos.txt}; REP="$ROOT/work/sushi-port/diff"; mkdir -p "$REP"
 one() {

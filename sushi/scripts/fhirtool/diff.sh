@@ -2,9 +2,9 @@
 # fhir-tool xmlToObj differential: JS (oracle.js) vs Java (FhirXmlOracleMain) on the corpus XML + mutations.
 # usage: scripts/fhirtool/diff.sh [mutations-per-file] [seed]   (corpus files under /srv/ig/sushi-port/fhirtool/corpus)
 set -eu
-ROOT=$ROOT; . "$ROOT/scripts/lib/vmdata.sh"
+ROOT="${ROOT:-$(cd "$(dirname "$0")/../../.." && pwd)}"; . "$ROOT/scripts/lib/vmdata.sh"
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
-BUILD=$VMDATA/sushi-port/build/$(basename "$HERE"); D=$VMDATA/sushi-port/fhirtool; FT=$VMDATA/sushi-spike/sushi/node_modules/fhir-tool
+BUILD=${SUSHI_BUILD_DIR:-$VMDATA/sushi-port/build/$(basename "$HERE")}; D=$VMDATA/sushi-port/fhirtool; FT=$VMDATA/sushi-spike/sushi/node_modules/fhir-tool
 vm "cat > $D/oracle.js" < "$HERE/scripts/fhirtool/oracle.js"
 vm "cat > $D/cmp.py" <<'PY'
 import json,sys

@@ -4,7 +4,7 @@
 # files (and, for information, the rest) with TS SUSHI 3.21.1's fsh-generated/resources.
 # usage: wp7-gate.sh <IG name, e.g. IHE__ITI.MHD> [combo-name]     (start under work/locks/waitfree.sh timing)
 set -eu
-R=$ROOT; . "$R/scripts/lib/vmdata.sh"
+R="${ROOT:-$(cd "$(dirname "$0")/../../.." && pwd)}"; . "$R/scripts/lib/vmdata.sh"
 NAME=$1; COMBO=${2:-gate}; C=$R/work/wp7-combo-$COMBO
 SP=$VMDATA/sushi-spike; SNAP=$VMDATA/determinism/snap/baseline-20261120; PKG=$SP/pkg/$NAME
 G=$VMDATA/sushi-port/wp7gate/$NAME; OUT=$G/java-out
