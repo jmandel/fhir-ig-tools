@@ -68,6 +68,11 @@ public final class CstDump {
     return t == null ? "null" : t.getTokenIndex() < 0 ? "conj(" + token(t) + ")" : String.valueOf(t.getTokenIndex());
   }
 
+  /** The full dump: "#tokens", "#errors", "#tree" sections (scripts/wp1/js-dump.js prints the same). */
+  public static String full(List<Token> tokens, Recorder errors, ParseTree tree, String[] ruleNames) {
+    return "#tokens\n" + tokens(tokens) + "#errors\n" + errors.out + "#tree\n" + tree(tree, ruleNames);
+  }
+
   /** An error listener that records errors in the dump format. */
   public static final class Recorder implements ErrorListener {
     public final StringBuilder out = new StringBuilder();
