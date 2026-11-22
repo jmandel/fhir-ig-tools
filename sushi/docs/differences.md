@@ -7,7 +7,7 @@ only on invalid input; **open** = decision pending.
 
 | id | WP | area | class | difference | decision |
 |---|---|---|---|---|---|
-| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, diag | on 1,035 malformed/unusual configs: same accept/reject and same configuration everywhere; 44 YAML error messages worded differently (0 on the 266 real configs); details below | accepted (owner decision 2026-11-22: fix accept/reject, wording where straightforward) |
+| KD-1 | WP-3 | sushi-config.yaml parsing | malformed, diag | on 1,035 malformed/unusual configs: same accept/reject, same configuration and exit status everywhere; 44 YAML error messages worded differently (0 on the 266 real configs); details below | **accepted** (owner, 2026-11-22): exact wording needs a port of yaml@1.10's ~1,500-line CST parser as an error pass; not worth it for messages on broken configs; revisit if users report it |
 | KD-2 | WP-4 | ElementDefinition.clone() | none | re-fetches the cached StructureDefinition of the element (`_edStructureDefinition`) instead of deep-copying it | accepted (cache is read-only) |
 | KD-3 | WP-4 | JS TypeError crash paths | diag | where TS crashes with a JS TypeError on unexpected input, the port reproduces it only at a few sites, with V8-style messages (`Cannot read properties of undefined (reading 'x')`); elsewhere Java fails differently | accepted; add sites when the differential finds them |
 | KD-4 | WP-6 | metadata de-duplication (MasterFisher) | none | a missing key is treated like a key whose value is undefined; cannot change results | accepted |
@@ -15,6 +15,7 @@ only on invalid input; **open** = decision pending.
 | KD-6 | WP-6 | debug stack traces | diag | `--log-level debug` stack traces are Java's, not V8's | accepted |
 | KD-7 | WP-6 | applyDeferredRules TypeError branch | diag | the TS TypeError branch surfaces as an uncaught `Common.JsTypeError` | accepted (crash in both; message text may differ) |
 | KD-8 | WP-8 | package resolution | none | 0 differences: 5,497/5,497 lookups on the 6 reference IGs pick the same definition; FPL rules ported where core differed are in [package-resolution-differences.md](package-resolution-differences.md) | n/a |
+| KD-9 | WP-3 | typed Configuration | malformed, none | 42 mutation inputs with a raw YAML value of the wrong type (e.g. `title: 2023`): the TS-shaped configuration and all output/messages are identical, but the typed `Configuration` object cannot hold the raw value (see `ConfigurationJs`); none in the 266-config corpus | **accepted** (owner, 2026-11-22) |
 
 
 ## KD-1 Malformed sushi-config.yaml: YAML error wording (WP-3)
@@ -46,6 +47,9 @@ must start at the same column" reported on the enclosing collection). libyaml st
 equivalent of that regrouping, so the remaining 44 cases (tab-indented lines 23, mis-indented continuation lines 12,
 other 9) can't be mapped by a local rule. Exact parity would need a port of yaml@1.10's CST parser (parse-cst,
 ~1,500 JS lines) as the error-detection pass; not done. The build outcome is the same (both reject the file).
+
+**Decision (owner, 2026-11-22): accepted.** Not worth a CST-parser port for messages on broken configs; revisit if
+users report it.
 
 | case | TS (yaml@1.10) | Java |
 |---|---|---|

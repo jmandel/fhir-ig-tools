@@ -1,5 +1,6 @@
 package org.hl7.fhir.sushi.importer.config;
 
+import org.hl7.fhir.sushi.importer.ParseCodeLexeme;
 import static org.hl7.fhir.sushi.importer.config.JsOps.U;
 import static org.hl7.fhir.sushi.importer.config.JsOps.coalesce;
 import static org.hl7.fhir.sushi.importer.config.JsOps.entries;
@@ -235,11 +236,11 @@ public final class ImportConfiguration {
     // If it has a display, we need to split it out and handle it separately
     Matcher m = CODE_WITH_DISPLAY.matcher(yamlCode);
     if (m.matches()) {
-      FshCode concept = parseCodeLexeme(m.group(1));
+      FshCode concept = ParseCodeLexeme.parseCodeLexeme(m.group(1));
       concept.display = m.group(3).replace("\\\"", "\"");
       return concept;
     }
-    FshCode concept = parseCodeLexeme(yamlCode);
+    FshCode concept = ParseCodeLexeme.parseCodeLexeme(yamlCode);
     if (concept.system == null && concept.code.isEmpty()) {
       logger.error("Invalid code format for " + property + ": " + yamlCode, src(file));
       // don't return an invalid code
@@ -248,29 +249,6 @@ public final class ImportConfiguration {
     return concept;
   }
 
-  private static final Pattern CODE_SPLIT = Pattern.compile("(^|[^\\\\])(\\\\\\\\)*#");
-
-  /** Same as {@code importer.ParseCodeLexeme.parseCodeLexeme} (WP-2); kept local until that lands on main. */
-  static FshCode parseCodeLexeme(String conceptText) {
-    Matcher splitPoint = CODE_SPLIT.matcher(conceptText);
-    String system;
-    String code;
-    if (!splitPoint.find()) {
-      system = "";
-      code = conceptText.startsWith("#") ? conceptText.substring(1) : "";
-    } else {
-      String sp = splitPoint.group();
-      system = conceptText.substring(0, splitPoint.start()) + sp.substring(0, sp.length() - 1);
-      code = conceptText.substring(splitPoint.start() + sp.length());
-    }
-    system = system.replace("\\\\", "\\").replace("\\#", "#");
-    if (code.startsWith("\"") && code.endsWith("\"") && code.length() >= 1) {
-      code = code.substring(1, Math.max(1, code.length() - 1)).replace("\\\\", "\\").replace("\\\"", "\"");
-    }
-    FshCode concept = new FshCode(code);
-    if (!system.isEmpty()) concept.system = system;
-    return concept;
-  }
 
   private static Object parseCodingArray(Object codings, String property, String file) {
     if (nullish(codings)) return U;
