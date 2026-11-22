@@ -16,6 +16,7 @@ class LoggerSpyTest {
     loggerSpy.reset();
   }
 
+  @org.junit.jupiter.api.DisplayName("LoggerSpy captures all levels with locations")
   @Test void capturesAllLevelsWithLocations() {
     FshLogger.logger.debug("d");
     FshLogger.logger.error("e", new SourceInfo("x.fsh", new TextLocation(3, 1, 3, 9)));

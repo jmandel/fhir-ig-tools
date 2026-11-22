@@ -104,6 +104,11 @@
         <version>3.5.2</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
+          <!-- testcase name in the XML reports = the method's @DisplayName (= Jest fullName), which
+               scripts/test-inventory.py (coverage mode) matches against tests/inventory.tsv -->
+          <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+            <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+          </statelessTestsetReporter>
           <systemPropertyVariables>
             <!-- SUSHI checkout (tests + fixtures) on the VM, used by data-driven tests; tests skip when absent -->
             <sushi.ts.dir>${sushi.ts.dir}</sushi.ts.dir>

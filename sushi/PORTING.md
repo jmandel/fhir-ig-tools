@@ -215,7 +215,9 @@ signatures** (public methods other WPs call), commit to main, then implement.
 ## 6. Tests and the differential harness
 
 - **Unit tests (hand-ported, 1:1):** `test/<dir>/<X>.test.ts` → `src/test/java/org/hl7/fhir/sushi/<pkg>/<X>Test.java`,
-  one `@Nested` class per `describe`, `@DisplayName` = Jest title (the `fullName` must match for coverage). `beforeEach`
+  one `@Nested` class per `describe` (its `@DisplayName` = the describe title, for readability), and **each test
+  method's `@DisplayName` = the full Jest `fullName`** (describe titles + `it` title, space-joined): surefire reports
+  that as the testcase name, and coverage matches it. `beforeEach`
   → `@BeforeEach`, `loggerSpy` → capture sink on `FshLogger` (shared helper `testhelpers.LoggerSpy`, WP-10 provides
   it first; until then use `FshLogger.logger.setSink`), `getTestFHIRDefinitions` → `testhelpers` over the TS
   fixtures (`test/testhelpers/testdefs`, read in place from `-Dsushi.ts.dir`, not copied: 17 MB). Jest mocks
