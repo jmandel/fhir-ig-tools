@@ -6,16 +6,16 @@ usage (in the reference image, VM paths): python3 scripts/test-inventory.py /srv
 A Java test claims a TS test by its JUnit display name == the TS `fullName` (describe titles + it title, space-joined),
 see PORTING.md "Tests"."""
 import json, sys, os, re, glob, collections
-WP = [  # (regex on test file path relative to test/, WP)
-    (r'^import/(FSHImporter|FSHErrorListener)', 'WP-1'),
-    (r'^import/', 'WP-2'),
-    (r'^fhirtypes/ElementDefinition', 'WP-3'),
-    (r'^fhirtypes/', 'WP-4'), (r'^utils/PathUtils', 'WP-4'),
-    (r'^export/(StructureDefinition|Package|FHIRExporter)', 'WP-5'), (r'^utils/(MasterFisher|FishingUtils)', 'WP-5'),
-    (r'^export/', 'WP-6'),
-    (r'^fhirdefs/', 'WP-7'), (r'^utils/FHIRVersionUtils', 'WP-7'), (r'^utils/axiosUtils', 'WP-7'),
-    (r'^fshtypes/', 'WP-0'),
-    (r'^(ig|run)/', 'WP-8'), (r'^utils/', 'WP-8'),
+WP = [  # (regex on test file path relative to test/, WP) -- must match PORTING.md section 5; first match wins
+    (r'^import/FSHErrorListener', 'WP-1'),
+    (r'^import/(FSHImporter|FSHTank)', 'WP-2'),
+    (r'^import/', 'WP-3'), (r'^fshtypes/', 'WP-3'),
+    (r'^fhirtypes/ElementDefinition', 'WP-4'),
+    (r'^fhirtypes/', 'WP-5'), (r'^utils/PathUtils', 'WP-5'),
+    (r'^export/(StructureDefinition|Package|FHIRExporter)', 'WP-6'), (r'^utils/(MasterFisher|FishingUtils)', 'WP-6'),
+    (r'^export/', 'WP-7'),
+    (r'^fhirdefs/', 'WP-8'), (r'^utils/(FHIRVersionUtils|axiosUtils)', 'WP-8'),
+    (r'^(ig|run)/', 'WP-10'), (r'^utils/', 'WP-10'),
 ]
 def wp(rel):
     return next((w for r, w in WP if re.search(r, rel)), '?')

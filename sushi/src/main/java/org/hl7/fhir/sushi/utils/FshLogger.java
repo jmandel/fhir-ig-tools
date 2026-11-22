@@ -98,6 +98,7 @@ public final class FshLogger {
   private List<Object> ignoredWarnings = List.of(); // String or Pattern
   private List<Object> ignoredErrors = List.of();
   private Consumer<LogEntry> sink = consoleSink(new PrintStream(System.out, true, StandardCharsets.UTF_8), false);
+  private final List<Consumer<LogEntry>> taps = new java.util.concurrent.CopyOnWriteArrayList<>();
 
   private FshLogger() {}
 
@@ -149,7 +150,10 @@ public final class FshLogger {
       appendLines(full, "\n  Applied on Line: ", src.appliedLocation);
     }
     // 5. print
-    if (enabled(lvl)) sink.accept(new LogEntry(lvl, message, full.toString(), src));
+    LogEntry entry = new LogEntry(lvl, message, full.toString(), src);
+    // taps see every non-ignored message regardless of level, like winston's transport.write (which TS loggerSpy spies on)
+    for (Consumer<LogEntry> t : taps) t.accept(entry);
+    if (enabled(lvl)) sink.accept(entry);
   }
 
   private static void appendLines(StringBuilder sb, String prefix, TextLocation loc) {
@@ -200,6 +204,18 @@ public final class FshLogger {
     Consumer<LogEntry> old = sink;
     sink = s;
     return old;
+  }
+
+  /**
+   * Observe every message that passes the ignore filter, at ANY level (debug included, also while the secret logger
+   * silences output), with location suffixes appended: exactly what TS tests see through loggerSpy.
+   */
+  public void addTap(Consumer<LogEntry> tap) {
+    taps.add(tap);
+  }
+
+  public void removeTap(Consumer<LogEntry> tap) {
+    taps.remove(tap);
   }
 
   /** winston Console transport + SUSHI's printer: {@code "<level> <message>"} on stdout. */
