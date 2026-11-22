@@ -10,12 +10,14 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * PORTING.md D1: main code may import only the JDK, our own packages and org.hl7.fhir.core's utilities (r4/r5 model
+ * PORTING.md D1: main code may import only the JDK, our own packages (sushi, and common's shared code) and
+ * org.hl7.fhir.core's utilities (r4/r5 model
  * modules only for WP-3's ig.xml reading). Libraries that arrive transitively with core (jackson, guava, commons-*,
  * okhttp, icu4j, saxon, slf4j...) must not be used directly. Runs from the checkout (surefire's working dir).
  */
 class DependencyRuleTest {
-  static final List<String> ALLOWED = List.of("java.", "javax.xml.", "org.hl7.fhir.sushi.", "org.hl7.fhir.utilities.");
+  static final List<String> ALLOWED =
+      List.of("java.", "javax.xml.", "org.hl7.fhir.sushi.", "org.hl7.fhir.common.", "org.hl7.fhir.utilities.");
   static final Map<String, List<String>> ALLOWED_IN = Map.of(
       "org.hl7.fhir.r4.", List.of("importer/config/"), "org.hl7.fhir.r5.", List.of("importer/config/"));
 
@@ -39,7 +41,7 @@ class DependencyRuleTest {
     assertEquals(List.of(), bad);
   }
 
-  /** The pom's non-test dependencies are exactly core's utilities and commons-compress (runtime). */
+  /** The pom's non-test dependencies are exactly fhir-ig-common, core's utilities and commons-compress (runtime). */
   @Test void pomRuntimeDependenciesAreCoreUtilitiesAndCommonsCompressOnly() throws IOException {
     Path pom = Paths.get("pom.xml");
     org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(pom));
@@ -53,6 +55,6 @@ class DependencyRuleTest {
       Matcher a = Pattern.compile("<artifactId>([^<]+)</artifactId>").matcher(d);
       if (a.find()) nonTest.add(a.group(1));
     }
-    assertEquals(List.of("org.hl7.fhir.utilities", "commons-compress"), nonTest);
+    assertEquals(List.of("fhir-ig-common", "org.hl7.fhir.utilities", "commons-compress"), nonTest);
   }
 }

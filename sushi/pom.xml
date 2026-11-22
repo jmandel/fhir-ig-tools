@@ -1,27 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Java port of SUSHI 3.21.1 (FSH compiler). Package root org.hl7.fhir.sushi is a placeholder (naming decision N1 in PORTING.md). -->
+<!--
+  The Java port of SUSHI 3.21.1, the FSH compiler (docs/MONOREPO.md "Module rules", sushi/PORTING.md). Java 21.
+  Runtime dependencies: fhir-ig-common, and org.hl7.fhir.core's utilities (package cache, registry, NpmPackage) with
+  commons-compress, which core's package cache needs at runtime (PORTING.md D1). ANTLR is test-only: the parser
+  generated from SUSHI's grammar is the oracle for the hand-written FSH parser (D6).
+  `package` writes two jars:
+    target/fhir-ig-sushi-<version>.jar   this module's classes only
+    target/sushi.jar                     self-contained (common, core utilities and their libraries shaded in),
+                                         run as `java -jar sushi.jar <ig dir>`, the same options as `sushi`
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.hl7.fhir</groupId>
-  <artifactId>sushi-java</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  <name>sushi-java</name>
+  <parent>
+    <groupId>org.hl7.fhir</groupId>
+    <artifactId>fhir-ig-tools-parent</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>fhir-ig-sushi</artifactId>
+  <name>fhir-ig-sushi</name>
+  <description>Java port of SUSHI 3.21.1, the FSH compiler used by the FHIR IG Publisher</description>
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- scripts/build.sh points this at the VM disk (D11); default keeps plain `mvn` usable -->
+    <sushi.mainClass>org.hl7.fhir.sushi.App</sushi.mainClass>
+    <!-- where target/ goes; -Dsushi.buildDir=... moves it off the checkout -->
     <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
-    <antlr.version>4.13.2</antlr.version>
-    <junit.version>5.11.4</junit.version>
     <!-- org.hl7.fhir.core release matching the publisher toolchain (7.0.7-SNAPSHOT) -->
     <hl7.fhir.core.version>7.0.6</hl7.fhir.core.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.hl7.fhir</groupId>
+      <artifactId>fhir-ig-common</artifactId>
+    </dependency>
     <!-- Runtime: no third-party libraries except org.hl7.fhir.core modules the IG Publisher ships (PORTING.md D1).
          org.hl7.fhir.utilities: package cache/registry/NpmPackage, used as is (D1a, WP-8). -->
     <dependency>
@@ -29,7 +43,6 @@
       <artifactId>org.hl7.fhir.utilities</artifactId>
       <version>${hl7.fhir.core.version}</version>
     </dependency>
-    <!-- optional in core's pom but needed by its package cache (tgz/.index); same version as core 7.0.6 -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
@@ -48,7 +61,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -57,9 +69,42 @@
     <directory>${sushi.buildDir}</directory>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sushi-rules</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[21,)</version>
+                  <message>sushi needs JDK 21. On JDK 17, build only the shim: ./build.sh -B -pl jekyll -am package</message>
+                </requireJavaVersion>
+                <bannedDependencies>
+                  <message>sushi may depend only on fhir-ig-common, org.hl7.fhir.core modules and commons-compress (runtime); see docs/MONOREPO.md</message>
+                  <!-- direct dependencies only: core's own libraries come with it (DependencyRuleTest keeps our code off them) -->
+                  <searchTransitive>false</searchTransitive>
+                  <excludes>
+                    <exclude>*:*:*:*:compile</exclude>
+                    <exclude>*:*:*:*:runtime</exclude>
+                    <exclude>*:*:*:*:provided</exclude>
+                    <exclude>*:*:*:*:system</exclude>
+                  </excludes>
+                  <includes>
+                    <include>org.hl7.fhir:fhir-ig-common</include>
+                    <include>ca.uhn.hapi.fhir:org.hl7.fhir.*</include>
+                    <include>org.apache.commons:commons-compress:*:jar:runtime</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <version>${antlr.version}</version>
         <!-- Generates the TEST-SCOPE oracle parser from src/test/antlr4 (SUSHI's .g4 files, unmodified). The plugin
              registers its output as a main source root, so default-compile excludes it and build-helper adds it to
              the test sources instead. -->
@@ -78,7 +123,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
         <configuration>
           <release>21</release>
           <compilerArgs><arg>-Xlint:all,-serial,-processing</arg></compilerArgs>
@@ -95,7 +139,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.6.0</version>
         <executions>
           <execution>
             <id>antlr-oracle-test-sources</id>
@@ -110,7 +153,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.2</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <!-- testcase name in the XML reports = the method's @DisplayName (= Jest fullName), which
@@ -119,7 +161,7 @@
             <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
           </statelessTestsetReporter>
           <systemPropertyVariables>
-            <!-- SUSHI checkout (tests + fixtures) on the VM, used by data-driven tests; tests skip when absent -->
+            <!-- SUSHI checkout (tests + fixtures), used by data-driven tests; they skip when it is absent -->
             <sushi.ts.dir>${sushi.ts.dir}</sushi.ts.dir>
           </systemPropertyVariables>
         </configuration>
@@ -127,24 +169,48 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
         <configuration>
-          <!-- java -jar sushi-java.jar: runtime dependencies in lib/ next to the jar (dependency:copy-dependencies below) -->
-          <archive><manifest><mainClass>org.hl7.fhir.sushi.App</mainClass><addClasspath>true</addClasspath><classpathPrefix>lib/</classpathPrefix></manifest></archive>
+          <archive>
+            <manifest><mainClass>${sushi.mainClass}</mainClass></manifest>
+          </archive>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.8.1</version>
+        <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>runtime-lib</id>
+            <id>sushi-jar</id>
             <phase>package</phase>
-            <goals><goal>copy-dependencies</goal></goals>
+            <goals><goal>shade</goal></goals>
             <configuration>
-              <includeScope>runtime</includeScope>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <outputFile>${project.build.directory}/sushi.jar</outputFile>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/maven/**</exclude>
+                    <!-- signatures of the original jars do not hold for the merged one -->
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/*.EC</exclude>
+                    <!-- the merged jar runs on the class path, not as a JPMS module -->
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${sushi.mainClass}</mainClass>
+                  <!-- some bundled libraries are multi-release jars: keep their versioned classes in effect -->
+                  <manifestEntries><Multi-Release>true</Multi-Release></manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
             </configuration>
           </execution>
         </executions>
@@ -153,6 +219,7 @@
   </build>
   <profiles>
     <profile>
+      <!-- default location of the SUSHI checkout on the build VM (scripts/lib/vmdata.sh); -Dsushi.ts.dir=... overrides -->
       <id>ts-dir-default</id>
       <activation><property><name>!sushi.ts.dir</name></property></activation>
       <properties><sushi.ts.dir>/srv/ig/sushi-spike/sushi</sushi.ts.dir></properties>
