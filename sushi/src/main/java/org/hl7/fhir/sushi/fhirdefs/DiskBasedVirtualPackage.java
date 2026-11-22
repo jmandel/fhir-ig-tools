@@ -27,9 +27,8 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
     Object xmlToObj(String xml) throws Exception;
   }
 
-  private static volatile XmlConverter xmlConverter = xml -> {
-    throw new UnsupportedOperationException("FHIR XML conversion is not available");
-  };
+  /** default: the port of fhir-tool 5.0.2's xmlToObj, which FPL uses */
+  private static volatile XmlConverter xmlConverter = org.hl7.fhir.sushi.fhirdefs.xml.FhirXmlToJs::xmlToObj;
 
   public static void setXmlConverter(XmlConverter c) {
     xmlConverter = c;
