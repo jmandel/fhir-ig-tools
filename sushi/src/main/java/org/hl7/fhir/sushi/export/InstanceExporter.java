@@ -53,12 +53,6 @@ public class InstanceExporter implements Fishable {
   private static final Pattern CONTAINED_PATH = Pattern.compile("^contained(\\[[^\\]]+\\])*(\\.url|\\.name|\\.id)?");
   private static final Pattern EXTENSION_PATH = Pattern.compile("(^|\\.)(extension|modifierExtension)\\[");
 
-  /**
-   * Whether the custom-resource box is coloured (TS chalk: colours only when stdout supports them). Set by the CLI
-   * (WP-10) together with the logger's console sink; differential runs are uncoloured.
-   */
-  public static volatile boolean chalkEnabled = false;
-
   /** TS sdCache: instanceOf url -> StructureDefinition (parsed once per exporter). */
   public final Map<String, StructureDefinition> sdCache = new LinkedHashMap<>();
 
@@ -72,9 +66,17 @@ public class InstanceExporter implements Fishable {
     this.fisher = fisher;
   }
 
-  /** chalk.rgb(179, 98, 0) (logger.warn's colour), truecolor. */
+  /**
+   * chalk 4 {@code chalk.rgb(179, 98, 0)(s)} (logger.warn's colour, truecolor level), only when chalk would colour
+   * (FshLogger.colorEnabled). Like chalk, closes and re-opens the style around each line break.
+   */
   private static String clr(String s) {
-    return chalkEnabled ? "\u001b[38;2;179;98;0m" + s + "\u001b[39m" : s;
+    if (!logger.colorEnabled() || s.isEmpty()) {
+      return s;
+    }
+    String open = "\u001b[38;2;179;98;0m";
+    String close = "\u001b[39m";
+    return open + s.replace("\n", close + "\n" + open) + close;
   }
 
   /** lodash padEnd(s, n) with spaces (UTF-16 length). */
