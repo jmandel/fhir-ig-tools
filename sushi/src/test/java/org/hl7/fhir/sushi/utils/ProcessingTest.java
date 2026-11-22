@@ -20,6 +20,7 @@ import static org.hl7.fhir.sushi.testhelpers.TsTestUtil.setProp;
 import static org.hl7.fhir.sushi.utils.Processing.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -2103,40 +2104,116 @@ class ProcessingTest {
     }
   }
 
-  static final String NO_NPM = "TS mocks child_process.execSync (`npm view fsh-sushi version`) and axios.get; the Java "
-      + "port has no npm step (PORTING D7) and getLatestSushiVersion() queries registry.npmjs.org over java.net.http "
-      + "with no injectable seam, so the mocked responses cannot be supplied";
+  /** TS mocks child_process.execSync / axios.get; Java substitutes Processing.versionSources. */
+  static final class FakeVersionSources implements Processing.VersionSources {
+    final java.util.ArrayDeque<java.util.concurrent.Callable<String>> npm = new java.util.ArrayDeque<>();
+    final java.util.ArrayDeque<java.util.concurrent.Callable<Object>> http = new java.util.ArrayDeque<>();
+
+    @Override public String npmView() throws Exception {
+      return npm.isEmpty() ? null : npm.poll().call();
+    }
+
+    @Override public Object registryGet(String url) throws Exception {
+      return http.isEmpty() ? null : http.poll().call();
+    }
+  }
 
   @Nested
   @DisplayName("#getLatestSushiVersion()")
   class GetLatestSushiVersion {
+    Processing.VersionSources original;
+    FakeVersionSources fake;
+
+    @BeforeEach
+    void beforeEach() {
+      loggerSpy.reset();
+      original = Processing.versionSources;
+      fake = new FakeVersionSources();
+      Processing.versionSources = fake;
+    }
+
+    @AfterEach
+    void afterEach() {
+      Processing.versionSources = original;
+    }
+
     @Test
-    @Disabled(NO_NPM)
     @DisplayName("Processing #getLatestSushiVersion() successfully fetches data")
-    void successfullyFetchesData() {}
+    void successfullyFetchesData() {
+      fake.npm.add(() -> "2.2.6\n");
+      assertEquals("2.2.6", Processing.getLatestSushiVersion());
+
+      fake.npm.add(() -> "2.2.6");
+      assertEquals("2.2.6", Processing.getLatestSushiVersion());
+    }
 
     @Test
-    @Disabled(NO_NPM)
     @DisplayName("Processing #getLatestSushiVersion() falls back to URL if primary process fails")
-    void fallsBackToURLIfPrimaryProcessFails() {}
+    void fallsBackToURLIfPrimaryProcessFails() {
+      fake.npm.add(() -> "npm ERR! code E404");
+      fake.http.add(() -> JsAssert.json("""
+          {
+            "name": "fsh-sushi",
+            "dist-tags": {
+              "latest": "2.1.6",
+              "beta": "2.0.0-beta.3",
+              "pre-1.0": "0.16.1",
+              "internal": "2.0.0-beta.1-fshonline-hotfix"
+            }
+          }
+          """));
+      assertEquals("2.1.6", Processing.getLatestSushiVersion());
+    }
 
     @Test
-    @Disabled(NO_NPM)
     @DisplayName("Processing #getLatestSushiVersion() unsuccessfully fetches data if it doesn't look like a semver is not found")
-    void unsuccessfullyFetchesDataIfItDoesntLookLikeASemver() {}
+    void unsuccessfullyFetchesDataIfItDoesntLookLikeASemver() {
+      fake.npm.add(() -> "npm ERR! code E404");
+      // TS: axios resolves {} so res.data is undefined
+      fake.http.add(() -> null);
+      String version = Processing.getLatestSushiVersion();
+      assertNull(version);
+      // Loosely match message since it differs slightly between npm 6 and npm 8
+      assertTrue(java.util.regex.Pattern.compile("Unable to determine the latest version of sushi: Cannot read .*'dist-tags'.*")
+          .matcher(loggerSpy.getLastMessage("warn")).find());
+    }
   }
 
   @Nested
   @DisplayName("#checkSushiVersion()")
   class CheckSushiVersion {
-    @Test
-    @Disabled(NO_NPM)
-    @DisplayName("Processing #checkSushiVersion() returns an object with the latest and current sushi versions")
-    void returnsAnObjectWithTheLatestAndCurrentSushiVersions() {}
+    Processing.VersionSources original;
+    FakeVersionSources fake;
+
+    @BeforeEach
+    void beforeEach() {
+      original = Processing.versionSources;
+      fake = new FakeVersionSources();
+      Processing.versionSources = fake;
+    }
+
+    @AfterEach
+    void afterEach() {
+      Processing.versionSources = original;
+    }
 
     @Test
-    @Disabled(NO_NPM)
+    @DisplayName("Processing #checkSushiVersion() returns an object with the latest and current sushi versions")
+    void returnsAnObjectWithTheLatestAndCurrentSushiVersions() {
+      String localVersion = Processing.getLocalSushiVersion();
+      String latestVersion = "2.5.0"; // A fake stable version (not a prerelease, like beta)
+      fake.npm.add(() -> latestVersion + "\n");
+      Processing.SushiVersions versionObj = Processing.checkSushiVersion(true);
+      assertEquals(new Processing.SushiVersions(latestVersion, localVersion), versionObj);
+    }
+
+    @Test
     @DisplayName("Processing #checkSushiVersion() should return an object with an undefined latest value when latest is not present")
-    void shouldReturnAnObjectWithAnUndefinedLatestValueWhenLatestIsNotPresent() {}
+    void shouldReturnAnObjectWithAnUndefinedLatestValueWhenLatestIsNotPresent() {
+      String localVersion = Processing.getLocalSushiVersion();
+      fake.npm.add(() -> "zsh: command not found: npm\n");
+      Processing.SushiVersions versionObj = Processing.checkSushiVersion(true);
+      assertEquals(new Processing.SushiVersions(null, localVersion), versionObj);
+    }
   }
 }

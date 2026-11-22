@@ -1007,32 +1007,83 @@ public final class Processing {
   }
 
   /**
-   * TS getLatestSushiVersion runs {@code npm view fsh-sushi version} and falls back to the npm registry. The Java port
-   * has no npm (PORTING D7): it queries https://registry.npmjs.org/fsh-sushi directly (the TS fallback), logging as the
-   * TS fallback does. Only called when the version check is enabled.
+   * Where getLatestSushiVersion looks: TS runs {@code npm view fsh-sushi version} and falls back to GET
+   * https://registry.npmjs.org/fsh-sushi. The Java port has no npm (PORTING D7): the default {@code npmView} fails,
+   * so the registry fallback is used. Tests substitute both (TS mocks execSync and axios).
    */
-  public static String getLatestSushiVersion() {
-    try {
+  public interface VersionSources {
+    /** stdout of {@code npm view fsh-sushi version} */
+    String npmView() throws Exception;
+
+    /** the parsed JSON body (axios res.data) of a GET; null when there is none */
+    Object registryGet(String url) throws Exception;
+  }
+
+  public static VersionSources versionSources = new VersionSources() {
+    @Override public String npmView() throws Exception {
+      throw new UnsupportedOperationException("npm is not used by the Java port of SUSHI");
+    }
+
+    @Override public Object registryGet(String url) throws Exception {
       java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
           .connectTimeout(java.time.Duration.ofSeconds(5)).followRedirects(java.net.http.HttpClient.Redirect.NORMAL)
           .build();
-      java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(
-          java.net.URI.create("https://registry.npmjs.org/fsh-sushi")).timeout(java.time.Duration.ofSeconds(10))
-          .build();
+      java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url))
+          .timeout(java.time.Duration.ofSeconds(10)).build();
       java.net.http.HttpResponse<String> res = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
       if (res.statusCode() >= 400) throw new IOException("Request failed with status code " + res.statusCode());
-      Object data = org.hl7.fhir.sushi.js.Json.parse(res.body());
-      Object distTags = data instanceof Map<?, ?> m ? m.get("dist-tags") : null;
-      Object latest = distTags instanceof Map<?, ?> m ? m.get("latest") : null;
-      if (latest instanceof String s && s.matches("[0-9.]*")) {
-        return s;
+      return org.hl7.fhir.sushi.js.Json.parse(res.body());
+    }
+  };
+
+  private static final Pattern SEMVERISH = Pattern.compile("^[0-9.]*\\z");
+
+  private static String getLatestSushiVersionFallback() {
+    FshLogger.logger.info("Attempting fallback to determine version of sushi.");
+    try {
+      Object data = versionSources.registryGet("https://registry.npmjs.org/fsh-sushi");
+      if (!(data instanceof Map<?, ?> m)) {
+        throw new NullPointerException("Cannot read properties of undefined (reading 'dist-tags')");
       }
-      FshLogger.logger.warn("Unable to determine the latest version of sushi.");
+      if (!(m.get("dist-tags") instanceof Map<?, ?> tags)) {
+        throw new NullPointerException("Cannot read properties of undefined (reading 'latest')");
+      }
+      Object latestVer = tags.get("latest");
+      if (!(latestVer instanceof String lv)) {
+        throw new NullPointerException("Cannot read properties of undefined (reading 'match')");
+      }
+      if (SEMVERISH.matcher(lv).find()) {
+        return lv;
+      } else {
+        FshLogger.logger.warn("Unable to determine the latest version of sushi.");
+      }
     } catch (Exception e) {
       FshLogger.logger.warn("Unable to determine the latest version of sushi: " + nodeMessage(e));
       FshLogger.logger.debug(stack(e));
     }
     return null;
+  }
+
+  /** TS getLatestSushiVersion (see {@link VersionSources}); only called when the version check is enabled. */
+  public static String getLatestSushiVersion() {
+    String latestVer = null;
+    try {
+      String execResult = versionSources.npmView();
+      execResult = execResult == null ? null : execResult.replaceFirst("\\s*\\z", "");
+      if (execResult == null) {
+        throw new NullPointerException("Cannot read properties of undefined (reading 'match')");
+      }
+      if (SEMVERISH.matcher(execResult).find()) {
+        latestVer = execResult;
+      }
+    } catch (Exception e) {
+      FshLogger.logger.info("Unable to determine the latest version of sushi: " + nodeMessage(e));
+      FshLogger.logger.debug(stack(e));
+    }
+    if (latestVer == null) {
+      latestVer = getLatestSushiVersionFallback();
+    }
+    return latestVer;
   }
 
   /** {latest, current}; latest null when undetermined. */
