@@ -45,6 +45,9 @@ Its transitive libraries (jackson, guava, commons-lang3/text/io/codec/net, okhtt
 slf4j, opentelemetry, hapi-fhir-base) ship with the publisher but **must not be imported directly**:
 `build.DependencyRuleTest` fails the build on any main-code import outside the JDK, `org.hl7.fhir.sushi`,
 `org.hl7.fhir.utilities` (and `org.hl7.fhir.r4/r5` only under `importer/config`).
+`java -jar` works with the runtime dependencies copied to `lib/` next to the jar (WP-10's pom: manifest
+`Class-Path lib/...`); `DependencyRuleTest` also pins the pom's non-test dependencies to exactly core utilities +
+commons-compress. In the monorepo this becomes a single shaded jar like shim.jar (deferred to the move).
 Not used from core, deliberately: model classes (R4/R5 `StructureDefinition` etc.), `ProfileUtilities` snapshot
 generation, FHIRPath, validation, core's JSON (`JsonNumber` keeps source text; SUSHI normalises through JS doubles).
 SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapshot itself; reusing those changes output.

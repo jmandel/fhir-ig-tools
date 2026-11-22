@@ -38,4 +38,21 @@ class DependencyRuleTest {
     }
     assertEquals(List.of(), bad);
   }
+
+  /** The pom's non-test dependencies are exactly core's utilities and commons-compress (runtime). */
+  @Test void pomRuntimeDependenciesAreCoreUtilitiesAndCommonsCompressOnly() throws IOException {
+    Path pom = Paths.get("pom.xml");
+    org.junit.jupiter.api.Assumptions.assumeTrue(Files.isRegularFile(pom));
+    String xml = Files.readString(pom);
+    String deps = xml.substring(xml.indexOf("<dependencies>"), xml.indexOf("</dependencies>"));
+    Matcher m = Pattern.compile("<dependency>(.*?)</dependency>", Pattern.DOTALL).matcher(deps);
+    List<String> nonTest = new ArrayList<>();
+    while (m.find()) {
+      String d = m.group(1);
+      if (d.contains("<scope>test</scope>")) continue;
+      Matcher a = Pattern.compile("<artifactId>([^<]+)</artifactId>").matcher(d);
+      if (a.find()) nonTest.add(a.group(1));
+    }
+    assertEquals(List.of("org.hl7.fhir.utilities", "commons-compress"), nonTest);
+  }
 }
