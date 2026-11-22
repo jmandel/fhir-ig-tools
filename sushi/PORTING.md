@@ -35,11 +35,15 @@ SUSHI_EXCLUDE="src/main/java/org/hl7/fhir/sushi/foo" scripts/build.sh ...  # bui
 code. No other third-party libraries, and **no ANTLR at runtime**.
 | dependency | scope | version | why |
 |---|---|---|---|
-| `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (added by WP-8) | the publisher's core (toolchain: 7.0.7-SNAPSHOT; pin the matching release) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
+| `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (on main since WP-8 day 1) | **7.0.6** (release matching the publisher toolchain's 7.0.7-SNAPSHOT) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
 | `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | compile, **only if** WP-3 needs it | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
 | build plugins: antlr4-maven-plugin 4.13.2, build-helper 3.6.0, compiler/surefire/jar | build | | the antlr plugin's output is excluded from main and added to test sources |
+Its transitive libraries (jackson, guava, commons-lang3/text/io/codec/net, okhttp/okio/kotlin-stdlib, icu4j, Saxon-HE,
+slf4j, opentelemetry, hapi-fhir-base) ship with the publisher but **must not be imported directly**:
+`build.DependencyRuleTest` fails the build on any main-code import outside the JDK, `org.hl7.fhir.sushi`,
+`org.hl7.fhir.utilities` (and `org.hl7.fhir.r4/r5` only under `importer/config`).
 Not used from core, deliberately: model classes (R4/R5 `StructureDefinition` etc.), `ProfileUtilities` snapshot
 generation, FHIRPath, validation, core's JSON (`JsonNumber` keeps source text; SUSHI normalises through JS doubles).
 SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapshot itself; reusing those changes output.
