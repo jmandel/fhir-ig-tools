@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.hl7.fhir.sushi.utils.FishableType;

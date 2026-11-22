@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // Replaces the YAML.parseDocument(...).set(...).toString() round trip of TS updateExternalDependencies
 // (sushi/src/utils/Processing.ts, SUSHI 3.21.1).

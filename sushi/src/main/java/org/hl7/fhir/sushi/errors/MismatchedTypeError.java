@@ -1,7 +1,7 @@
 package org.hl7.fhir.sushi.errors;
 
 import java.util.List;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of sushi/src/errors/MismatchedTypeError.ts (SUSHI 3.21.1)
 public class MismatchedTypeError extends RuntimeException implements Annotated {

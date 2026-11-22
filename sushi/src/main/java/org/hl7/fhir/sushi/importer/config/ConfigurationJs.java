@@ -10,8 +10,8 @@ import org.hl7.fhir.sushi.fshtypes.Configuration.ConfigurationHistory;
 import org.hl7.fhir.sushi.fshtypes.Configuration.ConfigurationHistoryItem;
 import org.hl7.fhir.sushi.fshtypes.Configuration.ConfigurationInstanceOptions;
 import org.hl7.fhir.sushi.fshtypes.Configuration.ConfigurationMenuItem;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 
 /**
  * Between the TS configuration object (a {@link JsObject} with the keys importConfiguration builds, in its order) and

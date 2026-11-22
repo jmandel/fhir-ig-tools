@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.*;
-import org.hl7.fhir.sushi.js.*;
+import org.hl7.fhir.common.js.*;
 import org.junit.jupiter.api.*;
 
 // port of sushi/test/fshtypes/rules/InsertRule.test.ts (SUSHI 3.21.1)

@@ -5,9 +5,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import org.hl7.fhir.sushi.errors.InvalidTypeError;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.JsonSerializable;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.JsonSerializable;
 
 // port of class ElementDefinitionType in sushi/src/fhirtypes/ElementDefinition.ts (SUSHI 3.21.1)
 /**

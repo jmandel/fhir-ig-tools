@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
-import org.hl7.fhir.sushi.js.JsNumber;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.JsNumber;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.testhelpers.JsDump;
 import org.hl7.fhir.sushi.utils.FshLogger;
 

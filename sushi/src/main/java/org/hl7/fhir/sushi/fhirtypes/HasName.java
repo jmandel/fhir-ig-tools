@@ -7,7 +7,7 @@ import org.hl7.fhir.sushi.fshtypes.FshEntity;
 import org.hl7.fhir.sushi.fshtypes.rules.AssignmentRule;
 import org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule;
 import org.hl7.fhir.sushi.fshtypes.rules.Rule;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of the HasName mixin in sushi/src/fhirtypes/mixins.ts (SUSHI 3.21.1)
 public interface HasName {

@@ -25,7 +25,7 @@ import org.hl7.fhir.sushi.fhirdefs.InMemoryVirtualPackage;
 import org.hl7.fhir.sushi.fhirdefs.R5DefsForR4;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
 import org.hl7.fhir.sushi.fshtypes.TextLocation;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.hl7.fhir.sushi.utils.Processing;

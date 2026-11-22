@@ -3,7 +3,7 @@ package org.hl7.fhir.sushi.fhirtypes;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hl7.fhir.sushi.errors.InvalidPeriodError;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 
 /**
  * Java half of the fhir-tool xmlToObj differential (scripts/fhirtool/oracle.js is the JS half): reads {id, xml}

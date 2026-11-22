@@ -13,7 +13,7 @@ import java.util.Map;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirdefs.FindResourceInfoOptions;
 import org.hl7.fhir.sushi.fhirdefs.LoadStatus;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

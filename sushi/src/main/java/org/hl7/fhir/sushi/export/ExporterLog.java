@@ -24,7 +24,7 @@ final class ExporterLog {
   static String str(Object v) {
     if (v == null) return "undefined";
     if (v instanceof java.math.BigInteger b) return b.toString();
-    return org.hl7.fhir.sushi.js.Js.toStr(v);
+    return org.hl7.fhir.common.js.Js.toStr(v);
   }
 
   /** JS Error.stack: "Name: message\n    at ..."; the Java trace plays that role. */

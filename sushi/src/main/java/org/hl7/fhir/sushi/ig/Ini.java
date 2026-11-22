@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.Json;
 
 // port of the npm package ini 5.0.0 (lib/ini.js): decode and encode, as SUSHI's IGExporter uses them
 /**

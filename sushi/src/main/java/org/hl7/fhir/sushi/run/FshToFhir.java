@@ -10,7 +10,7 @@ import org.hl7.fhir.sushi.fhirtypes.FhirResource;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
 import org.hl7.fhir.sushi.importer.FSHTank;
 import org.hl7.fhir.sushi.importer.RawFSH;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.hl7.fhir.sushi.utils.Processing;
 

@@ -196,7 +196,7 @@ public final class FshLogger {
   static List<Object> parseIgnoredLogsConfiguration(String config) {
     List<Object> out = new ArrayList<>();
     for (String line : config.split("\r?\n", -1)) {
-      String m = org.hl7.fhir.sushi.js.Js.trim(line);
+      String m = org.hl7.fhir.common.js.Js.trim(line);
       if (m.isEmpty() || m.startsWith("#")) continue;
       if (m.startsWith("/") && m.endsWith("/") && m.length() >= 2) {
         // JS RegExp source; most ignore patterns are plain. JsRegex (WP-1) owns full JS->Java regex translation.

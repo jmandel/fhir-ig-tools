@@ -11,10 +11,10 @@ import org.hl7.fhir.sushi.fshtypes.Configuration;
 import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.fshtypes.TextLocation;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
-import org.hl7.fhir.sushi.js.JsonSerializable;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
+import org.hl7.fhir.common.js.JsonSerializable;
 import org.hl7.fhir.sushi.testhelpers.JsAssert;
 
 /** Jest-matcher helpers for the WP-7 exporter tests, beyond testhelpers.JsAssert. */

@@ -1,4 +1,4 @@
-package org.hl7.fhir.sushi.js;
+package org.hl7.fhir.common.js;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

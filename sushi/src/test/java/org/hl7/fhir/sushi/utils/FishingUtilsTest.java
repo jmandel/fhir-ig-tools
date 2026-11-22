@@ -17,7 +17,7 @@ import org.hl7.fhir.sushi.fshtypes.TextLocation;
 import org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule;
 import org.hl7.fhir.sushi.importer.FSHDocument;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

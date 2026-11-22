@@ -2,8 +2,8 @@ package org.hl7.fhir.sushi.fhirtypes;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.utils.SanitizeFilename;
 
 // port of sushi/src/fhirtypes/ImplementationGuide.ts (SUSHI 3.21.1)

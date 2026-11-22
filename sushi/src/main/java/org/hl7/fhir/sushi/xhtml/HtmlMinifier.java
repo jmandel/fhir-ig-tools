@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.JsNumber;
+import org.hl7.fhir.common.js.JsNumber;
 import org.hl7.fhir.sushi.xhtml.HtmlParser.Attr;
 
 // port of html-minifier-terser 5.1.1 src/htmlminifier.js (only the subset SUSHI reaches)

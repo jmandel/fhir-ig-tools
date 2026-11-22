@@ -1,4 +1,4 @@
-package org.hl7.fhir.sushi.js;
+package org.hl7.fhir.sushi.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,14 +7,16 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.ValidUrl;
 import org.junit.jupiter.api.Test;
 
 /** Oracle tests (contributed by WP-7) for Js.merge/mergeWith/isMatch and utils.ValidUrl (vectors: scripts/oracle/wp7-vectors.js). */
-class LodashTest {
+class LodashOracleTest {
   @SuppressWarnings("unchecked")
   static Map<String, Object> vectors() throws IOException {
-    try (InputStream in = LodashTest.class.getResourceAsStream("/wp7/vectors.json")) {
+    try (InputStream in = LodashOracleTest.class.getResourceAsStream("/wp7/vectors.json")) {
       return (Map<String, Object>) Json.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
     }
   }
@@ -53,7 +55,7 @@ class LodashTest {
   @Test void mergeWithMatchesLodash() throws IOException {
     for (Object o : (List<Object>) vectors().get("mergeWithCases")) {
       List<Object> c = (List<Object>) o;
-      Object result = Js.mergeWith(c.get(0), c.get(1), LodashTest::metaCustomizer);
+      Object result = Js.mergeWith(c.get(0), c.get(1), LodashOracleTest::metaCustomizer);
       assertEquals(Json.stringify(c.get(2)), Json.stringify(result), "mergeWith " + Json.stringify(c.get(1)));
     }
   }

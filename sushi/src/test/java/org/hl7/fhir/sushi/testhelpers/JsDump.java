@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
-import org.hl7.fhir.sushi.js.JsNumber;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.JsNumber;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 
 /**
  * Canonical, JS-shaped dump of FSH-side objects (fshtypes, FSHDocument, ...), used by the WP-2 gate (TankDump, same

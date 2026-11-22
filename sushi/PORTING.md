@@ -74,7 +74,7 @@ object key order, which in SUSHI comes from three different mechanisms, all veri
 core's model classes serialise in canonical FHIR order, so they cannot reproduce 2 or 3, and they would also round
 decimals differently (see D3).
 
-**D3 The JS value model** (`org.hl7.fhir.sushi.js`, contract, see `Json` Javadoc): object = `Map<String,Object>`
+**D3 The JS value model** (`org.hl7.fhir.common.js`, contract, see `Json` Javadoc): object = `Map<String,Object>`
 (`JsObject`, insertion order; enumerate with `Js.ownKeys`, which puts array-index keys first like JS), array =
 `List<Object>`, string = `String` (UTF-16, so JS indices/lengths carry over), **number = `Double` always** (so
 `equals` matches JS and `1.50` prints `1.5`, `1e21` prints `1e+21`), boolean, `null`, JS `undefined` = `Js.UNDEFINED`

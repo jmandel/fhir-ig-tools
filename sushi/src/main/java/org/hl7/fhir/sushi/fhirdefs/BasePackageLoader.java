@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fhirdefs.FplErrors.InvalidResourceError;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of fhir-package-loader 2.2.4 src/loader/BasePackageLoader.ts
 /**
@@ -21,7 +21,7 @@ import org.hl7.fhir.sushi.js.Js;
  * (download, cache, registry, version resolution incl. latest/x.y.x/current/dev, .index.json — D1a). What stays here
  * is what core does not do for SUSHI: the resource index and its queries, virtual packages, and FPL's log messages.
  *
- * <p>SafeMode.FREEZE is emulated: resources are deeply frozen ({@link org.hl7.fhir.sushi.js.Frozen}); mutating one
+ * <p>SafeMode.FREEZE is emulated: resources are deeply frozen ({@link org.hl7.fhir.common.js.Frozen}); mutating one
  * throws, as FPL's frozen objects do. Differences from FPL by design: debug stack traces are Java's; version resolution and download
  * are core's, so FPL's "Attempting to download ... from <url>" line is not printed (core picks the server).
  */
@@ -327,7 +327,7 @@ public class BasePackageLoader {
         resource = packageProvider.readResource(resourcePath);
       }
       // FPL SafeMode.FREEZE: hand out deeply frozen resources, so an accidental mutation fails loudly (TS: TypeError)
-      resource = org.hl7.fhir.sushi.js.Frozen.deepFreeze(resource);
+      resource = org.hl7.fhir.common.js.Frozen.deepFreeze(resource);
       if (resourceCache != null) resourceCache.put(resourcePath, resource);
     }
     return resource;

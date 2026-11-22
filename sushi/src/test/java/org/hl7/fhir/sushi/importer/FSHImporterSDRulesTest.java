@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.*;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

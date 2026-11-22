@@ -14,7 +14,7 @@ import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirdefs.InMemoryVirtualPackage;
 import org.hl7.fhir.sushi.fhirdefs.PackageProvider;
 import org.hl7.fhir.sushi.fhirdefs.R5DefsForR4;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/test/testhelpers/TestFHIRDefinitions.ts (SUSHI 3.21.1)

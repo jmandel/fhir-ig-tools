@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/src/import/loadConfigurationFromIgResource.ts (SUSHI 3.21.1)

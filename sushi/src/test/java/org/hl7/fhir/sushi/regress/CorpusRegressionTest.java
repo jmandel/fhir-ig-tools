@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Map;
 import org.hl7.fhir.sushi.fhirtypes.StructureDefinition;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.junit.jupiter.api.Test;
 
 /** Regression tests for differences found by the corpus differential (WP-10's corpus-diff), one per root cause. */

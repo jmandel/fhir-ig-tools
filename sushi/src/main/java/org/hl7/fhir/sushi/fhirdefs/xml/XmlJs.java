@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of xml-js 1.6.11 lib/xml2js.js and lib/js2xml.js (non-compact mode, default options) + fhir-tool 5.0.2
 // xmlHelper.js escapeInvalidCharacters -- only what fhir-tool's xmlToObj uses

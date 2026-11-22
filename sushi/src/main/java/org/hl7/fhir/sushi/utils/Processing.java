@@ -36,8 +36,8 @@ import org.hl7.fhir.sushi.importer.RawFSH;
 import org.hl7.fhir.sushi.importer.config.EnsureConfigurationFile;
 import org.hl7.fhir.sushi.importer.config.ImportConfiguration;
 import org.hl7.fhir.sushi.importer.config.LoadConfigurationFromIgResource;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 
 // port of sushi/src/utils/Processing.ts (SUSHI 3.21.1) -- WP-8 part: dependency loading
 // (loadExternalDependencies, loadAutomaticDependencies, fixCrossVersionDependencies, AUTOMATIC_DEPENDENCIES).
@@ -1032,7 +1032,7 @@ public final class Processing {
           .timeout(java.time.Duration.ofSeconds(10)).build();
       java.net.http.HttpResponse<String> res = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
       if (res.statusCode() >= 400) throw new IOException("Request failed with status code " + res.statusCode());
-      return org.hl7.fhir.sushi.js.Json.parse(res.body());
+      return org.hl7.fhir.common.js.Json.parse(res.body());
     }
   };
 
@@ -1343,7 +1343,7 @@ public final class Processing {
           && !Pattern.compile("^(true|false|null|~|[-+]?(\\d[\\d_]*)?(\\.\\d*)?([eE][-+]?\\d+)?|0x[0-9a-fA-F]+|0o[0-7]+|[-+]?\\.inf|\\.nan)$",
               Pattern.CASE_INSENSITIVE).matcher(v).matches();
       if (plain) return v;
-      return org.hl7.fhir.sushi.js.Json.stringify(v);
+      return org.hl7.fhir.common.js.Json.stringify(v);
     }
 
     @Override public String toString() {
@@ -1414,9 +1414,9 @@ public final class Processing {
     }
   }
 
-  /** fs-extra outputJSONSync(p, value, {spaces: 2}): {@link org.hl7.fhir.sushi.js.Json#outputJson}. */
+  /** fs-extra outputJSONSync(p, value, {spaces: 2}): {@link org.hl7.fhir.common.js.Json#outputJson}. */
   public static void outputJson(String p, Object value) {
-    outputFile(p, org.hl7.fhir.sushi.js.Json.outputJson(value));
+    outputFile(p, org.hl7.fhir.common.js.Json.outputJson(value));
   }
 
   /** e.message as node would show it for the common filesystem errors. */

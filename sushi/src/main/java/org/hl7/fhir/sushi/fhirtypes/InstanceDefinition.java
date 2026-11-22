@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.utils.SanitizeFilename;
 
 // port of sushi/src/fhirtypes/InstanceDefinition.ts (SUSHI 3.21.1)

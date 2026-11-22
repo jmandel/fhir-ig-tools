@@ -12,7 +12,7 @@ import org.hl7.fhir.sushi.errors.CodeAndSystemMismatchError;
 import org.hl7.fhir.sushi.errors.InvalidPeriodError;
 import org.hl7.fhir.sushi.errors.InvalidRangeValueError;
 import org.hl7.fhir.sushi.errors.UnitMismatchError;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of sushi/src/fhirtypes/dataTypes.ts (SUSHI 3.21.1). The FHIR data types (CodeableConcept, Coding, Quantity,
 // Reference, ...) are TS type aliases over plain objects; in Java they are value-model maps (JsObject). Only the two

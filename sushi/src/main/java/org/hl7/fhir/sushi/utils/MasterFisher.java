@@ -10,7 +10,7 @@ import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fshtypes.FshEntity;
 import org.hl7.fhir.sushi.fshtypes.Instance;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of sushi/src/utils/MasterFisher.ts (SUSHI 3.21.1)
 /**

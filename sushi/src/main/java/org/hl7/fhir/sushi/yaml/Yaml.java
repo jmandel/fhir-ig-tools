@@ -1,5 +1,8 @@
 package org.hl7.fhir.sushi.yaml;
 
+import org.hl7.fhir.common.yaml.Event;
+import org.hl7.fhir.common.yaml.LibyamlError;
+import org.hl7.fhir.common.yaml.Parser;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -9,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsNumber;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsNumber;
+import org.hl7.fhir.common.js.JsObject;
 
 /**
  * {@code YAML.parse(src)} of the npm package yaml@1.10 (eemeli/yaml 1.10.3, the version SUSHI 3.21.1 ships) with its
@@ -136,8 +139,7 @@ public final class Yaml {
 
     Object compose(String src, byte[] input) {
       this.src = src;
-      Parser parser = new Parser(input, Reader.ANY_ENCODING);
-      parser.yaml110 = true;
+      Parser parser = new Parser(input, Parser.ANY_ENCODING, true);
       try {
         while (true) {
           Event e = parser.parse();
@@ -176,7 +178,7 @@ public final class Yaml {
           }
         }
         case SCALAR -> {
-          if (e.style == Token.SINGLE_QUOTED_SCALAR_STYLE || e.style == Token.DOUBLE_QUOTED_SCALAR_STYLE) {
+          if (e.style == Event.SINGLE_QUOTED_SCALAR_STYLE || e.style == Event.DOUBLE_QUOTED_SCALAR_STYLE) {
             // yaml 1.10: a comment right after a quoted value ('x'#c) is an error; libyaml takes it as a comment
             int after = charIndex(src, e.endMark.index);
             if (after < src.length() && src.charAt(after) == '#') {
@@ -324,17 +326,17 @@ public final class Yaml {
     private Node scalar(Event e) {
       String value = new String(e.value, StandardCharsets.UTF_8);
       String tag = cstr(e.tag);
-      boolean plain = e.style == Token.PLAIN_SCALAR_STYLE;
+      boolean plain = e.style == Event.PLAIN_SCALAR_STYLE;
       if (tag == null) {
         return Node.scalar(plain ? resolvePlain(value) : value);
       }
       if (tag.equals("!")) return Node.scalar(value);
       if (tag.equals(MAP) || tag.equals(SEQ)) {
         String type = switch (e.style) {
-          case Token.SINGLE_QUOTED_SCALAR_STYLE -> "QUOTE_SINGLE";
-          case Token.DOUBLE_QUOTED_SCALAR_STYLE -> "QUOTE_DOUBLE";
-          case Token.LITERAL_SCALAR_STYLE -> "BLOCK_LITERAL";
-          case Token.FOLDED_SCALAR_STYLE -> "BLOCK_FOLDED";
+          case Event.SINGLE_QUOTED_SCALAR_STYLE -> "QUOTE_SINGLE";
+          case Event.DOUBLE_QUOTED_SCALAR_STYLE -> "QUOTE_DOUBLE";
+          case Event.LITERAL_SCALAR_STYLE -> "BLOCK_LITERAL";
+          case Event.FOLDED_SCALAR_STYLE -> "BLOCK_FOLDED";
           default -> "PLAIN";
         };
         errors.add(YamlError.syntax(

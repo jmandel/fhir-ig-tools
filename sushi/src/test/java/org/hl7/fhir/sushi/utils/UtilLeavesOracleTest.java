@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.Json;
 import org.junit.jupiter.api.Test;
 
 /** Node oracle (scripts/oracle/util-vectors.js over SUSHI's node_modules, 5,000 real corpus page names + edge cases). */

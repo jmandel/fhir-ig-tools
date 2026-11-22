@@ -2,9 +2,9 @@ package org.hl7.fhir.sushi.fhirtypes;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.hl7.fhir.sushi.utils.FishableType;

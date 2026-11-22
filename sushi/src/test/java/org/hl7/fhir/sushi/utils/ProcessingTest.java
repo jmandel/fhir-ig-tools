@@ -55,7 +55,7 @@ import org.hl7.fhir.sushi.importer.FSHDocument;
 import org.hl7.fhir.sushi.importer.FSHTank;
 import org.hl7.fhir.sushi.importer.RawFSH;
 import org.hl7.fhir.sushi.importer.config.ConfigurationJs;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.JsAssert;
 import org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions;
 import org.hl7.fhir.sushi.utils.Processing.AutomaticDependency;

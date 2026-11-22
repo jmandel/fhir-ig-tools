@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions;
 import org.hl7.fhir.sushi.utils.Processing.AutomaticDependency;
 import org.hl7.fhir.sushi.utils.Processing.AutomaticDependencyPriority;

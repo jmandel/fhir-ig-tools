@@ -9,8 +9,8 @@ import org.hl7.fhir.sushi.errors.*;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.*;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.junit.jupiter.api.*;
@@ -356,7 +356,7 @@ class ElementDefinitionAssignNumberTest {
     @BeforeEach
     void beforeEach36() throws java.io.IOException {
       if (valueX == null) {
-        StructureDefinition r5Extension = StructureDefinition.fromJSON(org.hl7.fhir.sushi.js.Json.parse(
+        StructureDefinition r5Extension = StructureDefinition.fromJSON(org.hl7.fhir.common.js.Json.parse(
             java.nio.file.Files.readString(java.nio.file.Path.of(org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions
                 .testDefsPath("r5-definitions", "package", "StructureDefinition-Extension.json")))));
         valueX = el(r5Extension, "Extension.value[x]");

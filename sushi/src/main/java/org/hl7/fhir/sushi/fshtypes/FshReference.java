@@ -1,6 +1,6 @@
 package org.hl7.fhir.sushi.fshtypes;
 
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import java.util.Objects;
 
 // port of sushi/src/fshtypes/FshReference.ts (SUSHI 3.21.1)

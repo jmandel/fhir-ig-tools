@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import org.hl7.fhir.sushi.fshtypes.rules.AssignmentRule;
-import org.hl7.fhir.sushi.js.JsNumber;
+import org.hl7.fhir.common.js.JsNumber;
 import org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.fshtypes.rules.Rule;

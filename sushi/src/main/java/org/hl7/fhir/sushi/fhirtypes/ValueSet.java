@@ -2,8 +2,8 @@ package org.hl7.fhir.sushi.fhirtypes;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.utils.Fishable;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.hl7.fhir.sushi.utils.SanitizeFilename;

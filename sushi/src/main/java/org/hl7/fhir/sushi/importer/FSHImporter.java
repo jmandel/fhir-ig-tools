@@ -71,8 +71,8 @@ import org.hl7.fhir.sushi.importer.parser.ParseTree;
 import org.hl7.fhir.sushi.importer.parser.ParserRuleContext;
 import org.hl7.fhir.sushi.importer.parser.TerminalNode;
 import org.hl7.fhir.sushi.importer.parser.Token;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/src/import/FSHImporter.ts (SUSHI 3.21.1)

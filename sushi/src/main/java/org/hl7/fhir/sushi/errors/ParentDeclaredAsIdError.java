@@ -1,7 +1,7 @@
 package org.hl7.fhir.sushi.errors;
 
 import org.hl7.fhir.sushi.fshtypes.SourceInfo;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of sushi/src/errors/ParentDeclaredAsIdError.ts (SUSHI 3.21.1)
 public class ParentDeclaredAsIdError extends RuntimeException implements WithSource {

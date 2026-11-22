@@ -277,7 +277,7 @@ final class Sax124 {
     if (num == Math.rint(num) && Math.abs(num) < 9.007199254740992E15) {
       return Long.toString((long) num, radix);
     }
-    if (radix == 10) return org.hl7.fhir.sushi.js.JsNumber.toString(num);
+    if (radix == 10) return org.hl7.fhir.common.js.JsNumber.toString(num);
     return new java.math.BigDecimal(num).toBigInteger().toString(radix);
   }
 

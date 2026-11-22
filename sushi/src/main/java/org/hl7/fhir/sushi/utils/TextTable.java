@@ -24,7 +24,7 @@ public final class TextTable {
     List<Integer> dotsizes = new ArrayList<>();
     for (List<?> row : rowsIn) {
       for (int ix = 0; ix < row.size(); ix++) {
-        int n = dotindex(org.hl7.fhir.sushi.js.Js.toStr(row.get(ix)));
+        int n = dotindex(org.hl7.fhir.common.js.Js.toStr(row.get(ix)));
         grow(dotsizes, ix, n);
       }
     }
@@ -32,7 +32,7 @@ public final class TextTable {
     for (List<?> row : rowsIn) {
       List<String> r = new ArrayList<>();
       for (int ix = 0; ix < row.size(); ix++) {
-        String c = org.hl7.fhir.sushi.js.Js.toStr(row.get(ix));
+        String c = org.hl7.fhir.common.js.Js.toStr(row.get(ix));
         if (".".equals(at(align, ix))) {
           int index = dotindex(c);
           int size = dotsizes.get(ix) + (c.contains(".") ? 1 : 2) - (c.length() - index);

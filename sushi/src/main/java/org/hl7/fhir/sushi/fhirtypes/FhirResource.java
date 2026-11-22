@@ -1,6 +1,6 @@
 package org.hl7.fhir.sushi.fhirtypes;
 
-import org.hl7.fhir.sushi.js.JsonSerializable;
+import org.hl7.fhir.common.js.JsonSerializable;
 
 /**
  * CONTRACT: what SUSHI writes to fsh-generated/resources. Implemented by StructureDefinition, ValueSet, CodeSystem,

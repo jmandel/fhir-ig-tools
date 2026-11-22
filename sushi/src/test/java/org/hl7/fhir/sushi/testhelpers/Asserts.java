@@ -43,7 +43,7 @@ public final class Asserts {
     CardRule cardRule = as(CardRule.class, rule);
     assertEquals(path, cardRule.path);
     assertEquals(Double.valueOf(min), cardRule.min);
-    assertEquals(max instanceof Number n ? org.hl7.fhir.sushi.js.JsNumber.toString(n.doubleValue()) : max.toString(),
+    assertEquals(max instanceof Number n ? org.hl7.fhir.common.js.JsNumber.toString(n.doubleValue()) : max.toString(),
         cardRule.max);
   }
 

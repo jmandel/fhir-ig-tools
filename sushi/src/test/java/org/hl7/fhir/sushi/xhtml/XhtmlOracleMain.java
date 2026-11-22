@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 
 /**
  * Java half of the WP-9 differential (scripts/xhtml/oracle.js is the JS half): reads JSON-string lines on stdin,

@@ -4,7 +4,7 @@ import java.util.Objects;
 
 // port of sushi/src/fshtypes/FshEntity.ts type TextLocation (SUSHI 3.21.1)
 /** 1-based lines, columns as reported by the ANTLR tokens (see FSHImporter). Value semantics (TS tests use toEqual). */
-public final class TextLocation implements org.hl7.fhir.sushi.js.Js.DeepCloneable {
+public final class TextLocation implements org.hl7.fhir.common.js.Js.DeepCloneable {
   public int startLine;
   public int startColumn;
   public int endLine;

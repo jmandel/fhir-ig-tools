@@ -10,7 +10,7 @@ import java.util.TreeSet;
 import org.hl7.fhir.sushi.fhirdefs.FindResourceInfoOptions.ByLoadOrder;
 import org.hl7.fhir.sushi.fhirdefs.FindResourceInfoOptions.ByType;
 import org.hl7.fhir.sushi.fhirdefs.FindResourceInfoOptions.SortBy;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 
 // port of fhir-package-loader 2.2.4 src/db/SQLJSPackageDB.ts (SQLite via sql.js) as plain in-memory tables
 /**

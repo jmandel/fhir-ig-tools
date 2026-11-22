@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.NodePath;
 import org.hl7.fhir.sushi.utils.Processing;
 

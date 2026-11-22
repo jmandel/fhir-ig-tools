@@ -4,9 +4,9 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsNumber;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsNumber;
+import org.hl7.fhir.common.js.JsObject;
 
 /**
  * The JS operations importConfiguration performs on the untyped parsed YAML, with JS semantics, so malformed configs

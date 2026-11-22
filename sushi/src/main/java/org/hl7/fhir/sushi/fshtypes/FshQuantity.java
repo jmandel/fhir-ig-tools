@@ -1,7 +1,7 @@
 package org.hl7.fhir.sushi.fshtypes;
 
 import java.util.ArrayList;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import java.util.List;
 import java.util.Objects;
 

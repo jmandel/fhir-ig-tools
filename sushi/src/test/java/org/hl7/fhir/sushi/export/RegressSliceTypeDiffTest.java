@@ -10,7 +10,7 @@ import org.hl7.fhir.sushi.fhirtypes.ElementDefinition;
 import org.hl7.fhir.sushi.fhirtypes.StructureDefinition;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.testhelpers.MinimalConfig;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.junit.jupiter.api.Test;

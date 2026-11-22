@@ -13,7 +13,7 @@ import org.hl7.fhir.sushi.fhirtypes.PathPart;
 import org.hl7.fhir.sushi.fshtypes.SourceInfo;
 import org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule;
 import org.hl7.fhir.sushi.fshtypes.rules.Rule;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of sushi/src/utils/PathUtils.ts (SUSHI 3.21.1)
 public final class PathUtils {

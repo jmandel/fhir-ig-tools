@@ -13,9 +13,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import org.hl7.fhir.sushi.fhirdefs.xml.XmlJs.XNode;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.common.js.Json;
 
 // port of fhir-tool 5.0.2 convertToJs.js (ConvertToJs.convert, i.e. `new Fhir().xmlToObj(xml)`) with
 // ParseConformance(true) (its bundled R4 type data: resources/.../fhirtool-types.json.gz, generated from fhir-tool's

@@ -1,7 +1,7 @@
 package org.hl7.fhir.sushi.fshtypes;
 
 import java.util.List;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 
 // port of sushi/src/fshtypes/Configuration.ts (SUSHI 3.21.1)
 /**

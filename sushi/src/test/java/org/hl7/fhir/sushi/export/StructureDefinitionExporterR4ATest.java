@@ -37,7 +37,7 @@ import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRule;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;

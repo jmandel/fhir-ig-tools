@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 
 // port of sushi/src/fhirdefs/R5DefsForR4/index.ts (SUSHI 3.21.1); the JSON files are copied verbatim into resources
 public final class R5DefsForR4 {

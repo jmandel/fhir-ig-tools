@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager;
 import org.hl7.fhir.utilities.npm.NpmPackage;
 
@@ -127,7 +127,7 @@ public final class CorePackageProvider implements PackageProvider {
       org.hl7.fhir.utilities.http.HTTPResult res =
           org.hl7.fhir.utilities.http.ManagedWebAccess.get(java.util.List.of("web"), baseUrl + "/qas.json");
       res.checkThrowException();
-      qas = org.hl7.fhir.sushi.js.Json.parse(res.getContentAsString());
+      qas = org.hl7.fhir.common.js.Json.parse(res.getContentAsString());
     }
     Map<String, Object> newest = null;
     if (qas instanceof List<?> list && !list.isEmpty()) {

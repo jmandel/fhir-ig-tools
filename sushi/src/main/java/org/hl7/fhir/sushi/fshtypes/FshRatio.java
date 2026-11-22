@@ -1,6 +1,6 @@
 package org.hl7.fhir.sushi.fshtypes;
 
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 
 // port of sushi/src/fshtypes/FshRatio.ts (SUSHI 3.21.1)
 public class FshRatio extends FshEntity {

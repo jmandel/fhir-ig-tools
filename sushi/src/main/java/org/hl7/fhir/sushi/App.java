@@ -16,7 +16,7 @@ import org.hl7.fhir.sushi.ig.IGExporter;
 import org.hl7.fhir.sushi.ig.PredefinedResources;
 import org.hl7.fhir.sushi.importer.FSHTank;
 import org.hl7.fhir.sushi.importer.RawFSH;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.hl7.fhir.sushi.utils.NodePath;

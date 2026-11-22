@@ -11,7 +11,7 @@ import org.hl7.fhir.sushi.fshtypes.SourceInfo;
 import org.hl7.fhir.sushi.fshtypes.TextLocation;
 import org.hl7.fhir.sushi.fshtypes.VsOperator;
 import org.hl7.fhir.sushi.fshtypes.rules.CardRule;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.junit.jupiter.api.Test;
 
 /** Message text, class name, specReferences of every error class vs TS (scripts/oracle/errors-vectors.js). */

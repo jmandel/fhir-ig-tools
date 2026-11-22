@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 import java.util.Objects;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.sushi.utils.Metadata;
 
 /** Jest toEqual on utils.Metadata (undefined properties ignored, as Jest's toEqual does = Java null). */

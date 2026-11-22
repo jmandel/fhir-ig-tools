@@ -21,7 +21,7 @@ import org.hl7.fhir.sushi.fshtypes.RuleSet;
 import org.hl7.fhir.sushi.fshtypes.SourceInfo;
 import org.hl7.fhir.sushi.fshtypes.TextLocation;
 import org.hl7.fhir.sushi.fshtypes.rules.ContainsRuleItem;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

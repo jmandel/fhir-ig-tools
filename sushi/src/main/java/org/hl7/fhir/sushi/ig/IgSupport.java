@@ -5,7 +5,7 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 /**
  * Small npm-library equivalents IGExporter needs: semver 7 {@code maxSatisfying} for x-ranges, junk 3.1

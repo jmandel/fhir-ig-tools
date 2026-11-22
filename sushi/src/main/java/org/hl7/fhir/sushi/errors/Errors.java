@@ -1,6 +1,6 @@
 package org.hl7.fhir.sushi.errors;
 
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 /** Helpers shared by the error classes (no TS counterpart). */
 final class Errors {

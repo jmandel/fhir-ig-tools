@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.hl7.fhir.sushi.js.Json;
+import org.hl7.fhir.common.js.Json;
 
 // port of fhir-package-loader 2.2.4 src/virtual/DiskBasedVirtualPackage.ts
 /** Resources from local files/folders (SUSHI: predefined resources in input/, test fixtures). */

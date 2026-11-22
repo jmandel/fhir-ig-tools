@@ -31,8 +31,8 @@ import org.hl7.fhir.sushi.fshtypes.FshCode;
 import org.hl7.fhir.sushi.fshtypes.Invariant;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRule;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRuleType;
-import org.hl7.fhir.sushi.js.Js;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.junit.jupiter.api.BeforeAll;
@@ -981,7 +981,7 @@ class ElementDefinitionTest {
       ElementDefinition clone = valueX.clone(false);
       assertSameState(valueX, clone); // value-based equality (not sameness)
       clone.setDefinition("I am a clone");
-      assertFalse(org.hl7.fhir.sushi.js.Js.isEqual(edState(valueX), edState(clone)));
+      assertFalse(org.hl7.fhir.common.js.Js.isEqual(edState(valueX), edState(clone)));
     }
 
     @Test

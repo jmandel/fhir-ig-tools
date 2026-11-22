@@ -1,4 +1,4 @@
-// Generates JS-semantics oracle vectors for org.hl7.fhir.sushi.js (run with node; output is committed test data).
+// Generates JS-semantics oracle vectors for org.hl7.fhir.common.js (run with node; output is committed test data).
 // usage: node js-vectors.js > src/test/resources/js/vectors.json
 let seed = 42;
 const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };

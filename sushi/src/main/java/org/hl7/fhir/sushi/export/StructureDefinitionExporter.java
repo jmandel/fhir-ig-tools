@@ -54,7 +54,7 @@ import org.hl7.fhir.sushi.fshtypes.rules.ObeysRule;
 import org.hl7.fhir.sushi.fshtypes.rules.OnlyRule;
 import org.hl7.fhir.sushi.fshtypes.rules.Rule;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.JsObject;
+import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.sushi.utils.Fishable;
 import org.hl7.fhir.sushi.utils.FishableType;
 import org.hl7.fhir.sushi.utils.FishingUtils;
@@ -475,7 +475,7 @@ public class StructureDefinitionExporter implements Fishable {
       ElementDefinition myUrl = ed.structDef.findElement(ed.getId() + ".url");
       Object fixedUri = myUrl == null ? null : Common.getProp(myUrl, "fixedUri");
       if (fixedUri != null) {
-        urls.add(org.hl7.fhir.sushi.js.Js.toStr(fixedUri));
+        urls.add(org.hl7.fhir.common.js.Js.toStr(fixedUri));
       } else {
         logger.error("Could not find URL for extension " + ed.getId() + " as part of extension context.",
             extContext.sourceInfo);
@@ -1444,7 +1444,7 @@ public class StructureDefinitionExporter implements Fishable {
   }
 
   private static boolean truthy(Object o) {
-    return org.hl7.fhir.sushi.js.Js.truthy(o);
+    return org.hl7.fhir.common.js.Js.truthy(o);
   }
 
   private static String str(Object o) {

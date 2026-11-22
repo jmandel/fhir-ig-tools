@@ -23,7 +23,7 @@ import org.hl7.fhir.sushi.fshtypes.rules.InsertRule;
 import org.hl7.fhir.sushi.fshtypes.rules.MappingRule;
 import org.hl7.fhir.sushi.importer.FSHDocument;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.sushi.testhelpers.MinimalConfig;
 import org.hl7.fhir.sushi.testhelpers.TestFisher;
 import org.junit.jupiter.api.BeforeAll;

@@ -149,7 +149,7 @@ final class ImporterText {
   static Double jsParseInt(String s) {
     if (s == null) return Double.NaN;
     int i = 0;
-    while (i < s.length() && org.hl7.fhir.sushi.js.Js.isJsWhitespace(s.charAt(i))) i++;
+    while (i < s.length() && org.hl7.fhir.common.js.Js.isJsWhitespace(s.charAt(i))) i++;
     boolean neg = false;
     if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
       neg = s.charAt(i) == '-';

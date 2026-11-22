@@ -22,7 +22,7 @@ import org.hl7.fhir.sushi.fshtypes.*;
 import org.hl7.fhir.sushi.fshtypes.rules.*;
 import org.hl7.fhir.sushi.importer.FSHDocument;
 import org.hl7.fhir.sushi.importer.FSHTank;
-import org.hl7.fhir.sushi.js.*;
+import org.hl7.fhir.common.js.*;
 import org.hl7.fhir.sushi.testhelpers.*;
 import org.hl7.fhir.sushi.utils.*;
 import org.junit.jupiter.api.*;

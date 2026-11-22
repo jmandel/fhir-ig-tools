@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import org.hl7.fhir.sushi.js.Js;
+import org.hl7.fhir.common.js.Js;
 
 // port of the PathPart type in sushi/src/fhirtypes/StructureDefinition.ts (SUSHI 3.21.1)
 /**
