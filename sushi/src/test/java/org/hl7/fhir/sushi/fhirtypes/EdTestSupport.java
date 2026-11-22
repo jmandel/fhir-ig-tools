@@ -129,6 +129,56 @@ final class EdTestSupport {
     assertJsEqual(edState(expected), edState(actual));
   }
 
+  /** An object literal: {@code obj("a", 1.0, "b", "x")} (Java null = JS null; use Js.UNDEFINED for undefined). */
+  static JsObject obj(Object... kv) {
+    JsObject o = new JsObject();
+    for (int i = 0; i < kv.length; i += 2) o.put((String) kv[i], kv[i + 1]);
+    return o;
+  }
+
+  /** A mutable array literal. */
+  static List<Object> list(Object... v) {
+    List<Object> l = new ArrayList<>();
+    for (Object o : v) l.add(o);
+    return l;
+  }
+
+  /** A mutable string array literal. */
+  static List<String> strings(String... v) {
+    return new ArrayList<>(List.of(v));
+  }
+
+  /** Jest toStrictEqual: deep equality where undefined-valued keys count (lodash isEqual, no normalization). */
+  static void assertStrictJsEqual(Object expected, Object actual) {
+    if (!Js.isEqual(expected, actual)) {
+      fail("expected (strict): " + show(expected) + "\n but was: " + show(actual));
+    }
+  }
+
+  /** TS {@code sd.elements.find(e => e.path === path)}. */
+  static ElementDefinition byPath(StructureDefinition sd, String path) {
+    for (ElementDefinition e : sd.elements) if (path.equals(e.getPath())) return e;
+    return null;
+  }
+
+  /** TS {@code sd.elements.findIndex(e => e.path === path)}. */
+  static int indexByPath(StructureDefinition sd, String path) {
+    for (int i = 0; i < sd.elements.size(); i++) if (path.equals(sd.elements.get(i).getPath())) return i;
+    return -1;
+  }
+
+  /** TS {@code sd.elements.findIndex(e => e.id === id)}. */
+  static int indexById(StructureDefinition sd, String id) {
+    for (int i = 0; i < sd.elements.size(); i++) if (id.equals(sd.elements.get(i).getId())) return i;
+    return -1;
+  }
+
+  /** TS {@code list.find(e => e.id === id)}. */
+  static ElementDefinition findId(List<ElementDefinition> l, String id) {
+    for (ElementDefinition e : l) if (id.equals(e.getId())) return e;
+    return null;
+  }
+
   /** {@code new ElementDefinitionType(code)} list, for toEqual comparisons of ED.type. */
   static List<ElementDefinitionType> types(String... codes) {
     List<ElementDefinitionType> l = new ArrayList<>();
