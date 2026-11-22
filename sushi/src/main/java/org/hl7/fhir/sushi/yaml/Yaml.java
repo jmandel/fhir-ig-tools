@@ -48,7 +48,7 @@ public final class Yaml {
    */
   public static Object parse(String src, List<String> warnings) {
     Composer c = new Composer(warnings);
-    return c.compose(src.getBytes(StandardCharsets.UTF_8));
+    return c.compose(src, src.getBytes(StandardCharsets.UTF_8));
   }
 
   // ---------------------------------------------------------------- composer
@@ -132,7 +132,10 @@ public final class Yaml {
       this.warnings = warnings;
     }
 
-    Object compose(byte[] input) {
+    private String src;
+
+    Object compose(String src, byte[] input) {
+      this.src = src;
       Parser parser = new Parser(input, Reader.ANY_ENCODING);
       parser.tabsInBlankLines = true;
       try {
@@ -146,7 +149,7 @@ public final class Yaml {
         // the syntax error come first; the syntax error itself next.
         if (documents > 1) throw multipleDocuments();
         if (!errors.isEmpty()) throw errors.get(0);
-        throw YamlError.syntax(syntaxMessage(e));
+        throw YamlError.syntax(syntaxMessage(e, src));
       }
       if (documents > 1) throw multipleDocuments();
       if (!errors.isEmpty()) throw errors.get(0);
@@ -165,6 +168,13 @@ public final class Yaml {
     private void handle(Event e) {
       switch (e.type) {
         case DOCUMENT_START -> documents++;
+        case DOCUMENT_END -> {
+          // yaml 1.10 starts another (empty) document for any content after an explicit "...", comments included
+          if (!e.implicit && documents == 1) {
+            int after = charIndex(src, e.endMark.index);
+            if (!src.substring(Math.min(after, src.length())).isBlank()) documents++;
+          }
+        }
         case SCALAR -> add(scalar(e), e);
         case ALIAS -> {
           String name = cstr(e.anchor);
@@ -447,14 +457,120 @@ public final class Yaml {
 
   /**
    * The message for a libyaml error. yaml 1.10 words its syntax errors differently and detects them at different
-   * places; this maps the libyaml problems that have a clear yaml 1.10 counterpart and otherwise keeps libyaml's
+   * places; the libyaml problems with a clear yaml 1.10 counterpart are mapped to its wording (chosen with the WP-3
+   * mutation set: the yaml 1.10 message TS gives for the same malformed input most often), the rest keep libyaml's
    * problem/context text.
    */
-  static String syntaxMessage(LibyamlError e) {
+  static String syntaxMessage(LibyamlError e, String src) {
     String p = e.problem == null ? "" : e.problem;
-    String c = e.context;
-    String libyaml = c == null ? p : p + " " + c;
-    return libyaml;
+    String c = e.context == null ? "" : e.context;
+    String libyaml = e.context == null ? p : p + " " + e.context;
+    int at = charIndex(src, e.problemMark.index);
+    char ch = at >= 0 && at < src.length() ? src.charAt(at) : '\0';
+    String line = lineAt(src, at);
+    int col = at - lineStart(src, at);
+    switch (p) {
+      case "found character that cannot start any token" -> {
+        if (ch == '\t') return tabMessage(src, at);
+        if (ch == '@' || ch == '`') return "Plain value cannot start with reserved character " + ch;
+        return "All collection items must start at the same column";
+      }
+      case "found a tab character that violates indentation" -> {
+        return tabMessage(src, at);
+      }
+      case "did not find expected key", "did not find expected '-' indicator",
+          "did not find expected comment or line break" -> {
+        return "All collection items must start at the same column";
+      }
+      case "mapping values are not allowed in this context" -> {
+        // yaml 1.10 reads the line as the continuation of the previous line's plain value
+        return previousLineOpensBlock(src, at) ? "All collection items must start at the same column"
+            : "Nested mappings are not allowed in compact mappings";
+      }
+      case "could not find expected ':'" -> {
+        int k = charIndex(src, e.contextMark.index);
+        String key = k >= 0 && k <= at && at <= src.length() ? src.substring(k, at) : "";
+        if (key.length() > 1024) {
+          return "The \"" + key.substring(0, 8) + "..." + key.substring(key.length() - 8) + "\" key is too long";
+        }
+        return "Implicit map keys need to be followed by map values";
+      }
+      case "did not find expected <document start>" -> {
+        return "Document contains trailing content not separated by a ... or --- line";
+      }
+      case "found unexpected end of stream" -> {
+        if (c.equals("while scanning a quoted scalar")) {
+          int q = charIndex(src, e.contextMark.index);
+          return q >= 0 && q < src.length() && src.charAt(q) == '\'' ? "Missing closing 'quote"
+              : "Missing closing \"quote";
+        }
+        return libyaml;
+      }
+      case "found undefined tag handle" -> {
+        int end = at + 1;
+        while (end < src.length() && src.charAt(end) != '!' && !Character.isWhitespace(src.charAt(end))) end++;
+        String handle = end < src.length() && src.charAt(end) == '!' ? src.substring(at, end + 1) : "!";
+        return "The " + handle + " tag handle is non-default and was not declared.";
+      }
+      case "block sequence entries are not allowed in this context" -> {
+        return "Sequence items must not have preceding content on the same line";
+      }
+      case "found unknown escape character" -> {
+        int b = src.lastIndexOf('\\', at);
+        return "Invalid escape sequence " + (b >= 0 && b + 2 <= src.length() ? src.substring(b, b + 2) : "\\");
+      }
+      case "did not find expected node content" -> {
+        if (c.equals("while parsing a flow node") && ch == ',') return "Flow sequence contains an unexpected ,";
+        return libyaml;
+      }
+      default -> {
+        if (p.startsWith("did not find expected ',' or ")) return "Insufficient indentation in flow collection";
+        return libyaml;
+      }
+    }
+  }
+
+  /**
+   * A tab-indented line: yaml 1.10 sees it as the continuation of the previous line's plain value ("Plain value
+   * cannot start with a tab character") unless the previous line opened a block ("key:" with no value).
+   */
+  private static String tabMessage(String src, int at) {
+    return previousLineOpensBlock(src, at) ? "All collection items must start at the same column"
+        : "Plain value cannot start with a tab character";
+  }
+
+  /** Whether the last non-blank, non-comment line before {@code at}'s line ends with ':' (comments stripped). */
+  private static boolean previousLineOpensBlock(String src, int at) {
+    int i = lineStart(src, at);
+    while (i > 0) {
+      int end = i - 1;
+      if (end > 0 && src.charAt(end) == '\n' && src.charAt(end - 1) == '\r') end--;
+      int start = lineStart(src, end);
+      String l = src.substring(start, end).replaceFirst("(^|[ \\t])#.*$", "").strip();
+      if (!l.isEmpty()) return l.endsWith(":");
+      i = start;
+    }
+    return false;
+  }
+
+  /** The UTF-16 index of a libyaml mark index (characters = code points), clamped to the source. */
+  private static int charIndex(String src, long codePoints) {
+    if (codePoints <= 0) return 0;
+    long n = Math.min(codePoints, src.codePointCount(0, src.length()));
+    return src.offsetByCodePoints(0, (int) n);
+  }
+
+  private static int lineStart(String src, int at) {
+    int i = Math.min(at, src.length());
+    while (i > 0 && src.charAt(i - 1) != '\n' && src.charAt(i - 1) != '\r') i--;
+    return i;
+  }
+
+  private static String lineAt(String src, int at) {
+    int s = lineStart(src, at);
+    int e = Math.max(s, Math.min(at, src.length()));
+    while (e < src.length() && src.charAt(e) != '\n' && src.charAt(e) != '\r') e++;
+    return src.substring(s, e);
   }
 
   /** Flow-YAML rendering of a collection key (yaml's stringifyKey with inStringifyKey), for simple contents. */

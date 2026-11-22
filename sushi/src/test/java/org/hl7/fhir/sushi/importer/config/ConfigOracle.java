@@ -102,8 +102,13 @@ final class ConfigOracle {
         typedDiffs.add("typed: " + firstDiff(dump(back), dump(config), ""));
       }
     }
-    if (!Json.stringify(logs).equals(Json.stringify(ts.get("logs")))) {
-      diffs.add("logs: TS " + Json.stringify(ts.get("logs")) + " Java " + Json.stringify(logs));
+    // the TS transport spy also sees debug entries (e.g. YAML error stacks, which differ by nature): not compared
+    List<Object> tsLogs = new ArrayList<>();
+    for (Object l : (List<Object>) ts.get("logs")) {
+      if (!"debug".equals(((Map<String, Object>) l).get("level"))) tsLogs.add(l);
+    }
+    if (!Json.stringify(logs).equals(Json.stringify(tsLogs))) {
+      diffs.add("logs: TS " + Json.stringify(tsLogs) + " Java " + Json.stringify(logs));
     }
     return new Result(name, diffs, typedDiffs);
   }

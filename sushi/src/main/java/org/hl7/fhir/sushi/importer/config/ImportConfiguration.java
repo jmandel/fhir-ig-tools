@@ -214,7 +214,7 @@ public final class ImportConfiguration {
 
   private static Object parseSimpleCode(Object yamlCode, String property, String file) {
     if (nullish(yamlCode)) return yamlCode;
-    String s = JsOps.requireStringForCall(yamlCode, "yamlCode?.startsWith");
+    String s = JsOps.requireStringForCall(yamlCode, "yamlCode.startsWith");
     if (s.startsWith("#")) {
       FshCode c = parseFshCode(s, property, file);
       return c == null ? U : c.code;
@@ -274,7 +274,7 @@ public final class ImportConfiguration {
 
   private static Object parseCodingArray(Object codings, String property, String file) {
     if (nullish(codings)) return U;
-    if (!(codings instanceof List<?> list)) throw new JsOps.JsTypeError("codings?.map is not a function");
+    if (!(codings instanceof List<?> list)) throw new JsOps.JsTypeError("codings.map is not a function");
     List<Object> result = new ArrayList<>();
     for (Object c : list) {
       Object r = parseCoding(c, property, file);
