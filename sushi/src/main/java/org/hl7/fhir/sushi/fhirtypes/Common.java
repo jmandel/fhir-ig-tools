@@ -1381,6 +1381,12 @@ public final class Common {
         }
       }
     }
+    // TS for..in also walks an ElementDefinition's private own property _original (a full ElementDefinition), so
+    // cleanResource cleans the stored original the same way as the element; otherwise calculateDiff sees e.g. an
+    // `_aggregation: [{}]` left only in the original (corpus fut-infrastructure__implementation-guide).
+    if (object instanceof ElementDefinition ed && ed.getOriginal() != null && !skipFn.test("_original")) {
+      replaceField(ed.getOriginal(), matchFn, replaceFn, skipFn);
+    }
   }
 
   private static boolean hasPropOrNull(Object o, String prop) {
