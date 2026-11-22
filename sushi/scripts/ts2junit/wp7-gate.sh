@@ -69,5 +69,29 @@ for k in ('CS', 'VS', 'Instance', 'SD', 'IG'):
     for f in s['extra'][:8]: print('   extra   ', f)
 PY
   grep -c '^error' '$OUT/sushi.log' | sed 's/^/java errors: /'; grep -c '^warn' '$OUT/sushi.log' | sed 's/^/java warnings: /'
+  TSLOG=\$(ls $SP/runs/$NAME-ref-a/sushi.log $SP/runs/$NAME-t1/sushi.log 2>/dev/null | head -1)
+  python3 - \$TSLOG '$OUT/sushi.log' <<'PY'
+import sys, re
+# warn/error messages (with their File/Line continuation lines) in order; TS log has timing prefixes and colours.
+# The IG exporter's messages (WP-10) are not produced by the gate driver and are dropped from the TS side.
+def msgs(p, ts):
+    out = []; cur = None
+    for l in open(p, encoding='utf8', errors='replace'):
+        l = re.sub(r'\x1b\[[0-9;]*m', '', l.rstrip('\n'))
+        if ts: l = re.sub(r'^\s*[0-9.]+ ', '', l)
+        l = re.sub(r'(File: )\S*/ig/input/', r'\1<ig>/input/', l)
+        m = re.match(r'^(warn |error) (.*)', l)
+        if m: cur = [m.group(1).strip(), m.group(2)]; out.append(cur)
+        elif re.match(r'^(info |debug) ', l) or not l.startswith(' '): cur = None
+        elif cur is not None: cur[1] += '\n' + l
+    return out
+ign = ('The following files were not added', 'Files not in the supported file types')
+ref = [r for r in msgs(sys.argv[1], True) if not r[1].startswith(ign)]
+java = msgs(sys.argv[2], False)
+same = sum(1 for a, b in zip(ref, java) if a == b)
+print('log: TS %d warn/error, Java %d, identical in order: %d' % (len(ref), len(java), same))
+for a, b in list(zip(ref, java)) + [(r, None) for r in ref[len(java):]] + [(None, j) for j in java[len(ref):]]:
+    if a != b: print('  first difference:\n   TS:  ', a, '\n   Java:', b); break
+PY
 "
 docker volume rm -f "$vol" >/dev/null 2>&1 || true
