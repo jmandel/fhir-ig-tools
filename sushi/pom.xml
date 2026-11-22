@@ -29,6 +29,12 @@
       <artifactId>org.hl7.fhir.utilities</artifactId>
       <version>${hl7.fhir.core.version}</version>
     </dependency>
+    <!-- optional in core's pom but needed by its package cache (tgz/.index); same version as core 7.0.6 -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.27.1</version>
+    </dependency>
     <!-- Test only: the ANTLR parser generated from SUSHI's grammar is the oracle for the hand-written FSH parser. -->
     <dependency>
       <groupId>org.antlr</groupId>
