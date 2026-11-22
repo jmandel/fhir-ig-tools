@@ -80,6 +80,7 @@ Resumed 2026-11-20 after a pause (laptop offline ~20:15Z); agents relaunched fro
 | Subagent: P11.5 cheap wins (Opus) | own branches | `progress/speed-quick.log` | running |
 | Subagent: P11.6 incremental / warm rebuilds (Opus) | own branches | `progress/speed-incremental.log` | running |
 | Subagent: P11.7 url-bug survey (Opus) | own branches | `progress/url-survey.log` | done |
+| Subagent: narrow bug-fix branches (check each against current upstream master and the maintainer's PRs first; one bug per branch, with tests; nothing proposed) (Opus) | `fix/*` | `progress/narrow-fixes.log` | running |
 | Subagent: P8.11 fragment elision + Cross.views timing (Opus) | branch `determinism/p811` | `progress/p811.log` | done |
 | P8.10 kitchen-sink test IG (Opus) | https://github.com/jmandel/fhir-ig-kitchen-sink | `progress/kitchen-sink.log` | done |
 
