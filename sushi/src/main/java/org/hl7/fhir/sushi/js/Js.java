@@ -202,90 +202,19 @@ public final class Js {
     return false;
   }
 
-  /**
-   * lodash isMatch(object, source): partial deep comparison. Every key of a source object must match in object
-   * (extra keys allowed); a source array matches when object's array is at least as long and every source element
-   * partially matches SOME element of it (lodash COMPARE_PARTIAL_FLAG, order-insensitive); leaves compare like
-   * isEqual.
-   */
+  /** lodash isMatch(object, source): partial deep comparison. Implementation: {@link Lodash} (WP-7, oracle-tested). */
   public static boolean isMatch(Object object, Object source) {
-    if (source instanceof Map<?, ?> s) {
-      if (!(object instanceof Map<?, ?> o)) return s.isEmpty() && object != null;
-      for (Map.Entry<?, ?> e : s.entrySet()) {
-        if (!o.containsKey(e.getKey())) {
-          if (e.getValue() == UNDEFINED) continue;
-          return false;
-        }
-        if (!isMatch(o.get(e.getKey()), e.getValue())) return false;
-      }
-      return true;
-    }
-    if (source instanceof List<?> s) {
-      if (!(object instanceof List<?> o) || o.size() < s.size()) return false;
-      for (Object se : s) {
-        boolean found = false;
-        for (Object oe : o) if (isMatch(oe, se)) { found = true; break; }
-        if (!found) return false;
-      }
-      return true;
-    }
-    return isEqual(object, source);
+    return Lodash.isMatch(object, source);
   }
 
-  /**
-   * lodash merge(destination, source) for the value model: plain objects merge recursively, arrays merge BY INDEX,
-   * a source undefined never overwrites an existing value, other values replace. Mutates and returns destination
-   * (sources are deep-cloned where inserted, like lodash's baseMergeDeep).
-   */
-  @SuppressWarnings("unchecked")
-  public static Object merge(Object destination, Object source) {
-    return mergeWith(destination, source, null);
+  /** lodash merge(object, source). Implementation: {@link Lodash} (WP-7, oracle-tested). */
+  public static <T> T merge(T object, Object source) {
+    return Lodash.merge(object, source);
   }
 
-  /** Customizer for {@link #mergeWith}: return {@link #UNDEFINED} to fall back to the default merge. */
-  public interface MergeCustomizer {
-    Object apply(Object objValue, Object srcValue, Object key);
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Object mergeWith(Object destination, Object source, MergeCustomizer customizer) {
-    if (source instanceof Map<?, ?> sm && destination instanceof Map<?, ?> dm) {
-      Map<String, Object> d = (Map<String, Object>) dm;
-      for (String k : ownKeys((Map<String, Object>) sm)) mergeKey(d, k, d.get(k), sm.get(k), customizer, d.containsKey(k));
-      return d;
-    }
-    if (source instanceof List<?> sl && destination instanceof List<?> dl) {
-      List<Object> d = (List<Object>) dl;
-      for (int i = 0; i < sl.size(); i++) {
-        Object cur = i < d.size() ? d.get(i) : UNDEFINED;
-        Object v = mergeValue(cur, sl.get(i), i, customizer, i < d.size());
-        if (v == NO_CHANGE) continue;
-        if (i < d.size()) d.set(i, v); else { while (d.size() < i) d.add(UNDEFINED); d.add(v); }
-      }
-      return d;
-    }
-    return destination;
-  }
-
-  private static final Object NO_CHANGE = new Object();
-
-  private static void mergeKey(Map<String, Object> d, String k, Object cur, Object src, MergeCustomizer c, boolean has) {
-    Object v = mergeValue(has ? cur : UNDEFINED, src, k, c, has);
-    if (v != NO_CHANGE) d.put(k, v);
-  }
-
-  private static Object mergeValue(Object cur, Object src, Object key, MergeCustomizer c, boolean has) {
-    if (c != null) {
-      Object r = c.apply(cur == UNDEFINED ? null : cur, src, key);
-      if (r != UNDEFINED) return r;
-    }
-    if (src instanceof Map<?, ?> || src instanceof List<?>) {
-      boolean sameKind = (src instanceof Map<?, ?> && cur instanceof Map<?, ?>) || (src instanceof List<?> && cur instanceof List<?>);
-      Object target = sameKind ? cur : (src instanceof Map<?, ?> ? new JsObject() : new ArrayList<>());
-      return mergeWith(target, src, c);
-    }
-    if (src == UNDEFINED && has) return NO_CHANGE;
-    return src;
+  /** lodash mergeWith(object, source, customizer). Implementation: {@link Lodash}. */
+  public static <T> T mergeWith(T object, Object source, Lodash.MergeCustomizer customizer) {
+    return Lodash.mergeWith(object, source, customizer);
   }
 
   /** lodash words(string) with the default pattern (ASCII fast path or lodash's unicode word regex). */
