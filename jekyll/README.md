@@ -16,7 +16,7 @@ java -jar publisher.jar -ig . -jekyll "$PWD/jekyll-shim"    # first run fetches 
 ## Why
 
 To render an IG's narrative pages, the publisher writes `temp/pages` and runs `jekyll build`. That puts
-a whole second toolchain (Ruby 3.2, Jekyll 4.4.1, Liquid, kramdown, Rouge, libyaml) into every place an
+a whole second toolchain (Ruby 3.4, Jekyll 4.4.1, Liquid, kramdown, Rouge, libyaml) into every place an
 IG is built: the autobuilder, CI images, and every author's laptop. It has its own install pains,
 especially on Windows, and its own security patch cycle, and it is the slow, memory-hungry part of the
 pipeline that nobody on the Java side can debug.
@@ -36,10 +36,10 @@ them.
 
 | Check | Result |
 |---|---|
-| Golden corpus: real publisher + real Jekyll on real IGs from build.fhir.org, then the shim on the same input | **266 IGs (the IGs built on build.fhir.org over a month): 260 identical, 1,024,171 files**, including UTG (259k input → 89,572 output files). The other 6 can't be identical by construction: 3 differ only in build timestamps (`site.time`), 2 include files under a name that differs only in case (the goldens were recorded on a case-insensitive disk), and in 1 real Jekyll itself fails |
+| Golden corpus: real publisher + real Jekyll on real IGs from build.fhir.org, then the shim on the same input | **266 IGs (the IGs built on build.fhir.org over a month): 260 identical, 1,024,171 files**, including UTG (259k input → 89,572 output files). The other 6 can't be identical by construction: 3 differ only in build timestamps (`site.time`), 2 include files under a name that differs only in case (the goldens were recorded on a case-insensitive disk), and in 1 real Jekyll itself fails. Again on 2026-11-23 against the current autobuilder image (kramdown 2.6.1, Ruby 3.4.13; 268 goldens, 1,021,376 files): 262 identical, the same 6 for the same reasons |
 | Full publisher run (`-jekyll jekyll-shim`) vs a real-Jekyll publisher run (UDAP) | identical apart from per-run data (build timestamps, GUIDs, QA timing counters) |
 | Liquid 4.0.4: differential vs the real gem | 4,167 / 4,167 cases (+150 CRLF variants) |
-| kramdown 2.5.2 + GFM | 2,207 / 2,207 real IG fragments · 4,000 / 4,000 adversarial emphasis cases · upstream suite 702 / 1,043 exact, the other 341 being code fences in languages no IG uses, whose Rouge lexers aren't ported (they render as plain text) |
+| kramdown 2.6.1 + GFM | 2,207 / 2,207 real IG fragments · 4,000 / 4,000 adversarial emphasis cases · upstream suite + targeted cases 762 / 1,103 exact, the other 341 being code fences in languages no IG uses, whose Rouge lexers aren't ported (they render as plain text) |
 | YAML (SafeYAML → Psych → libyaml) | 687 real IG files · 804 yaml-test-suite cases · 343k fuzz, typed values identical |
 | Rouge 4.7.0 | 2,467 / 2,467 highlighted fragments mined from real IGs |
 | Jekyll site behavior | 75 / 75 cases (filters, includes, `site.*`, static-file paths, collisions) |
@@ -264,7 +264,7 @@ Extension points the glue relies on (names may be refined, but keep the capabili
 - `Drop` interface (`Object invokeDrop(String key)`, optional `toLiquid()`), for lazily computed
   objects such as Jekyll's `forloop`, `site`, `page`.
 
-### Contract: `org.hl7.fhir.jekyll.kramdown` (port of kramdown 2.5.2 + kramdown-parser-gfm 1.1.0)
+### Contract: `org.hl7.fhir.jekyll.kramdown` (port of kramdown 2.6.1 + kramdown-parser-gfm 1.1.0)
 ```java
 String html = Kramdown.toHtml(markdownText, siteKramdownConfig /*Map<String,Object>, string keys*/);
 ```

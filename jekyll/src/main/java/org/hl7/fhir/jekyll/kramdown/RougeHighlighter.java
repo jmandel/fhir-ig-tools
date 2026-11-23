@@ -7,7 +7,7 @@ import org.hl7.fhir.jekyll.rouge.Formatters;
 import org.hl7.fhir.jekyll.rouge.Lexer;
 
 /**
- * Port of kramdown-2.5.2/lib/kramdown/converter/syntax_highlighter/rouge.rb, calling the Rouge 4.7.0
+ * Port of kramdown-2.6.1/lib/kramdown/converter/syntax_highlighter/rouge.rb, calling the Rouge 4.7.0
  * port (org.hl7.fhir.jekyll.rouge): <code>Rouge::Lexer.find_fancy</code>, the formatter chosen by
  * <code>formatter_class(opts)</code>, and <code>formatter.format(lexer.lex(text))</code>.
  */

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Port of kramdown-2.5.2/lib/kramdown/element.rb.
+ * Port of kramdown-2.6.1/lib/kramdown/element.rb.
  *
  * <p>Ruby symbols (element types, option keys, symbolic values such as {@code :mdash}) are Java
  * Strings. {@code attr} keeps insertion order (Ruby Hash order defines HTML attribute order).

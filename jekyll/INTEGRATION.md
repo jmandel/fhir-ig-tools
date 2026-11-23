@@ -52,9 +52,20 @@ as the `jekyll` and `common` modules (`org.hl7.fhir.jekyll.*`, `org.hl7.fhir.com
 4. **Remove Ruby** from the autobuilder image (and from author setup instructions).
 
 ## 4. Compatibility contract
-- Target: Jekyll 4.4.1 / Liquid 4.0.4 / kramdown 2.5.2 + kramdown-parser-gfm 1.1.0, as configured by
-  the publisher's templates (TRACKER D9). Upstream's image moved to kramdown 2.6.1 on 2026-11-19; the
-  real corpus renders identically under both (P0.11); the small delta is tracked as P9.1.
+- Target: what the autobuilder's images run: Jekyll 4.4.1 / Liquid 4.0.4 / kramdown 2.6.1 +
+  kramdown-parser-gfm 1.1.0 / Rouge 4.7.0 on Ruby 3.4.13, as configured by the publisher's templates (TRACKER
+  D9). The reference image (`docker/Dockerfile`) pins `ghcr.io/fhir/ig-publisher-localdev` by digest
+  (`sha256:daa6a3f4…`, `:latest` since 2026-11-19; `hl7fhir/ig-publisher-base:latest` is the same image and the
+  `ghcr.io/fhir/ig-build` CI candidates have the same gems). Before that the target was kramdown 2.5.2 on
+  Ruby 3.2.3; the 2.5.2 → 2.6.1 delta and Ruby 3.4's `Hash#inspect` / `NoMethodError` texts were ported on
+  2026-11-23 (NOTES-kramdown.md "2.6.1 delta").
+- Tracking the image: the autobuilder's `images/ig-publisher/Dockerfile` installs `gem install jekyll -v 4.4.1`
+  without pinning kramdown, liquid or rouge, so a rebuild of the image can move them. Before each shim release
+  (and when `ghcr.io/fhir/ig-publisher-localdev:latest` changes digest): build `docker/` with
+  `--build-arg BASE=ghcr.io/fhir/ig-publisher-localdev:latest -t ig-publisher-localdev-ca-next`, `gem list` it, and
+  if a gem or Ruby moved, re-record the suites with `ORACLE_IMAGE=ig-publisher-localdev-ca-next
+  jekyll/oracle/oracle.sh <cases> <expected>` and diff against the committed expected files; port the gem's
+  diff (`gem fetch` both versions, diff `lib/`), then move the pin in `docker/Dockerfile`.
 - Equivalence: normalized-DOM equality (D1), including Rouge's token `<span>`s in highlighted code (D7;
   the templates style them). Fence languages whose Rouge lexers aren't ported (none that IGs use) render as
   plain text.

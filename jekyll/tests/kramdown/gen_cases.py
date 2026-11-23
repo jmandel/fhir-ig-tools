@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generates jekyll/tests/kramdown/cases.jsonl (oracle format, type: kramdown).
 
-Sources: kramdown-2.5.2 test/testcases/**/*.text (+ .options / dir 'options'), kramdown-parser-gfm-1.1.0
+Sources: kramdown-2.6.1 test/testcases/**/*.text (+ .options / dir 'options'), kramdown-parser-gfm-1.1.0
 test/testcases, and targeted cases (targeted.md: cases separated by lines '=== <id> [config-json]').
 Every upstream/targeted text is emitted with two configs: the upstream options (or kramdown's test
 default {auto_ids: false, footnote_nr: 1}), and the typical IG config merged with those options.

@@ -9,7 +9,7 @@ Ruby sources as optional git submodules for developers.
 |---|---|---|---|
 | Liquid (Shopify) | 4.0.4 | MIT | `org.hl7.fhir.jekyll.liquid` |
 | Jekyll | 4.4.1 | MIT | `org.hl7.fhir.jekyll.site` |
-| kramdown | 2.5.2 | MIT | `org.hl7.fhir.jekyll.kramdown` |
+| kramdown | 2.6.1 | MIT | `org.hl7.fhir.jekyll.kramdown` |
 | kramdown-parser-gfm | 1.1.0 | MIT | `org.hl7.fhir.jekyll.kramdown` |
 | Rouge (incl. Pygments-derived lexers) | 4.7.0 | MIT; Pygments BSD-2-Clause | `org.hl7.fhir.jekyll.rouge` |
 | SafeYAML | 1.0.5 | MIT | `org.hl7.fhir.jekyll.yaml` |
@@ -94,7 +94,7 @@ SOFTWARE.
 
 ---
 
-## kramdown 2.5.2
+## kramdown 2.6.1
 
 ```
 kramdown - fast, pure-Ruby Markdown-superset converter

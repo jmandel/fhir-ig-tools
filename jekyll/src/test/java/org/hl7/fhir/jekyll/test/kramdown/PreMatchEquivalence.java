@@ -10,7 +10,7 @@ import java.util.Random;
 public final class PreMatchEquivalence {
   public static void main(String[] args) {
     int n = args.length > 0 ? Integer.parseInt(args[0]) : 200_000;
-    int maxLen = args.length > 1 ? Integer.parseInt(args[1]) : 12;
+    int maxLen = args.length > 1 ? Integer.parseInt(args[1]) : 12; // 2.6.1's 50-character window: run with maxLen > 50 too
     String alphabet = "_-aZé\u00df\u4e2d9 \t\n\r\u000B\f*`.\u00a0\ud835\udc00x";
     Random r = new Random(42);
     long checked = 0, bad = 0;

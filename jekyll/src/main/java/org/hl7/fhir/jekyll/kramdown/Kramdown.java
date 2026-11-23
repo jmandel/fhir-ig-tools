@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Public entry point: converts Markdown to HTML exactly as Jekyll 4.4.1's
- * Jekyll::Converters::Markdown::KramdownParser does with kramdown 2.5.2 + kramdown-parser-gfm 1.1.0.
+ * Jekyll::Converters::Markdown::KramdownParser does with kramdown 2.6.1 + kramdown-parser-gfm 1.1.0.
  *
  * <p>Ports jekyll-4.4.1/lib/jekyll/converters/markdown/kramdown_parser.rb (setup, convert and
  * Kramdown::JekyllDocument) and the "kramdown" entry of jekyll-4.4.1/lib/jekyll/configuration.rb

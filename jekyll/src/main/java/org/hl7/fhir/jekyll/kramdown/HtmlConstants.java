@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Port of Kramdown::Parser::Html::Constants (kramdown-2.5.2/lib/kramdown/parser/html.rb) plus the
+ * Port of Kramdown::Parser::Html::Constants (kramdown-2.6.1/lib/kramdown/parser/html.rb) plus the
  * REXML regex fragments kramdown borrows (rexml 3.4.4 BaseParser::UNAME_STR, XMLTokens NAME_*).
  */
 final class HtmlConstants {
@@ -18,7 +18,9 @@ final class HtmlConstants {
   /** [[:alnum:]] (content of a bracket expression) */
   static final String ALNUM = "\\p{IsAlphabetic}\\p{IsDigit}";
   /** \p{Word} (content of a bracket expression) */
-  static final String WORD = "\\p{IsAlphabetic}\\p{M}\\p{Nd}\\p{Pc}";
+  // Ruby 3.4's Onigmo also counts Join_Control (U+200C, U+200D) as Word (Ruby 3.2 didn't); the set equals Ruby 3.4.13's
+  // \\p{Word} on all 1,112,064 code points (139,612 of them)
+  static final String WORD = "\\p{IsAlphabetic}\\p{M}\\p{Nd}\\p{Pc}\\u200C\\u200D";
   /** Ruby's \b (Unicode word boundary even though \w is ASCII) */
   static final String WB = "(?:(?<=[" + WORD + "])(?![" + WORD + "])|(?<![" + WORD + "])(?=[" + WORD + "]))";
   /** Ruby's \B */

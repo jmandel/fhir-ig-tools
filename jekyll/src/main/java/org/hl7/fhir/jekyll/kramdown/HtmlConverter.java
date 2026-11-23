@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Port of kramdown-2.5.2/lib/kramdown/converter/html.rb (Kramdown::Converter::Html) together with
+ * Port of kramdown-2.6.1/lib/kramdown/converter/html.rb (Kramdown::Converter::Html) together with
  * converter/base.rb (Kramdown::Converter::Base) and converter/math_engine/mathjax.rb.
  */
 public final class HtmlConverter {
@@ -267,7 +267,7 @@ public final class HtmlConverter {
       case "root":
         return convertRoot(el, ind);
       default:
-        throw new KramdownError("undefined method `convert_" + el.type + "'");
+        throw new KramdownError("undefined method 'convert_" + el.type + "' for an instance of Kramdown::Converter::Html");
     }
   }
 
@@ -368,11 +368,22 @@ public final class HtmlConverter {
     if (KramdownParser.truthy(options.get("auto_ids")) && attr.get("id") == null) {
       attr.put("id", generateId((String) el.opt("raw_text")));
     }
-    if (KramdownParser.truthy(options.get("header_links")) && attr.get("id") != null
+    Object headerLinks = options.get("header_links");
+    if (KramdownParser.truthy(headerLinks) && attr.get("id") != null
         && attr.get("id").toString().length() > 0) {
       Element link = new Element("a", null, null, null);
       link.attr().put("href", "#" + attr.get("id"));
-      el.children.add(0, link);
+      // 2.6.1: @options[:header_links][:content] / [:position] (the option is a hash once validated)
+      Map<?, ?> hl = headerLinks instanceof Map ? (Map<?, ?>) headerLinks : Map.of();
+      String headerLinkText = Options.toS(hl.get("content"));
+      if (!headerLinkText.isEmpty()) {
+        link.children.add(new Element("text", headerLinkText));
+      }
+      if (Options.toS(hl.get("position")).equals("start")) {
+        el.children.add(0, link);
+      } else {
+        el.children.add(link);
+      }
     }
     if (attr.get("id") != null && inToc(el)) {
       toc.add(new Object[] {el.opt("level"), attr.get("id"), el.children});
@@ -765,10 +776,7 @@ public final class HtmlConverter {
         }
         para = parent.children.isEmpty() ? null : parent.children.get(parent.children.size() - 1);
         insertSpace = true;
-      } else if (li.children.isEmpty()) {
-        // Ruby: li.children.last.type on nil raises
-        throw new KramdownError("undefined method `type' for nil");
-      }
+      } // 2.6.1: an empty footnote definition (li.children.last&.type) gets a new paragraph below, no error
       if (para == null) {
         para = new Element("p");
         li.children.add(para);

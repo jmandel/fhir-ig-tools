@@ -1,5 +1,5 @@
 # Differential-testing oracle: renders test cases with the REAL Ruby gems (liquid 4.0.4,
-# kramdown 2.5.2 + kramdown-parser-gfm 1.1.0, configured exactly as Jekyll 4.4.1 does).
+# kramdown 2.6.1 + kramdown-parser-gfm 1.1.0 in the reference image, configured exactly as Jekyll 4.4.1 does).
 #
 # usage (via oracle.sh): ruby oracle.rb <cases.jsonl> <expected.jsonl>
 #

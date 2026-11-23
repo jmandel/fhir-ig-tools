@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Port of kramdown-2.5.2/lib/kramdown/options.rb plus the GFM parser's options
+ * Port of kramdown-2.6.1/lib/kramdown/options.rb plus the GFM parser's options
  * (kramdown-parser-gfm-1.1.0/lib/kramdown/parser/gfm/options.rb).
  *
  * <p>Option values: Ruby Symbols are represented as Java Strings, Integers as Long, Booleans as
@@ -59,7 +59,19 @@ public final class Options {
     define("auto_ids", Type.BOOLEAN, true);
     define("auto_id_stripping", Type.BOOLEAN, false);
     define("auto_id_prefix", Type.STRING, "");
-    define("header_links", Type.BOOLEAN, false);
+    // 2.6.1: false, true (= {content: '', position: :start}) or a hash with :content and :position
+    define("header_links", Type.OBJECT, false, (val, name) -> {
+      if (val instanceof Boolean && !((Boolean) val)) {
+        return val;
+      }
+      if (val instanceof Boolean) {
+        Map<Object, Object> h = new LinkedHashMap<>();
+        h.put("content", "");
+        h.put("position", "start");
+        return h;
+      }
+      return symbolizeKeys(simpleHashValidator(val, "header_links"));
+    });
     define("transliterated_header_ids", Type.BOOLEAN, false);
     define("parse_block_html", Type.BOOLEAN, false);
     define("parse_span_html", Type.BOOLEAN, true);
@@ -168,7 +180,7 @@ public final class Options {
         }
         val = l;
       } else if (val instanceof String) {
-        throw new KramdownError("undefined method `map!' for String");
+        throw new KramdownError("undefined method 'map!' for an instance of String");
       }
       return simpleArrayValidator(val, "forbidden_inline_options", -1);
     });
@@ -342,7 +354,7 @@ public final class Options {
     if (o == null) {
       return 0L;
     }
-    throw new KramdownError("undefined method `to_i'");
+    throw new KramdownError("undefined method 'to_i'");
   }
 
   /** Ruby to_s for JSON-ish values. */

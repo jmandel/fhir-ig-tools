@@ -230,7 +230,7 @@ public final class Values {
         }
         first = false;
         inspect(e.getKey(), sb);
-        sb.append("=>");
+        sb.append(" => "); // Ruby 3.4 Hash#inspect
         inspect(e.getValue(), sb);
       }
       sb.append('}');

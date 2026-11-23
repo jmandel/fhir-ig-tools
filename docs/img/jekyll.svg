@@ -91,7 +91,7 @@
   <text x="262" y="303" class="ink" font-size="12">warn mode</text>
   <rect class="stage" x="368" y="242" width="110" height="86" rx="8"/>
   <text x="376" y="264" class="ink mono" font-size="14" font-weight="700">kramdown</text>
-  <text x="376" y="286" class="ink" font-size="12">kramdown 2.5.2</text>
+  <text x="376" y="286" class="ink" font-size="12">kramdown 2.6.1</text>
   <text x="376" y="303" class="ink" font-size="12">+ GFM 1.1.0</text>
   <rect class="stage" x="482" y="242" width="110" height="86" rx="8"/>
   <text x="490" y="264" class="ink mono" font-size="14" font-weight="700">rouge</text>

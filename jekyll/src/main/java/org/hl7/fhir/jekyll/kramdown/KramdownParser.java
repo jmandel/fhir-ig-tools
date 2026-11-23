@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Port of kramdown-2.5.2/lib/kramdown/parser/kramdown.rb and the parser pieces it pulls in
+ * Port of kramdown-2.6.1/lib/kramdown/parser/kramdown.rb and the parser pieces it pulls in
  * (parser/base.rb, parser/kramdown/*.rb, the Parser module of parser/html.rb). Ruby reopens the
  * class across files; here each Ruby file is a section of this class, marked
  * {@code // ==== port of parser/kramdown/<file>.rb}.
@@ -263,6 +263,9 @@ public class KramdownParser {
 
   /** parse_blocks(el, text = nil); returns true if stopped with :found */
   protected boolean parseBlocks(Element el, String text) {
+    if (++stackCounter > 100) { // 2.6.1
+      throw new KramdownError("Elements nested too deep at block level");
+    }
     stack.add(new Object[] {tree, src, blockIal});
     tree = el;
     blockIal = null;
@@ -299,8 +302,16 @@ public class KramdownParser {
     tree = (Element) f[0];
     src = (StrScanner) f[1];
     blockIal = castMap(f[2]);
+    stackCounter--;
     return found;
   }
+
+  /**
+   * 2.6.1's @stack_counter: nesting depth of parse_blocks, parse_spans and parse_raw_html together (one counter);
+   * more than 100 (blocks, spans) or 200 (raw HTML) raises Kramdown::Error. Not decremented on the way out of an
+   * error, as in Ruby (the error ends the conversion).
+   */
+  protected int stackCounter;
 
   @SuppressWarnings("unchecked")
   static Map<String, Object> castMap(Object o) {
@@ -374,6 +385,9 @@ public class KramdownParser {
 
   /** parse_spans(el, stop_re = nil, parsers = nil, text_type = @text_type) { block } */
   protected boolean parseSpans(Element el, Pattern stopRe, List<String> ps, String tt, BooleanSupplier blk) {
+    if (++stackCounter > 100) { // 2.6.1
+      throw new KramdownError("Elements nested too deep at span level");
+    }
     if (tree != null) {
       stack.add(new Object[] {tree, textType});
     }
@@ -427,6 +441,7 @@ public class KramdownParser {
       tree = (Element) f[0];
       textType = f.length > 1 ? (String) f[1] : null;
     }
+    stackCounter--;
     return stopReFound;
   }
 
@@ -546,8 +561,9 @@ public class KramdownParser {
   static final Pattern ALD_TYPE_ID_OR_CLASS = rx(ALD_TYPE_ID_NAME + "|" + ALD_TYPE_CLASS_NAME);
   static final String ALD_TYPE_ID_OR_CLASS_MULTI = "(?:((?:" + ALD_TYPE_ID_NAME + "|" + ALD_TYPE_CLASS_NAME + ")+))";
   static final String ALD_TYPE_REF = "(?:(" + ALD_ID_NAME + "))";
+  // 2.6.1: a last alternative (\S+) (group 8) catches the invalid parts, which get a warning
   static final Pattern ALD_TYPE_ANY = rx("(?:\\A|\\s)(?:" + ALD_TYPE_KEY_VALUE_PAIR + "|" + ALD_TYPE_REF + "|"
-      + ALD_TYPE_ID_OR_CLASS_MULTI + ")(?=\\s|\\Z)");
+      + ALD_TYPE_ID_OR_CLASS_MULTI + "|(\\S+))(?=\\s|\\Z)");
   static final Pattern ALD_START = rx("^" + OPT_SPACE + "\\{:(" + ALD_ID_NAME + "):(" + ALD_ANY_CHARS + "+)\\}\\s*?\\n");
   static final String EXT_STOP_STR = "\\{:/(%s)?\\}";
   static final String EXT_START_STR = "\\{::(\\w+)(?:\\s(" + ALD_ANY_CHARS + "*?)|)(\\/)?\\}";
@@ -581,6 +597,7 @@ public class KramdownParser {
       String val = m.group(3);
       String ref = m.group(4);
       String idAndOrClass = m.group(5);
+      String unmatched = m.group(8);
       if (ref != null) {
         List<Object> refs = (List<Object>) opts.get(Element.REFS);
         if (refs == null) {
@@ -600,6 +617,8 @@ public class KramdownParser {
             opts.put("id", idAttr);
           }
         }
+      } else if (unmatched != null) {
+        warning("IAL/ALD contains invalid part: " + unmatched);
       } else {
         val = RubyStr.gsub(val, SEP_UNESCAPE.get(sep), "\\1");
         opts.put(key, val);
@@ -1626,7 +1645,7 @@ public class KramdownParser {
       el.attr().put("href", href);
     } else {
       el.attr().put("src", href);
-      el.attr().put("alt", altText);
+      el.attr().putIfAbsent("alt", altText); // 2.6.1: el.attr['alt'] ||= alt_text
       el.children.clear();
     }
     if (title != null) {
@@ -1644,8 +1663,23 @@ public class KramdownParser {
   private static final Pattern ANGLE_URL = rx("\\(<(.*?)>");
   private static final Pattern CLOSE_PAREN = rx("\\)");
 
+  /**
+   * 2.6.1: failed bracket scans are cached per source position (and emphasis context, the two lowest bits), so
+   * unclosed brackets cost linear, not quadratic or exponential, time. Reset when the scanner changes.
+   */
+  private StrScanner linkScanFailuresSrc;
+  private java.util.Set<Long> linkScanFailures;
+
+  private static int linkEmphasisContext(Element t) {
+    if (t == null) {
+      return 0;
+    }
+    return t.type.equals("em") ? 1 : t.type.equals("strong") ? 2 : 0;
+  }
+
   protected boolean parseLink() {
     int startLineNumber = src.currentLineNumber();
+    int startPos = src.pos();
     String result = src.scan(LINK_START);
     int curPos = src.pos();
     int[] savedPos = src.savePos();
@@ -1656,21 +1690,56 @@ public class KramdownParser {
       addText(result);
       return true;
     }
+    if (linkScanFailuresSrc != src) {
+      linkScanFailuresSrc = src;
+      linkScanFailures = new java.util.HashSet<>();
+    }
+    int ctx = linkEmphasisContext(tree);
+    for (Object[] f : stack) {
+      ctx |= linkEmphasisContext((Element) f[0]);
+    }
+    final int context = ctx;
+    long startKey = ((long) startPos << 2) | context;
+    if (linkScanFailures.contains(startKey)) {
+      if (tree.type.equals("a") || tree.type.equals("img")) {
+        src.terminate();
+      }
+      addText(result);
+      return true;
+    }
+
     Element el = new Element(linkType, null, null, Element.opts("location", startLineNumber));
 
     int[] count = {1};
+    List<int[]> brackets = new ArrayList<>(); // [pos or -1, level]
     boolean found = parseSpans(el, LINK_BRACKET_STOP_RE, null, textType, () -> {
-      count[0] += src.group(1) != null ? -1 : 1;
+      boolean closing = src.group(1) != null;
+      count[0] += closing ? -1 : 1;
       int imgs = 0;
       for (Element c : el.children) {
         if (c.type.equals("img")) {
           imgs++;
         }
       }
-      return count[0] - imgs == 0;
+      int level = count[0] - imgs;
+      brackets.add(new int[] {closing || src.matchedSize() == 2 ? -1 : src.pos(), level});
+      return level == 0;
     });
     if (!found) {
+      // an opening bracket found during the scan can only start a link if a later bracket has a level of one less
+      java.util.Set<Integer> levels = new java.util.HashSet<>();
+      for (int k = brackets.size() - 1; k >= 0; k--) {
+        int[] b = brackets.get(k);
+        if (b[0] >= 0 && !levels.contains(b[1] - 1)) {
+          linkScanFailures.add(((long) b[0] << 2) | context);
+        }
+        levels.add(b[1]);
+      }
+      linkScanFailures.add(startKey);
       src.revertPos(savedPos);
+      if (tree.type.equals("a") || tree.type.equals("img")) {
+        src.terminate();
+      }
       addText(result);
       return true;
     }
@@ -1723,7 +1792,7 @@ public class KramdownParser {
       }
       String l = lu.toString();
       if (l.isEmpty()) {
-        throw new IllegalStateException("undefined method `strip!' for nil");
+        throw new IllegalStateException("undefined method 'strip!' for nil");
       }
       linkUrl = RubyStr.strip(l.length() >= 2 ? l.substring(1, l.length() - 1) : "");
       if (nrOfBrackets == 0) {
@@ -2078,6 +2147,9 @@ public class KramdownParser {
 
   /** Html::Parser#parse_raw_html(el, &block) */
   protected void parseRawHtml(Element el, TagHandler handler) {
+    if (++stackCounter > 200) { // 2.6.1
+      throw new KramdownError("Elements nested too deep at HTML raw level");
+    }
     stack.add(new Object[] {tree});
     tree = el;
     boolean done = false;
@@ -2115,6 +2187,7 @@ public class KramdownParser {
         done = true;
       }
     }
+    stackCounter--;
     Object[] f = stack.remove(stack.size() - 1);
     tree = (Element) f[0];
   }
@@ -2253,7 +2326,9 @@ public class KramdownParser {
 
   // ==== port of parser/kramdown/emphasis.rb =================================================
   static final Pattern EMPHASIS_START = rx("(?:\\*\\*?|__?)");
-  private static final Pattern EM_INTRAWORD = rx("[" + ALPHA + "]-?[" + ALPHA + "]*_*\\z");
+  // 2.6.1: [[:alnum:]] (was [[:alpha:]]), matched from at most 50 characters before the end of pre_match
+  private static final Pattern EM_INTRAWORD = rx("[" + ALNUM + "]-?[" + ALNUM + "]*_*\\z");
+  static final int EM_INTRAWORD_WINDOW = 50;
   private static final Map<String, Pattern[]> EM_PATTERNS = new ConcurrentHashMap<>();
 
   private static Pattern[] emPatterns(String delim) {
@@ -2411,32 +2486,51 @@ public class KramdownParser {
     return end <= 0 || isRubyWs(src.charAt(end - 1));
   }
 
-  /** EM_INTRAWORD (/[[:alpha:]]-?[[:alpha:]]*_*\z/) on string[0, end). */
+  /**
+   * 2.6.1: (tmp = pre_match).match?(/[[:alnum:]]-?[[:alnum:]]*_*\z/, [tmp.size - 50, 0].max) on string[0, end):
+   * the match must start within the last 50 characters (code points) of pre_match.
+   */
   boolean emIntrawordAtEnd(int end) {
     return emIntraword(src.string(), end);
   }
 
   static boolean emIntraword(CharSequence s, int end) {
+    int from = emWindowStart(s, end);
     int i = end;
-    while (i > 0 && s.charAt(i - 1) == '_') {
+    while (i > from && s.charAt(i - 1) == '_') {
       i--;
     }
-    if (i <= 0) {
+    if (i <= from) {
       return false;
     }
     int c = Character.codePointBefore(s, i);
-    if (Character.isAlphabetic(c)) {
+    if (isAlnum(c)) {
       return true;
     }
     if (c == '-') {
       int j = i - 1;
-      return j > 0 && Character.isAlphabetic(Character.codePointBefore(s, j));
+      return j > from && isAlnum(Character.codePointBefore(s, j));
     }
     return false;
   }
 
+  /** The index EM_WINDOW code points before end (0 if fewer). */
+  static int emWindowStart(CharSequence s, int end) {
+    int i = end;
+    for (int n = 0; n < EM_INTRAWORD_WINDOW && i > 0; n++) {
+      i -= Character.charCount(Character.codePointBefore(s, i));
+    }
+    return i;
+  }
+
+  private static boolean isAlnum(int c) {
+    return Character.isAlphabetic(c) || Character.isDigit(c);
+  }
+
   static boolean emIntrawordRegex(String prefix) {
-    return EM_INTRAWORD.matcher(prefix).find();
+    java.util.regex.Matcher m = EM_INTRAWORD.matcher(prefix);
+    m.region(emWindowStart(prefix, prefix.length()), prefix.length());
+    return m.find();
   }
 
   static boolean csPreRegex(String prefix) {
@@ -2485,7 +2579,7 @@ public class KramdownParser {
       }
     }
     if (substs == null) {
-      throw new IllegalStateException("undefined method `[]' for nil");
+      throw new IllegalStateException("undefined method '[]' for nil");
     }
     for (Object subst : substs) {
       if (subst instanceof Integer) {

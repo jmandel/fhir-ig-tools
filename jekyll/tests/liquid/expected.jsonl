@@ -114,7 +114,7 @@
 {"id":"suite-strict-114","output":"0.5"}
 {"id":"suite-strict-115","error":"Liquid::ZeroDivisionError: Liquid error (line 1): divided by 0"}
 {"id":"suite-strict-116","output":"1234"}
-{"id":"suite-strict-117","output":"{\"a\"=>1}{\"a\"=>2}{\"a\"=>3}{\"a\"=>4}{}"}
+{"id":"suite-strict-117","output":"{\"a\" => 1}{\"a\" => 2}{\"a\" => 3}{\"a\" => 4}{}"}
 {"id":"suite-strict-118","output":""}
 {"id":"suite-strict-119","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property ''"}
 {"id":"suite-strict-120","output":"1234"}
@@ -127,7 +127,7 @@
 {"id":"suite-strict-127","output":""}
 {"id":"suite-strict-128","output":"abc"}
 {"id":"suite-strict-129","output":"abc"}
-{"id":"suite-strict-130","output":"{\"a\"=>\"ok\"}"}
+{"id":"suite-strict-130","output":"{\"a\" => \"ok\"}"}
 {"id":"suite-strict-131","output":""}
 {"id":"suite-strict-132","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'bar'"}
 {"id":"suite-strict-133","output":""}
@@ -148,7 +148,7 @@
 {"id":"suite-strict-148","output":"17.42"}
 {"id":"suite-strict-149","output":"ab c"}
 {"id":"suite-strict-150","output":"ab c"}
-{"id":"suite-strict-151","output":"{\"key\"=>\"a\"}{\"key\"=>\"b\"}{\"key\"=>\"c\"}{\"key\"=>\"X\"}{\"key\"=>\"Y\"}{\"key\"=>\"Z\"}{\"fake\"=>\"t\"}"}
+{"id":"suite-strict-151","output":"{\"key\" => \"a\"}{\"key\" => \"b\"}{\"key\" => \"c\"}{\"key\" => \"X\"}{\"key\" => \"Y\"}{\"key\" => \"Z\"}{\"fake\" => \"t\"}"}
 {"id":"suite-strict-152","output":"abcXYZ"}
 {"id":"suite-strict-153","output":"1"}
 {"id":"suite-strict-154","output":"bcd"}
@@ -159,9 +159,9 @@
 {"id":"suite-strict-159","output":"5"}
 {"id":"suite-strict-160","error":"Liquid::FloatDomainError: Liquid error (line 1): Computation results in 'Infinity'"}
 {"id":"suite-strict-161","output":"210"}
-{"id":"suite-strict-162","output":"{\"a\"=>2}{\"a\"=>10}"}
+{"id":"suite-strict-162","output":"{\"a\" => 2}{\"a\" => 10}"}
 {"id":"suite-strict-163","output":"102"}
-{"id":"suite-strict-164","output":"{\"a\"=>\"10\"}{\"a\"=>\"2\"}"}
+{"id":"suite-strict-164","output":"{\"a\" => \"10\"}{\"a\" => \"2\"}"}
 {"id":"suite-strict-165","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'bar'"}
 {"id":"suite-strict-166","output":"testing"}
 {"id":"suite-strict-167","output":""}
@@ -199,7 +199,7 @@
 {"id":"suite-strict-199","output":"2 1 1 1"}
 {"id":"suite-strict-200","output":" ab c"}
 {"id":"suite-strict-201","output":" \tab c"}
-{"id":"suite-strict-202","output":"{\"price\"=>\"1\", \"handle\"=>\"gamma\"}{\"price\"=>2, \"handle\"=>\"epsilon\"}{\"price\"=>\"4\", \"handle\"=>\"alpha\"}{\"handle\"=>\"delta\"}{\"handle\"=>\"beta\"}"}
+{"id":"suite-strict-202","output":"{\"price\" => \"1\", \"handle\" => \"gamma\"}{\"price\" => 2, \"handle\" => \"epsilon\"}{\"price\" => \"4\", \"handle\" => \"alpha\"}{\"handle\" => \"delta\"}{\"handle\" => \"beta\"}"}
 {"id":"suite-strict-203","output":"a<br />\nb<br />\nc"}
 {"id":"suite-strict-204","output":"1234..."}
 {"id":"suite-strict-205","output":"1234567890"}
@@ -207,9 +207,9 @@
 {"id":"suite-strict-207","output":"1234567890"}
 {"id":"suite-strict-208","output":"测试..."}
 {"id":"suite-strict-209","output":"12341"}
-{"id":"suite-strict-210","output":"{\"message\"=>\"Bonjour!\", \"language\"=>\"French\"}"}
-{"id":"suite-strict-211","output":"{\"message\"=>\"Hallo!\", \"language\"=>\"German\"}"}
-{"id":"suite-strict-212","output":"{\"message\"=>\"Hello!\", \"language\"=>\"English\"}"}
+{"id":"suite-strict-210","output":"{\"message\" => \"Bonjour!\", \"language\" => \"French\"}"}
+{"id":"suite-strict-211","output":"{\"message\" => \"Hallo!\", \"language\" => \"German\"}"}
+{"id":"suite-strict-212","output":"{\"message\" => \"Hello!\", \"language\" => \"English\"}"}
 {"id":"suite-strict-213","output":""}
 {"id":"suite-strict-214","output":""}
 {"id":"suite-strict-215","output":""}
@@ -239,16 +239,16 @@
 {"id":"suite-strict-239","error":"Liquid::ArgumentError: Liquid error (line 1): invalid byte sequence in UTF-8"}
 {"id":"suite-strict-240","output":"4217"}
 {"id":"suite-strict-241","output":"aBcD"}
-{"id":"suite-strict-242","output":"{\"a\"=>\"a\"}{\"a\"=>\"B\"}{\"a\"=>\"c\"}{\"a\"=>\"D\"}"}
+{"id":"suite-strict-242","output":"{\"a\" => \"a\"}{\"a\" => \"B\"}{\"a\" => \"c\"}{\"a\" => \"D\"}"}
 {"id":"suite-strict-243","output":"3"}
 {"id":"suite-strict-244","output":"0"}
 {"id":"suite-strict-245","output":"0"}
 {"id":"suite-strict-246","output":"1234"}
-{"id":"suite-strict-247","output":"{\"a\"=>1}{\"a\"=>2}{\"a\"=>3}{\"a\"=>4}"}
+{"id":"suite-strict-247","output":"{\"a\" => 1}{\"a\" => 2}{\"a\" => 3}{\"a\" => 4}"}
 {"id":"suite-strict-248","output":"1 2 3 4"}
 {"id":"suite-strict-249","output":"1 - 2 - 3 - 4"}
 {"id":"suite-strict-250","output":"1121314"}
-{"id":"suite-strict-251","output":"{\"price\"=>1, \"handle\"=>\"gamma\"}{\"price\"=>2, \"handle\"=>\"epsilon\"}{\"price\"=>4, \"handle\"=>\"alpha\"}{\"handle\"=>\"delta\"}{\"handle\"=>\"beta\"}"}
+{"id":"suite-strict-251","output":"{\"price\" => 1, \"handle\" => \"gamma\"}{\"price\" => 2, \"handle\" => \"epsilon\"}{\"price\" => 4, \"handle\" => \"alpha\"}{\"handle\" => \"delta\"}{\"handle\" => \"beta\"}"}
 {"id":"suite-strict-252","output":"4"}
 {"id":"suite-strict-253","output":"4"}
 {"id":"suite-strict-254","error":"Liquid::FloatDomainError: Liquid error (line 1): Computation results in 'Infinity'"}
@@ -260,22 +260,22 @@
 {"id":"suite-strict-260","output":"6"}
 {"id":"suite-strict-261","output":"5"}
 {"id":"suite-strict-262","output":"aBcD"}
-{"id":"suite-strict-263","output":"{\"a\"=>\"a\"}{\"a\"=>\"B\"}{\"a\"=>\"c\"}{\"a\"=>\"D\"}{}"}
+{"id":"suite-strict-263","output":"{\"a\" => \"a\"}{\"a\" => \"B\"}{\"a\" => \"c\"}{\"a\" => \"D\"}{}"}
 {"id":"suite-strict-264","output":"4321"}
 {"id":"suite-strict-265","output":"foo"}
 {"id":"suite-strict-266","output":"1324"}
-{"id":"suite-strict-267","output":"{\"a\"=>1}{\"a\"=>3}{\"a\"=>2}"}
+{"id":"suite-strict-267","output":"{\"a\" => 1}{\"a\" => 3}{\"a\" => 2}"}
 {"id":"suite-strict-268","output":"   "}
 {"id":"suite-strict-269","output":"   "}
 {"id":"suite-strict-270","output":"a a a"}
 {"id":"suite-strict-271","output":" 1 1 1"}
 {"id":"suite-strict-272","output":"a a a"}
-{"id":"suite-strict-273","output":"{\"foo\"=>true}{\"foo\"=>\"for sure\"}"}
-{"id":"suite-strict-274","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
-{"id":"suite-strict-275","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
+{"id":"suite-strict-273","output":"{\"foo\" => true}{\"foo\" => \"for sure\"}"}
+{"id":"suite-strict-274","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
+{"id":"suite-strict-275","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
 {"id":"suite-strict-276","output":"foobar"}
-{"id":"suite-strict-277","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
-{"id":"suite-strict-278","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
+{"id":"suite-strict-277","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
+{"id":"suite-strict-278","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
 {"id":"suite-strict-279","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Unexpected outer 'else' tag"}
 {"id":"suite-strict-280","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Unknown tag 'foo'"}
 {"id":"suite-strict-281","error":"Liquid::SyntaxError: Liquid syntax error (line 1): 'endunless' is not a valid delimiter for if tags. use endif"}
@@ -941,7 +941,7 @@
 {"id":"suite-warn-114","output":"0.5"}
 {"id":"suite-warn-115","error":"Liquid::ZeroDivisionError: Liquid error (line 1): divided by 0"}
 {"id":"suite-warn-116","output":"1234"}
-{"id":"suite-warn-117","output":"{\"a\"=>1}{\"a\"=>2}{\"a\"=>3}{\"a\"=>4}{}"}
+{"id":"suite-warn-117","output":"{\"a\" => 1}{\"a\" => 2}{\"a\" => 3}{\"a\" => 4}{}"}
 {"id":"suite-warn-118","output":""}
 {"id":"suite-warn-119","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property ''"}
 {"id":"suite-warn-120","output":"1234"}
@@ -954,7 +954,7 @@
 {"id":"suite-warn-127","output":""}
 {"id":"suite-warn-128","output":"abc"}
 {"id":"suite-warn-129","output":"abc"}
-{"id":"suite-warn-130","output":"{\"a\"=>\"ok\"}"}
+{"id":"suite-warn-130","output":"{\"a\" => \"ok\"}"}
 {"id":"suite-warn-131","output":""}
 {"id":"suite-warn-132","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'bar'"}
 {"id":"suite-warn-133","output":""}
@@ -975,7 +975,7 @@
 {"id":"suite-warn-148","output":"17.42"}
 {"id":"suite-warn-149","output":"ab c"}
 {"id":"suite-warn-150","output":"ab c"}
-{"id":"suite-warn-151","output":"{\"key\"=>\"a\"}{\"key\"=>\"b\"}{\"key\"=>\"c\"}{\"key\"=>\"X\"}{\"key\"=>\"Y\"}{\"key\"=>\"Z\"}{\"fake\"=>\"t\"}"}
+{"id":"suite-warn-151","output":"{\"key\" => \"a\"}{\"key\" => \"b\"}{\"key\" => \"c\"}{\"key\" => \"X\"}{\"key\" => \"Y\"}{\"key\" => \"Z\"}{\"fake\" => \"t\"}"}
 {"id":"suite-warn-152","output":"abcXYZ"}
 {"id":"suite-warn-153","output":"1"}
 {"id":"suite-warn-154","output":"bcd"}
@@ -986,9 +986,9 @@
 {"id":"suite-warn-159","output":"5"}
 {"id":"suite-warn-160","error":"Liquid::FloatDomainError: Liquid error (line 1): Computation results in 'Infinity'"}
 {"id":"suite-warn-161","output":"210"}
-{"id":"suite-warn-162","output":"{\"a\"=>2}{\"a\"=>10}"}
+{"id":"suite-warn-162","output":"{\"a\" => 2}{\"a\" => 10}"}
 {"id":"suite-warn-163","output":"102"}
-{"id":"suite-warn-164","output":"{\"a\"=>\"10\"}{\"a\"=>\"2\"}"}
+{"id":"suite-warn-164","output":"{\"a\" => \"10\"}{\"a\" => \"2\"}"}
 {"id":"suite-warn-165","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'bar'"}
 {"id":"suite-warn-166","output":"testing"}
 {"id":"suite-warn-167","output":""}
@@ -1026,7 +1026,7 @@
 {"id":"suite-warn-199","output":"2 1 1 1"}
 {"id":"suite-warn-200","output":" ab c"}
 {"id":"suite-warn-201","output":" \tab c"}
-{"id":"suite-warn-202","output":"{\"price\"=>\"1\", \"handle\"=>\"gamma\"}{\"price\"=>2, \"handle\"=>\"epsilon\"}{\"price\"=>\"4\", \"handle\"=>\"alpha\"}{\"handle\"=>\"delta\"}{\"handle\"=>\"beta\"}"}
+{"id":"suite-warn-202","output":"{\"price\" => \"1\", \"handle\" => \"gamma\"}{\"price\" => 2, \"handle\" => \"epsilon\"}{\"price\" => \"4\", \"handle\" => \"alpha\"}{\"handle\" => \"delta\"}{\"handle\" => \"beta\"}"}
 {"id":"suite-warn-203","output":"a<br />\nb<br />\nc"}
 {"id":"suite-warn-204","output":"1234..."}
 {"id":"suite-warn-205","output":"1234567890"}
@@ -1034,9 +1034,9 @@
 {"id":"suite-warn-207","output":"1234567890"}
 {"id":"suite-warn-208","output":"测试..."}
 {"id":"suite-warn-209","output":"12341"}
-{"id":"suite-warn-210","output":"{\"message\"=>\"Bonjour!\", \"language\"=>\"French\"}"}
-{"id":"suite-warn-211","output":"{\"message\"=>\"Hallo!\", \"language\"=>\"German\"}"}
-{"id":"suite-warn-212","output":"{\"message\"=>\"Hello!\", \"language\"=>\"English\"}"}
+{"id":"suite-warn-210","output":"{\"message\" => \"Bonjour!\", \"language\" => \"French\"}"}
+{"id":"suite-warn-211","output":"{\"message\" => \"Hallo!\", \"language\" => \"German\"}"}
+{"id":"suite-warn-212","output":"{\"message\" => \"Hello!\", \"language\" => \"English\"}"}
 {"id":"suite-warn-213","output":""}
 {"id":"suite-warn-214","output":""}
 {"id":"suite-warn-215","output":""}
@@ -1066,16 +1066,16 @@
 {"id":"suite-warn-239","error":"Liquid::ArgumentError: Liquid error (line 1): invalid byte sequence in UTF-8"}
 {"id":"suite-warn-240","output":"4217"}
 {"id":"suite-warn-241","output":"aBcD"}
-{"id":"suite-warn-242","output":"{\"a\"=>\"a\"}{\"a\"=>\"B\"}{\"a\"=>\"c\"}{\"a\"=>\"D\"}"}
+{"id":"suite-warn-242","output":"{\"a\" => \"a\"}{\"a\" => \"B\"}{\"a\" => \"c\"}{\"a\" => \"D\"}"}
 {"id":"suite-warn-243","output":"3"}
 {"id":"suite-warn-244","output":"0"}
 {"id":"suite-warn-245","output":"0"}
 {"id":"suite-warn-246","output":"1234"}
-{"id":"suite-warn-247","output":"{\"a\"=>1}{\"a\"=>2}{\"a\"=>3}{\"a\"=>4}"}
+{"id":"suite-warn-247","output":"{\"a\" => 1}{\"a\" => 2}{\"a\" => 3}{\"a\" => 4}"}
 {"id":"suite-warn-248","output":"1 2 3 4"}
 {"id":"suite-warn-249","output":"1 - 2 - 3 - 4"}
 {"id":"suite-warn-250","output":"1121314"}
-{"id":"suite-warn-251","output":"{\"price\"=>1, \"handle\"=>\"gamma\"}{\"price\"=>2, \"handle\"=>\"epsilon\"}{\"price\"=>4, \"handle\"=>\"alpha\"}{\"handle\"=>\"delta\"}{\"handle\"=>\"beta\"}"}
+{"id":"suite-warn-251","output":"{\"price\" => 1, \"handle\" => \"gamma\"}{\"price\" => 2, \"handle\" => \"epsilon\"}{\"price\" => 4, \"handle\" => \"alpha\"}{\"handle\" => \"delta\"}{\"handle\" => \"beta\"}"}
 {"id":"suite-warn-252","output":"4"}
 {"id":"suite-warn-253","output":"4"}
 {"id":"suite-warn-254","error":"Liquid::FloatDomainError: Liquid error (line 1): Computation results in 'Infinity'"}
@@ -1087,22 +1087,22 @@
 {"id":"suite-warn-260","output":"6"}
 {"id":"suite-warn-261","output":"5"}
 {"id":"suite-warn-262","output":"aBcD"}
-{"id":"suite-warn-263","output":"{\"a\"=>\"a\"}{\"a\"=>\"B\"}{\"a\"=>\"c\"}{\"a\"=>\"D\"}{}"}
+{"id":"suite-warn-263","output":"{\"a\" => \"a\"}{\"a\" => \"B\"}{\"a\" => \"c\"}{\"a\" => \"D\"}{}"}
 {"id":"suite-warn-264","output":"4321"}
 {"id":"suite-warn-265","output":"foo"}
 {"id":"suite-warn-266","output":"1324"}
-{"id":"suite-warn-267","output":"{\"a\"=>1}{\"a\"=>3}{\"a\"=>2}"}
+{"id":"suite-warn-267","output":"{\"a\" => 1}{\"a\" => 3}{\"a\" => 2}"}
 {"id":"suite-warn-268","output":"   "}
 {"id":"suite-warn-269","output":"   "}
 {"id":"suite-warn-270","output":"a a a"}
 {"id":"suite-warn-271","output":" 1 1 1"}
 {"id":"suite-warn-272","output":"a a a"}
-{"id":"suite-warn-273","output":"{\"foo\"=>true}{\"foo\"=>\"for sure\"}"}
-{"id":"suite-warn-274","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
-{"id":"suite-warn-275","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
+{"id":"suite-warn-273","output":"{\"foo\" => true}{\"foo\" => \"for sure\"}"}
+{"id":"suite-warn-274","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
+{"id":"suite-warn-275","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
 {"id":"suite-warn-276","output":"foobar"}
-{"id":"suite-warn-277","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
-{"id":"suite-warn-278","output":"{\"handle\"=>\"alpha\", \"ok\"=>true}{\"handle\"=>\"delta\", \"ok\"=>true}"}
+{"id":"suite-warn-277","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
+{"id":"suite-warn-278","output":"{\"handle\" => \"alpha\", \"ok\" => true}{\"handle\" => \"delta\", \"ok\" => true}"}
 {"id":"suite-warn-279","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Unexpected outer 'else' tag"}
 {"id":"suite-warn-280","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Unknown tag 'foo'"}
 {"id":"suite-warn-281","error":"Liquid::SyntaxError: Liquid syntax error (line 1): 'endunless' is not a valid delimiter for if tags. use endif"}
@@ -1780,12 +1780,12 @@
 {"id":"quirk-warn-40-bang","warnings":["Liquid syntax error (line 1): Expected end_of_string but found colon in \"{{ a:b }}\""],"output":""}
 {"id":"quirk-strict-40","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected end_of_string but found colon in \"{{ a:b }}\""}
 {"id":"quirk-strict-40-bang","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected end_of_string but found colon in \"{{ a:b }}\""}
-{"id":"quirk-lax-41","output":"ab,c{\"k\"=>\"v\"}"}
-{"id":"quirk-lax-41-bang","output":"ab,c{\"k\"=>\"v\"}"}
-{"id":"quirk-warn-41","output":"ab,c{\"k\"=>\"v\"}"}
-{"id":"quirk-warn-41-bang","output":"ab,c{\"k\"=>\"v\"}"}
-{"id":"quirk-strict-41","output":"ab,c{\"k\"=>\"v\"}"}
-{"id":"quirk-strict-41-bang","output":"ab,c{\"k\"=>\"v\"}"}
+{"id":"quirk-lax-41","output":"ab,c{\"k\" => \"v\"}"}
+{"id":"quirk-lax-41-bang","output":"ab,c{\"k\" => \"v\"}"}
+{"id":"quirk-warn-41","output":"ab,c{\"k\" => \"v\"}"}
+{"id":"quirk-warn-41-bang","output":"ab,c{\"k\" => \"v\"}"}
+{"id":"quirk-strict-41","output":"ab,c{\"k\" => \"v\"}"}
+{"id":"quirk-strict-41-bang","output":"ab,c{\"k\" => \"v\"}"}
 {"id":"quirk-lax-42","output":"Liquid error (line 1): wrong number of arguments (given 3, expected 2)","render_errors":["Liquid::ArgumentError: Liquid error (line 1): wrong number of arguments (given 3, expected 2)"]}
 {"id":"quirk-lax-42-bang","error":"Liquid::ArgumentError: Liquid error (line 1): wrong number of arguments (given 3, expected 2)"}
 {"id":"quirk-warn-42","output":"Liquid error (line 1): wrong number of arguments (given 3, expected 2)","render_errors":["Liquid::ArgumentError: Liquid error (line 1): wrong number of arguments (given 3, expected 2)"]}
@@ -2248,12 +2248,12 @@
 {"id":"quirk-warn-118-bang","warnings":["Liquid syntax error (line 1): Expected id but found end_of_string in \"{{a | }}\""],"output":"ab,c"}
 {"id":"quirk-strict-118","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected id but found end_of_string in \"{{a | }}\""}
 {"id":"quirk-strict-118-bang","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected id but found end_of_string in \"{{a | }}\""}
-{"id":"quirk-lax-119","output":"a{\"k\"=>1}"}
-{"id":"quirk-lax-119-bang","output":"a{\"k\"=>1}"}
-{"id":"quirk-warn-119","output":"a{\"k\"=>1}"}
-{"id":"quirk-warn-119-bang","output":"a{\"k\"=>1}"}
-{"id":"quirk-strict-119","output":"a{\"k\"=>1}"}
-{"id":"quirk-strict-119-bang","output":"a{\"k\"=>1}"}
+{"id":"quirk-lax-119","output":"a{\"k\" => 1}"}
+{"id":"quirk-lax-119-bang","output":"a{\"k\" => 1}"}
+{"id":"quirk-warn-119","output":"a{\"k\" => 1}"}
+{"id":"quirk-warn-119-bang","output":"a{\"k\" => 1}"}
+{"id":"quirk-strict-119","output":"a{\"k\" => 1}"}
+{"id":"quirk-strict-119-bang","output":"a{\"k\" => 1}"}
 {"id":"quirk-lax-120","output":"1..3"}
 {"id":"quirk-lax-120-bang","output":"1..3"}
 {"id":"quirk-warn-120","output":"1..3"}
@@ -2478,12 +2478,12 @@
 {"id":"quirk-arr-105","output":"3"}
 {"id":"quirk-arr-106","output":"312"}
 {"id":"quirk-arr-115","output":"<tr class=\"row1\">\n<td class=\"col1\">3</td></tr>\n"}
-{"id":"sv-0-False","output":"{\"a\"=>\"A\"}"}
-{"id":"sf-0-False","output":"{\"a\"=>\"A\"}"}
-{"id":"svsf-0-False","output":"{\"a\"=>\"A\"}"}
-{"id":"sv-0-True","output":"{\"a\"=>\"A\"}"}
-{"id":"sf-0-True","output":"{\"a\"=>\"A\"}"}
-{"id":"svsf-0-True","output":"{\"a\"=>\"A\"}"}
+{"id":"sv-0-False","output":"{\"a\" => \"A\"}"}
+{"id":"sf-0-False","output":"{\"a\" => \"A\"}"}
+{"id":"svsf-0-False","output":"{\"a\" => \"A\"}"}
+{"id":"sv-0-True","output":"{\"a\" => \"A\"}"}
+{"id":"sf-0-True","output":"{\"a\" => \"A\"}"}
+{"id":"svsf-0-True","output":"{\"a\" => \"A\"}"}
 {"id":"sv-1-False","output":"","render_errors":["Liquid::UndefinedVariable: Liquid error (line 1): undefined variable y"]}
 {"id":"sf-1-False","output":""}
 {"id":"svsf-1-False","output":"","render_errors":["Liquid::UndefinedVariable: Liquid error (line 1): undefined variable y"]}
@@ -2544,16 +2544,16 @@
 {"id":"sv-10-True","error":"Liquid::UndefinedVariable: Liquid error (line 1): undefined variable y"}
 {"id":"sf-10-True","output":""}
 {"id":"svsf-10-True","error":"Liquid::UndefinedVariable: Liquid error (line 1): undefined variable y"}
-{"id":"sv-11-False","output":"{\"a\"=>\"A\"}"}
+{"id":"sv-11-False","output":"{\"a\" => \"A\"}"}
 {"id":"sf-11-False","output":"","render_errors":["Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"]}
 {"id":"svsf-11-False","output":"","render_errors":["Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"]}
-{"id":"sv-11-True","output":"{\"a\"=>\"A\"}"}
+{"id":"sv-11-True","output":"{\"a\" => \"A\"}"}
 {"id":"sf-11-True","error":"Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"}
 {"id":"svsf-11-True","error":"Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"}
-{"id":"sv-12-False","output":"{\"A\"=>\"A\"}"}
+{"id":"sv-12-False","output":"{\"A\" => \"A\"}"}
 {"id":"sf-12-False","output":"","render_errors":["Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"]}
 {"id":"svsf-12-False","output":"","render_errors":["Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"]}
-{"id":"sv-12-True","output":"{\"A\"=>\"A\"}"}
+{"id":"sv-12-True","output":"{\"A\" => \"A\"}"}
 {"id":"sf-12-True","error":"Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"}
 {"id":"svsf-12-True","error":"Liquid::UndefinedFilter: Liquid error (line 1): undefined filter nofilter"}
 {"id":"sv-13-False","output":"12","render_errors":["Liquid::UndefinedDropMethod: Liquid error (line 1): undefined method nope","Liquid::UndefinedDropMethod: Liquid error (line 1): undefined method nope"]}
@@ -2645,12 +2645,12 @@
 {"id":"hand-19-bang","output":"[123x]"}
 {"id":"hand-20","output":"[{}]"}
 {"id":"hand-20-bang","output":"[{}]"}
-{"id":"hand-21","output":"[{\"a\"=>1, \"b\"=>[1, 2.5, nil, true], \"c\"=>{\"d\"=>\"e\\\"f\"}}]"}
-{"id":"hand-21-bang","output":"[{\"a\"=>1, \"b\"=>[1, 2.5, nil, true], \"c\"=>{\"d\"=>\"e\\\"f\"}}]"}
-{"id":"hand-22","output":"[{\"a\"=>1}{\"b\"=>\"x\"}]"}
-{"id":"hand-22-bang","output":"[{\"a\"=>1}{\"b\"=>\"x\"}]"}
-{"id":"hand-23","output":"[{\"s\"=>\"line\\nbreak\\t\\#{x} \\\\ é\"}]"}
-{"id":"hand-23-bang","output":"[{\"s\"=>\"line\\nbreak\\t\\#{x} \\\\ é\"}]"}
+{"id":"hand-21","output":"[{\"a\" => 1, \"b\" => [1, 2.5, nil, true], \"c\" => {\"d\" => \"e\\\"f\"}}]"}
+{"id":"hand-21-bang","output":"[{\"a\" => 1, \"b\" => [1, 2.5, nil, true], \"c\" => {\"d\" => \"e\\\"f\"}}]"}
+{"id":"hand-22","output":"[{\"a\" => 1}{\"b\" => \"x\"}]"}
+{"id":"hand-22-bang","output":"[{\"a\" => 1}{\"b\" => \"x\"}]"}
+{"id":"hand-23","output":"[{\"s\" => \"line\\nbreak\\t\\#{x} \\\\ é\"}]"}
+{"id":"hand-23-bang","output":"[{\"s\" => \"line\\nbreak\\t\\#{x} \\\\ é\"}]"}
 {"id":"hand-24","warnings":["Liquid syntax error (line 1): Expected end_of_string but found dot in \"{{ 1.2.3 }}\""],"output":"1.0|2.5|-3.14|7|1.2|0|10000000000000000000000"}
 {"id":"hand-24-bang","warnings":["Liquid syntax error (line 1): Expected end_of_string but found dot in \"{{ 1.2.3 }}\""],"output":"1.0|2.5|-3.14|7|1.2|0|10000000000000000000000"}
 {"id":"hand-25","output":"1..5|3..1|Liquid error (line 1): invalid integer","render_errors":["Liquid::ArgumentError: Liquid error (line 1): invalid integer"]}
@@ -2683,8 +2683,8 @@
 {"id":"hand-38-bang","output":"1|2|x"}
 {"id":"hand-39","output":"draft151cm|draft151cm|ELEMENT151CM"}
 {"id":"hand-39-bang","output":"draft151cm|draft151cm|ELEMENT151CM"}
-{"id":"hand-40","output":"deep|{\"d\"=>{\"e\"=>\"deep\"}}|"}
-{"id":"hand-40-bang","output":"deep|{\"d\"=>{\"e\"=>\"deep\"}}|"}
+{"id":"hand-40","output":"deep|{\"d\" => {\"e\" => \"deep\"}}|"}
+{"id":"hand-40-bang","output":"deep|{\"d\" => {\"e\" => \"deep\"}}|"}
 {"id":"hand-41","output":"||1"}
 {"id":"hand-41-bang","output":"||1"}
 {"id":"hand-42","output":"abc"}
@@ -3257,7 +3257,7 @@
 {"id":"hand-327","output":"1221"}
 {"id":"hand-327-bang","output":"1221"}
 {"id":"hand-328","output":"Liquid error (line 1): internal","render_errors":["Liquid::InternalError: Liquid error (line 1): internal"]}
-{"id":"hand-328-bang","error":"NoMethodError: undefined method `to_i' for true:TrueClass"}
+{"id":"hand-328-bang","error":"NoMethodError: undefined method 'to_i' for true"}
 {"id":"hand-329","output":"|123|none"}
 {"id":"hand-329-bang","output":"|123|none"}
 {"id":"hand-330","output":"12"}
@@ -3297,7 +3297,7 @@
 {"id":"hand-347","output":"Liquid error (line 1): internal","render_errors":["Liquid::InternalError: Liquid error (line 1): internal"]}
 {"id":"hand-347-bang","error":"TypeError: no implicit conversion of Integer into String"}
 {"id":"hand-348","output":"Liquid error (line 1): internal","render_errors":["Liquid::InternalError: Liquid error (line 1): internal"]}
-{"id":"hand-348-bang","error":"NoMethodError: undefined method `-' for \"str\":String"}
+{"id":"hand-348-bang","error":"NoMethodError: undefined method '-' for an instance of String"}
 {"id":"hand-349","warnings":["Liquid syntax error (line 1): [:open_square, \"[\"] is not a valid expression in \"{{ [\"a b\"] }}\""],"output":"012"}
 {"id":"hand-349-bang","warnings":["Liquid syntax error (line 1): [:open_square, \"[\"] is not a valid expression in \"{{ [\"a b\"] }}\""],"output":"012"}
 {"id":"hand-350","output":"1213"}
@@ -3350,52 +3350,52 @@
 {"id":"hand-373-bang","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]"}
 {"id":"hand-374","output":"Liquid error (line 1): No such template 'product'","render_errors":["Liquid::FileSystemError: Liquid error (line 1): No such template 'product'"]}
 {"id":"hand-374-bang","error":"Liquid::FileSystemError: Liquid error (line 1): No such template 'product'"}
-{"id":"hand-375","output":"[HELLO WORLD][][42][3.5][[\"B\", \"A\", \"C\"]][{\"K\"=>\"V\"}][][TRUE]"}
-{"id":"hand-375-bang","output":"[HELLO WORLD][][42][3.5][[\"B\", \"A\", \"C\"]][{\"K\"=>\"V\"}][][TRUE]"}
-{"id":"hand-376","output":"[hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-376-bang","output":"[hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-377","output":"[Hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\"=>\"v\"}][][True]"}
-{"id":"hand-377-bang","output":"[Hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\"=>\"v\"}][][True]"}
-{"id":"hand-378","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-378-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-379","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-379-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-380","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-380-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot;=&gt;&quot;v&quot;}][][true]"}
-{"id":"hand-381","output":"[Hello+World][][42][3.5][%5B%22b%22%2C+%22a%22%2C+%22C%22%5D][%7B%22k%22%3D%3E%22v%22%7D][][true]"}
-{"id":"hand-381-bang","output":"[Hello+World][][42][3.5][%5B%22b%22%2C+%22a%22%2C+%22C%22%5D][%7B%22k%22%3D%3E%22v%22%7D][][true]"}
-{"id":"hand-382","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-382-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-383","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-383-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-384","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-384-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-385","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-385-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-386","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-386-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-387","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-387-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-388","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-388-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
+{"id":"hand-375","output":"[HELLO WORLD][][42][3.5][[\"B\", \"A\", \"C\"]][{\"K\" => \"V\"}][][TRUE]"}
+{"id":"hand-375-bang","output":"[HELLO WORLD][][42][3.5][[\"B\", \"A\", \"C\"]][{\"K\" => \"V\"}][][TRUE]"}
+{"id":"hand-376","output":"[hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-376-bang","output":"[hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-377","output":"[Hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\" => \"v\"}][][True]"}
+{"id":"hand-377-bang","output":"[Hello world][][42][3.5][[\"b\", \"a\", \"c\"]][{\"k\" => \"v\"}][][True]"}
+{"id":"hand-378","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-378-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-379","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-379-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-380","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-380-bang","output":"[Hello World][][42][3.5][[&quot;b&quot;, &quot;a&quot;, &quot;C&quot;]][{&quot;k&quot; =&gt; &quot;v&quot;}][][true]"}
+{"id":"hand-381","output":"[Hello+World][][42][3.5][%5B%22b%22%2C+%22a%22%2C+%22C%22%5D][%7B%22k%22+%3D%3E+%22v%22%7D][][true]"}
+{"id":"hand-381-bang","output":"[Hello+World][][42][3.5][%5B%22b%22%2C+%22a%22%2C+%22C%22%5D][%7B%22k%22+%3D%3E+%22v%22%7D][][true]"}
+{"id":"hand-382","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-382-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-383","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-383-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-384","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-384-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-385","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-385-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-386","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-386-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-387","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-387-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-388","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-388-bang","output":"[Hello World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
 {"id":"hand-389","output":"[11][0][8][0][3][1][0][0]"}
 {"id":"hand-389-bang","output":"[11][0][8][0][3][1][0][0]"}
 {"id":"hand-390","output":"[][][][][b][kv][][]"}
 {"id":"hand-390-bang","output":"[][][][][b][kv][][]"}
 {"id":"hand-391","output":"[][][][][C][][][]"}
 {"id":"hand-391-bang","output":"[][][][][C][][][]"}
-{"id":"hand-392","output":"[Hello World][][42][3.5][Cab][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-392-bang","output":"[Hello World][][42][3.5][Cab][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-393","output":"[Hello World][][42][3.5][b a C][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-393-bang","output":"[Hello World][][42][3.5][b a C][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-394","output":"[Hello World][][42][3.5][Cab][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-394-bang","output":"[Hello World][][42][3.5][Cab][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-395","output":"[Hello World][][42][3.5][abC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-395-bang","output":"[Hello World][][42][3.5][abC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-396","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-396-bang","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-397","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-397-bang","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
+{"id":"hand-392","output":"[Hello World][][42][3.5][Cab][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-392-bang","output":"[Hello World][][42][3.5][Cab][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-393","output":"[Hello World][][42][3.5][b a C][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-393-bang","output":"[Hello World][][42][3.5][b a C][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-394","output":"[Hello World][][42][3.5][Cab][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-394-bang","output":"[Hello World][][42][3.5][Cab][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-395","output":"[Hello World][][42][3.5][abC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-395-bang","output":"[Hello World][][42][3.5][abC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-396","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-396-bang","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-397","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-397-bang","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
 {"id":"hand-398","output":"[0][0][42][3.5][0][0][0][0]"}
 {"id":"hand-398-bang","output":"[0][0][42][3.5][0][0][0][0]"}
 {"id":"hand-399","output":"[0][0][42][4][0][0][0][0]"}
@@ -3404,28 +3404,28 @@
 {"id":"hand-400-bang","output":"[0][0][42][3][0][0][0][0]"}
 {"id":"hand-401","output":"[0][0][42][4][0][0][0][0]"}
 {"id":"hand-401-bang","output":"[0][0][42][4][0][0][0][0]"}
-{"id":"hand-402","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-402-bang","output":"[Hello World][][42][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-403","output":"[Hello World][][1970][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-403-bang","output":"[Hello World][][1970][3.5][baC][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-404","output":"[Hell Wrld][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-404-bang","output":"[Hell Wrld][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-405","output":"[Hello World!][!][42!][3.5!][[\"b\", \"a\", \"C\"]!][{\"k\"=>\"v\"}!][!][true!]"}
-{"id":"hand-405-bang","output":"[Hello World!][!][42!][3.5!][[\"b\", \"a\", \"C\"]!][{\"k\"=>\"v\"}!][!][true!]"}
-{"id":"hand-406","output":"[!Hello World][!][!42][!3.5][![\"b\", \"a\", \"C\"]][!{\"k\"=>\"v\"}][!][!true]"}
-{"id":"hand-406-bang","output":"[!Hello World][!][!42][!3.5][![\"b\", \"a\", \"C\"]][!{\"k\"=>\"v\"}][!][!true]"}
-{"id":"hand-407","output":"[Heo Word][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-407-bang","output":"[Heo Word][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-408","output":"[Helo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-408-bang","output":"[Helo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-409","output":"[HeLLo WorLd][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-409-bang","output":"[HeLLo WorLd][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-410","output":"[HeLlo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
-{"id":"hand-410-bang","output":"[HeLlo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\"=>\"v\"}][][true]"}
+{"id":"hand-402","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-402-bang","output":"[Hello World][][42][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-403","output":"[Hello World][][1970][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-403-bang","output":"[Hello World][][1970][3.5][baC][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-404","output":"[Hell Wrld][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-404-bang","output":"[Hell Wrld][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-405","output":"[Hello World!][!][42!][3.5!][[\"b\", \"a\", \"C\"]!][{\"k\" => \"v\"}!][!][true!]"}
+{"id":"hand-405-bang","output":"[Hello World!][!][42!][3.5!][[\"b\", \"a\", \"C\"]!][{\"k\" => \"v\"}!][!][true!]"}
+{"id":"hand-406","output":"[!Hello World][!][!42][!3.5][![\"b\", \"a\", \"C\"]][!{\"k\" => \"v\"}][!][!true]"}
+{"id":"hand-406-bang","output":"[!Hello World][!][!42][!3.5][![\"b\", \"a\", \"C\"]][!{\"k\" => \"v\"}][!][!true]"}
+{"id":"hand-407","output":"[Heo Word][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-407-bang","output":"[Heo Word][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-408","output":"[Helo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-408-bang","output":"[Helo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-409","output":"[HeLLo WorLd][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-409-bang","output":"[HeLLo WorLd][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-410","output":"[HeLlo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
+{"id":"hand-410-bang","output":"[HeLlo World][][42][3.5][[\"b\", \"a\", \"C\"]][{\"k\" => \"v\"}][][true]"}
 {"id":"hand-411","output":"[He...][][42][3.5][[\"...][{\"...][][true]"}
 {"id":"hand-411-bang","output":"[He...][][42][3.5][[\"...][{\"...][][true]"}
-{"id":"hand-412","output":"[Hello...][][42...][3.5...][[\"b\",...][{\"k\"=>\"v\"}...][][true...]"}
-{"id":"hand-412-bang","output":"[Hello...][][42...][3.5...][[\"b\",...][{\"k\"=>\"v\"}...][][true...]"}
+{"id":"hand-412","output":"[Hello...][][42...][3.5...][[\"b\",...][{\"k\"...][][true...]"}
+{"id":"hand-412-bang","output":"[Hello...][][42...][3.5...][[\"b\",...][{\"k\"...][][true...]"}
 {"id":"hand-413","output":"[e][][2][.][a][\"][][r]"}
 {"id":"hand-413-bang","output":"[e][][2][.][a][\"][][r]"}
 {"id":"hand-414","output":"[el][][2][.5][aC][\"k][][ru]"}
@@ -3446,10 +3446,10 @@
 {"id":"hand-421-bang","output":"[0][0][5][3.5][0][0][0][0]"}
 {"id":"hand-422","output":"[][][Liquid error (line 1): cannot select the property 'k'][][][v][][]","render_errors":["Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'k'"]}
 {"id":"hand-422-bang","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'k'"}
-{"id":"hand-423","output":"[][][Liquid error (line 1): cannot select the property 'k'][][][{\"k\"=>\"v\"}][][]","render_errors":["Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'k'"]}
+{"id":"hand-423","output":"[][][Liquid error (line 1): cannot select the property 'k'][][][{\"k\" => \"v\"}][][]","render_errors":["Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'k'"]}
 {"id":"hand-423-bang","error":"Liquid::ArgumentError: Liquid error (line 1): cannot select the property 'k'"}
-{"id":"hand-424","output":"[Hello WorldbaC][baC][42baC][3.5baC][baCbaC][{\"k\"=>\"v\"}baC][baC][truebaC]"}
-{"id":"hand-424-bang","output":"[Hello WorldbaC][baC][42baC][3.5baC][baCbaC][{\"k\"=>\"v\"}baC][baC][truebaC]"}
+{"id":"hand-424","output":"[Hello WorldbaC][baC][42baC][3.5baC][baCbaC][{\"k\" => \"v\"}baC][baC][truebaC]"}
+{"id":"hand-424-bang","output":"[Hello WorldbaC][baC][42baC][3.5baC][baCbaC][{\"k\" => \"v\"}baC][baC][truebaC]"}
 {"id":"hand-425","output":"ǅemo|Ssa|école|STRASSE|Hello world"}
 {"id":"hand-425-bang","output":"ǅemo|Ssa|école|STRASSE|Hello world"}
 {"id":"hand-426","warnings":["Liquid syntax error (line 1): Unexpected character \" in \"{{ \"a<b>&'\\\"\" | escape }}\""],"output":"a&lt;b&gt;&amp;&#39;\\|&amp; &lt; &#39; &foo; &amp;#x27; &amp; &lt;|&lt;p&gt;a&lt;/p&gt;"}
@@ -3486,10 +3486,10 @@
 {"id":"hand-441-bang","output":"he\\0\\0\\0\\0o|a\\&!b|he[\\0]lo|-a-b-c-||a/b"}
 {"id":"hand-442","output":"heo|helo|hello|134"}
 {"id":"hand-442-bang","output":"heo|helo|hello|134"}
-{"id":"hand-443","output":"[1, \"b\", nil, [2]]x|x[1, \"b\", nil, [2]]|{\"k\"=>1}|[1, \"B\", NIL, [2]]|1[1, \"b\", nil, [2]]||1.52"}
-{"id":"hand-443-bang","output":"[1, \"b\", nil, [2]]x|x[1, \"b\", nil, [2]]|{\"k\"=>1}|[1, \"B\", NIL, [2]]|1[1, \"b\", nil, [2]]||1.52"}
-{"id":"hand-444","output":"4|1 2 3  x {\"k\"=>\"v\"}|1, 2, 3, , x, {\"k\"=>\"v\"}|1121311x1{\"k\"=>\"v\"}|123x{\"k\"=>\"v\"}|{\"a\"=>1}|str|5|"}
-{"id":"hand-444-bang","output":"4|1 2 3  x {\"k\"=>\"v\"}|1, 2, 3, , x, {\"k\"=>\"v\"}|1121311x1{\"k\"=>\"v\"}|123x{\"k\"=>\"v\"}|{\"a\"=>1}|str|5|"}
+{"id":"hand-443","output":"[1, \"b\", nil, [2]]x|x[1, \"b\", nil, [2]]|{\"k\" => 1}|[1, \"B\", NIL, [2]]|1[1, \"b\", nil, [2]]||1.52"}
+{"id":"hand-443-bang","output":"[1, \"b\", nil, [2]]x|x[1, \"b\", nil, [2]]|{\"k\" => 1}|[1, \"B\", NIL, [2]]|1[1, \"b\", nil, [2]]||1.52"}
+{"id":"hand-444","output":"4|1 2 3  x {\"k\" => \"v\"}|1, 2, 3, , x, {\"k\" => \"v\"}|1121311x1{\"k\" => \"v\"}|123x{\"k\" => \"v\"}|{\"a\" => 1}|str|5|"}
+{"id":"hand-444-bang","output":"4|1 2 3  x {\"k\" => \"v\"}|1, 2, 3, , x, {\"k\" => \"v\"}|1121311x1{\"k\" => \"v\"}|123x{\"k\" => \"v\"}|{\"a\" => 1}|str|5|"}
 {"id":"hand-445","output":"1|2|x1|||1|3|"}
 {"id":"hand-445-bang","output":"1|2|x1|||1|3|"}
 {"id":"hand-446","output":"A,B,a,b,b,c|a,A,b,B,b,c|b,c,A,a,B,b|b,B,a,A,c"}
@@ -3520,8 +3520,8 @@
 {"id":"hand-458-bang","error":"Liquid::ArgumentError: Liquid error (line 1): comparison of Hash with Hash failed"}
 {"id":"hand-459","output":"0"}
 {"id":"hand-459-bang","output":"0"}
-{"id":"hand-460","output":"{\"b\"=>1, \"a\"=>2}|x|5|0"}
-{"id":"hand-460-bang","output":"{\"b\"=>1, \"a\"=>2}|x|5|0"}
+{"id":"hand-460","output":"{\"b\" => 1, \"a\" => 2}|x|5|0"}
+{"id":"hand-460-bang","output":"{\"b\" => 1, \"a\" => 2}|x|5|0"}
 {"id":"hand-461","output":"1,1,1,2,2"}
 {"id":"hand-461-bang","output":"1,1,1,2,2"}
 {"id":"hand-462","output":"1,4|1|2|1,2|3"}
@@ -3832,10 +3832,10 @@
 {"id":"hand-614-bang","output":"2020-01-02 00:00:00 +0000|UTC|1577923200"}
 {"id":"hand-615","output":"2020-01-02 15:04:05 +0000|UTC|1577977445"}
 {"id":"hand-615-bang","output":"2020-01-02 15:04:05 +0000|UTC|1577977445"}
-{"id":"hand-616","output":"2026-11-19 15:00:00 +0000|UTC|1795100400"}
-{"id":"hand-616-bang","output":"2026-11-19 15:00:00 +0000|UTC|1795100400"}
-{"id":"hand-617","output":"2026-11-19 10:00:00 +0000|UTC|1795082400"}
-{"id":"hand-617-bang","output":"2026-11-19 10:00:00 +0000|UTC|1795082400"}
+{"id":"hand-616","output":"2026-11-23 15:00:00 +0000|UTC|1795446000"}
+{"id":"hand-616-bang","output":"2026-11-23 15:00:00 +0000|UTC|1795446000"}
+{"id":"hand-617","output":"2026-11-23 10:00:00 +0000|UTC|1795428000"}
+{"id":"hand-617-bang","output":"2026-11-23 10:00:00 +0000|UTC|1795428000"}
 {"id":"hand-618","output":"2020-01-02 10:00:00 +0000|UTC|1577959200"}
 {"id":"hand-618-bang","output":"2020-01-02 10:00:00 +0000|UTC|1577959200"}
 {"id":"hand-619","output":"2020-01-01 00:00:00 +0000|UTC|1577836800"}
@@ -3900,8 +3900,8 @@
 {"id":"hand-648-bang","output":"2006-07-05 10:00:00 +0000|UTC|1152093600"}
 {"id":"hand-649","output":"2006-07-05 10:30:00 +0000|UTC|1152095400"}
 {"id":"hand-649-bang","output":"2006-07-05 10:30:00 +0000|UTC|1152095400"}
-{"id":"hand-650","output":"2026-11-19 20:15:00 +0000|UTC|1795119300"}
-{"id":"hand-650-bang","output":"2026-11-19 20:15:00 +0000|UTC|1795119300"}
+{"id":"hand-650","output":"2026-11-23 20:15:00 +0000|UTC|1795464900"}
+{"id":"hand-650-bang","output":"2026-11-23 20:15:00 +0000|UTC|1795464900"}
 {"id":"hand-651","output":"2006-07-05 10:00:00 +0000|UTC|1152093600"}
 {"id":"hand-651-bang","output":"2006-07-05 10:00:00 +0000|UTC|1152093600"}
 {"id":"hand-652","output":"01 00 52 2005 05 001 7 0 Sun 20 06 1136073600"}
@@ -4033,9 +4033,9 @@
 {"id":"ig-2-bang","warnings":["Liquid syntax error (line 1): Expected end_of_string but found id in \"{{my_types | append: \",\"s | append: r.name }}\""],"output":"[,,]"}
 {"id":"ig-2-lax","output":"[,,]"}
 {"id":"ig-2-strict","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected end_of_string but found id in \"{{my_types | append: \",\"s | append: r.name }}\""}
-{"id":"ig-3","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file] }}\""],"output":"{\"index\"=>{\"title\"=>\"Home\", \"label\"=>\"1.0\", \"titlelang\"=>{\"en\"=>\"Home\", \"fr\"=>\"Accueil\"}}, \"profiles.html\"=>{\"title\"=>\"Profiles\", \"label\"=>\"2.3.0\", \"titlelang\"=>{\"en\"=>\"Profiles\", \"de\"=>\"Profile\"}}}"}
-{"id":"ig-3-bang","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file] }}\""],"output":"{\"index\"=>{\"title\"=>\"Home\", \"label\"=>\"1.0\", \"titlelang\"=>{\"en\"=>\"Home\", \"fr\"=>\"Accueil\"}}, \"profiles.html\"=>{\"title\"=>\"Profiles\", \"label\"=>\"2.3.0\", \"titlelang\"=>{\"en\"=>\"Profiles\", \"de\"=>\"Profile\"}}}"}
-{"id":"ig-3-lax","output":"{\"index\"=>{\"title\"=>\"Home\", \"label\"=>\"1.0\", \"titlelang\"=>{\"en\"=>\"Home\", \"fr\"=>\"Accueil\"}}, \"profiles.html\"=>{\"title\"=>\"Profiles\", \"label\"=>\"2.3.0\", \"titlelang\"=>{\"en\"=>\"Profiles\", \"de\"=>\"Profile\"}}}"}
+{"id":"ig-3","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file] }}\""],"output":"{\"index\" => {\"title\" => \"Home\", \"label\" => \"1.0\", \"titlelang\" => {\"en\" => \"Home\", \"fr\" => \"Accueil\"}}, \"profiles.html\" => {\"title\" => \"Profiles\", \"label\" => \"2.3.0\", \"titlelang\" => {\"en\" => \"Profiles\", \"de\" => \"Profile\"}}}"}
+{"id":"ig-3-bang","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file] }}\""],"output":"{\"index\" => {\"title\" => \"Home\", \"label\" => \"1.0\", \"titlelang\" => {\"en\" => \"Home\", \"fr\" => \"Accueil\"}}, \"profiles.html\" => {\"title\" => \"Profiles\", \"label\" => \"2.3.0\", \"titlelang\" => {\"en\" => \"Profiles\", \"de\" => \"Profile\"}}}"}
+{"id":"ig-3-lax","output":"{\"index\" => {\"title\" => \"Home\", \"label\" => \"1.0\", \"titlelang\" => {\"en\" => \"Home\", \"fr\" => \"Accueil\"}}, \"profiles.html\" => {\"title\" => \"Profiles\", \"label\" => \"2.3.0\", \"titlelang\" => {\"en\" => \"Profiles\", \"de\" => \"Profile\"}}}"}
 {"id":"ig-3-strict","error":"Liquid::SyntaxError: Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file] }}\""}
 {"id":"ig-4","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file].index.title }}\""],"output":"Home"}
 {"id":"ig-4-bang","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"{{site.data.[include.file].index.title }}\""],"output":"Home"}

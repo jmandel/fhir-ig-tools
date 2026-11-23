@@ -33,13 +33,13 @@ edit `igbuild.yaml`, `limactl delete igbuild` and re-create.
 
 ## Image
 
-The image must exist on this daemon too. **Build it on the same base digest as Docker Desktop**:
-`ghcr.io/fhir/ig-publisher-localdev:latest` moved on 2026-11-19 (new `:latest` = Debian trixie,
-Ruby 3.4.13, kramdown 2.6.1), while our reference (D6) is Ruby 3.2.3 / kramdown 2.5.2 / Jekyll 4.4.1.
-So pin the base by digest and tag it `:latest` locally before building:
+The image must exist on this daemon too, built on the base digest `docker/Dockerfile` pins:
+`ghcr.io/fhir/ig-publisher-localdev:latest` as of 2026-11-19 (Debian trixie, Ruby 3.4.13, kramdown 2.6.1); the
+reference until 2026-11-23 was `sha256:39509f41…` (Ruby 3.2.3, kramdown 2.5.2). Pin the base by digest and tag it
+`:latest` locally before building:
 
 ```bash
-D=sha256:39509f4138197f0b93a99ed3ae00e6dce2bbd76df1a2e4e2bd6dec4180dc34b5   # = Docker Desktop's copy
+D=sha256:daa6a3f40ffb80e71f1b3a026498cf60f0a324e188a5cb33676e2a9f871df898   # docker/Dockerfile's BASE
 docker --context igbuild pull ghcr.io/fhir/ig-publisher-localdev@$D
 docker --context igbuild tag  ghcr.io/fhir/ig-publisher-localdev@$D ghcr.io/fhir/ig-publisher-localdev:latest
 docker --context igbuild build --pull=false -t ig-publisher-localdev-ca ~/fhir-ig-tools/docker

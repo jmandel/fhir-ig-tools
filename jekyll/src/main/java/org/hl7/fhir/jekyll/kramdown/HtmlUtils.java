@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Port of kramdown-2.5.2/lib/kramdown/utils/html.rb (Kramdown::Utils::Html). */
+/** Port of kramdown-2.6.1/lib/kramdown/utils/html.rb (Kramdown::Utils::Html). */
 final class HtmlUtils {
   private HtmlUtils() {}
 

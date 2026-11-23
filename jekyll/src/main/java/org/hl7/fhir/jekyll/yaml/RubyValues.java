@@ -141,7 +141,7 @@ public final class RubyValues {
         }
         first = false;
         inspect(e.getKey(), sb, seen);
-        sb.append("=>");
+        sb.append(" => "); // Ruby 3.4 Hash#inspect
         inspect(e.getValue(), sb, seen);
       }
       sb.append('}');

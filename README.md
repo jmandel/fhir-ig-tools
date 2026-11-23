@@ -31,8 +31,8 @@ Details, the Windows wrapper and caveats: [`sushi/README.md`](sushi/README.md).
 
 ## jekyll.jar: Jekyll in Java
 
-A port of the slice of Jekyll 4.4.1 the publisher uses, with Liquid 4.0.4, kramdown 2.5.2, Rouge 4.7.0 and Jekyll's
-YAML stack. **On 266 real IGs, 260 render identically (1,024,171 files)**; the other 6 cannot by construction. 3–7×
+A port of the slice of Jekyll 4.4.1 the publisher uses, with Liquid 4.0.4, kramdown 2.6.1, Rouge 4.7.0 and Jekyll's
+YAML stack. **On 268 real IGs, 262 render identically to the autobuilder image's Jekyll (1,021,376 files)**; the other 6 cannot by construction. 3–7×
 faster than Jekyll on the Jekyll stage. Java 17+.
 
 ```sh

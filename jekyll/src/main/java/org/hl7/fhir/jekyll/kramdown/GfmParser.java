@@ -201,7 +201,7 @@ public class GfmParser extends KramdownParser {
       Element d = listItems.get(0).children.get(0);
       String descendant = (String) d.value;
       if (descendant == null) {
-        throw new IllegalStateException("undefined method `gsub!' for nil");
+        throw new IllegalStateException("undefined method 'gsub!' for nil");
       }
       boolean checked = false;
       boolean unchecked = false;
@@ -247,7 +247,7 @@ public class GfmParser extends KramdownParser {
     for (int index = 0; index < lines.size(); index++) {
       String line = lines.get(index);
       if (loc == null) {
-        throw new IllegalStateException("undefined method `+' for nil");
+        throw new IllegalStateException("undefined method '+' for nil");
       }
       int l = ((Number) loc).intValue() + index;
       children.add(new Element("text", index > 0 ? "\n" + line : line, null, Element.opts("location", l)));

@@ -35,8 +35,17 @@ public class RubyError extends RuntimeException {
     return new RubyError("ZeroDivisionError", "divided by 0");
   }
 
+  /** Ruby 3.4's NoMethodError message: "for nil" / "for true" / "for false", else "for an instance of Class". */
   public static RubyError noMethod(String method, Object receiver) {
-    return new RubyError("NoMethodError", "undefined method `" + method + "' for " + Values.inspect(receiver) + ":" + Values.className(receiver));
+    return new RubyError("NoMethodError", "undefined method '" + method + "' for " + receiverDescription(receiver));
+  }
+
+  /** The receiver part of Ruby 3.4's NoMethodError message. */
+  public static String receiverDescription(Object receiver) {
+    if (receiver == null || receiver instanceof Boolean) {
+      return Values.inspect(receiver);
+    }
+    return "an instance of " + Values.className(receiver);
   }
 
   /** Ruby's wrong-arity message; given/expected count the filter input too. */

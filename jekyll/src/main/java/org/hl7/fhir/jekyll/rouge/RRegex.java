@@ -27,8 +27,10 @@ import java.util.regex.Pattern;
 public final class RRegex {
   private RRegex() {}
 
-  /** Onigmo's Unicode Word ctype (verified against Ruby 3.2: Nl yes, Join_Control no). */
-  static final String WORD = "\\p{IsAlphabetic}\\p{M}\\p{Nd}\\p{Pc}";
+  /** Onigmo's Unicode Word ctype (Nl yes; Join_Control: no in Ruby 3.2, yes in Ruby 3.4). */
+  // Ruby 3.4's Onigmo also counts Join_Control (U+200C, U+200D) as Word (Ruby 3.2 didn't); the set equals Ruby 3.4.13's
+  // \\p{Word} on all 1,112,064 code points (139,612 of them)
+  static final String WORD = "\\p{IsAlphabetic}\\p{M}\\p{Nd}\\p{Pc}\\u200C\\u200D";
   static final String WB = "(?:(?<=[" + WORD + "])(?![" + WORD + "])|(?<![" + WORD + "])(?=[" + WORD + "]))";
   static final String NWB = "(?:(?<=[" + WORD + "])(?=[" + WORD + "])|(?<![" + WORD + "])(?![" + WORD + "]))";
 

@@ -3,7 +3,7 @@ package org.hl7.fhir.jekyll.kramdown;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Port of kramdown-2.5.2/lib/kramdown/utils/entities.rb (table generated from the Ruby source). */
+/** Port of kramdown-2.6.1/lib/kramdown/utils/entities.rb (table generated from the Ruby source). */
 public final class Entities {
   private Entities() {}
 

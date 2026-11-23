@@ -61,7 +61,7 @@ public class Python extends RegexLexer {
   static final class StringRegister extends ArrayList<String[]> {
     private String[] last() {
       if (isEmpty()) {
-        throw new RougeError("NoMethodError: undefined method `[]' for nil:NilClass");
+        throw new RougeError("NoMethodError: undefined method '[]' for nil");
       }
       return get(size() - 1);
     }

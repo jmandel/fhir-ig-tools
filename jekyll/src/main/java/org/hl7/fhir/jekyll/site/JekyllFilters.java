@@ -233,12 +233,12 @@ final class JekyllFilters {
           + ") with given key. Expected an integer but got " + Values.inspect(key) + " instead.");
     }
     if (obj == null) {
-      throw new JekyllTags.JekyllError("undefined method `[]' for nil:NilClass");
+      throw new JekyllTags.JekyllError("undefined method '[]' for nil");
     }
     if (Values.respondsToIndex(obj)) {
       return Values.index(obj, key);
     }
-    throw new JekyllTags.JekyllError("undefined method `[]' for " + Values.className(obj));
+    throw new JekyllTags.JekyllError("undefined method '[]' for " + org.hl7.fhir.jekyll.liquid.RubyError.receiverDescription(obj));
   }
 
   private static String truncate(String s, int n) {
@@ -267,7 +267,7 @@ final class JekyllFilters {
     } else if (input instanceof Map) {
       items = new ArrayList<>(rubyArray(input));
     } else {
-      throw new JekyllTags.JekyllError("undefined method `sort' for " + Values.className(input));
+      throw new JekyllTags.JekyllError("undefined method 'sort' for " + org.hl7.fhir.jekyll.liquid.RubyError.receiverDescription(input));
     }
     if (property == null) {
       RubySort.msort(items, (a, b) -> {

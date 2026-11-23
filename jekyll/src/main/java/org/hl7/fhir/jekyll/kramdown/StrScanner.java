@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /**
  * Port of Ruby's ::StringScanner (strscan, default non-fixed-anchor mode) plus
- * kramdown-2.5.2/lib/kramdown/utils/string_scanner.rb (line number tracking).
+ * kramdown-2.6.1/lib/kramdown/utils/string_scanner.rb (line number tracking).
  *
  * <p>Semantics mirrored from strscan: every match is anchored at the current position, and the
  * regex sees the string as if it started at the position ({@code ^} and {@code \A} match there,
@@ -80,39 +80,18 @@ public final class StrScanner {
   }
 
   public int currentLineNumber() {
-    // Ruby: strscan = ::StringScanner.new(string); strscan.pos = @previous_pos; old_pos = pos + 1
-    //       @previous_line_number += 1 while strscan.skip_until(/\n/) && strscan.pos <= old_pos
-    int p = previousPos;
-    int oldPos = pos + 1;
-    while (true) {
-      int nl = nextNewline(p);
-      if (nl < 0) {
-        break;
+    // kramdown 2.6.1: count the newlines in string[@previous_pos, pos) (only forwards), plus one if the scan pointer
+    // is on a newline (not stored)
+    int cur = pos;
+    if (cur > previousPos) {
+      for (int p = previousPos; p < cur; p++) {
+        if (string.charAt(p) == '\n') {
+          previousLineNumber++;
+        }
       }
-      p = nl + 1;
-      if (p <= oldPos) {
-        previousLineNumber++;
-      } else {
-        break;
-      }
+      previousPos = cur;
     }
-    previousPos = eos() ? pos : pos + 1;
-    return previousLineNumber;
-  }
-
-  // Cache for nextNewline: the first '\n' at or after nlFrom is nlAt (-1 = none). Valid for any
-  // p >= nlFrom with p <= nlAt (or nlAt == -1), which avoids rescanning a long newline-free tail
-  // on every call (Ruby rescans; output is identical).
-  private int nlFrom = Integer.MAX_VALUE;
-  private int nlAt = -1;
-
-  private int nextNewline(int p) {
-    if (p >= nlFrom && (nlAt < 0 || p <= nlAt)) {
-      return nlAt;
-    }
-    nlFrom = p;
-    nlAt = string.indexOf('\n', p);
-    return nlAt;
+    return cur < len && string.charAt(cur) == '\n' ? previousLineNumber + 1 : previousLineNumber;
   }
 
   /** Anchored match of p at index `at` with the same region semantics as check/matches, without touching scanner state. */

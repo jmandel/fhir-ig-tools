@@ -78,7 +78,7 @@ public class HTTP extends RegexLexer {
         if (RubyStrings.casecmp(RubyStrings.strip(key), "content-type") == 0) {
           List<String> parts = RubyStrings.split(value, ";");
           if (parts.isEmpty()) {
-            throw new RougeError("NoMethodError: undefined method `downcase' for nil:NilClass");
+            throw new RougeError("NoMethodError: undefined method 'downcase' for nil");
           }
           ((HTTP) l).contentType = RubyStrings.downcase(parts.get(0));
         }

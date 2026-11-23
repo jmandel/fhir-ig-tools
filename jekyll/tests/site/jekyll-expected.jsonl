@@ -42,7 +42,7 @@
 {"id":"number_of_words","output":"3"}
 {"id":"array_to_sentence","output":"x, y, and z|p or q|only"}
 {"id":"to_integer","output":"13|1|3"}
-{"id":"inspect","output":"{&quot;title&quot;=&gt;&quot;A &amp; B&quot;, &quot;label&quot;=&gt;&quot;2.3&quot;}|&quot;x&lt;y&quot;|nil"}
+{"id":"inspect","output":"{&quot;title&quot; =&gt; &quot;A &amp; B&quot;, &quot;label&quot; =&gt; &quot;2.3&quot;}|&quot;x&lt;y&quot;|nil"}
 {"id":"date-filters","output":"2026-03-04T05:06:07+00:00|Wed, 04 Mar 2026 05:06:07 +0000|04 Mar 2026|04 March 2026|Mar 4th, 2026"}
 {"id":"url-filters","output":"/base/a/b.html|https://example.org/base/a/b.html|/base/x/index.html"}
 {"id":"url-filters-nobase","output":"/a/b.html|/a.html"}
@@ -58,10 +58,12 @@
 {"id":"include-nested-scope","output":"(X<in||>X)"}
 {"id":"include-dynamic","output":"<d||>"}
 {"id":"include-dynamic-dir","output":"SUBen"}
+{"id":"include-leading-slash","output":"<s||>SUBL"}
+{"id":"include-double-slash","error":"ArgumentError: Invalid syntax for include tag. File contains invalid characters or sequences:\n\n  //frag.html\n\nValid syntax:\n\n  {% include file.ext param='value' param2='value' %}\n\n"}
 {"id":"include-md-markdownify","output":"<h2 id=\"title-t\">Title T</h2>\n\n<p>some <em>md</em></p>\n"}
 {"id":"include-sees-page","output":"[y.html]"}
 {"id":"include-assign-leaks","output":"[q.html]q.html"}
-{"id":"include-missing","error":"IOError: Could not locate the included file 'nope.html' in any of [\"/tmp/d20261119-1-nd060m/_includes\"]. Ensure it exists in one of those directories and, if it is a symlink, does not point outside your site source."}
+{"id":"include-missing","error":"IOError: Could not locate the included file 'nope.html' in any of [\"/tmp/d20261123-1-vab5yl/_includes\"]. Ensure it exists in one of those directories and, if it is a symlink, does not point outside your site source."}
 {"id":"include-bad-params","error":"ArgumentError: Invalid syntax for include tag:\n\na=b=c\n\nValid syntax:\n\n{% include file.ext param='value' param2='value' %}\n\n"}
 {"id":"highlight-json","output":"<figure class=\"highlight\"><pre><code class=\"language-json\" data-lang=\"json\"><span class=\"p\">{</span><span class=\"nl\">\"a\"</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"p\">[</span><span class=\"mi\">1</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"s2\">\"x\"</span><span class=\"p\">]}</span></code></pre></figure>"}
 {"id":"highlight-xml","output":"<figure class=\"highlight\"><pre><code class=\"language-xml\" data-lang=\"xml\"><span class=\"nt\">&lt;a</span> <span class=\"na\">b=</span><span class=\"s\">\"c\"</span><span class=\"nt\">&gt;</span><span class=\"ni\">&amp;amp;</span><span class=\"nt\">&lt;/a&gt;</span></code></pre></figure>"}
@@ -71,5 +73,3 @@
 {"id":"lax-dot-bracket","output":"H","warnings":["Liquid syntax error (line 1): Expected id but found open_square in \"site.data.resources[resource_].['history']\""]}
 {"id":"lax-append-s","output":"A,B","warnings":["Liquid syntax error (line 1): Expected end_of_string but found id in \"{{t | append: \",\"s | append: \"B\" }}\""]}
 {"id":"lax-index-pipe","output":" T ","warnings":["Liquid syntax error (line 1): Expected close_square but found pipe in \"{{item[\"title\" | trim ]}}\""]}
-{"id":"include-leading-slash","output":"<s||>SUBL"}
-{"id":"include-double-slash","error":"ArgumentError: Invalid syntax for include tag. File contains invalid characters or sequences:\n\n  //frag.html\n\nValid syntax:\n\n  {% include file.ext param='value' param2='value' %}\n\n"}
