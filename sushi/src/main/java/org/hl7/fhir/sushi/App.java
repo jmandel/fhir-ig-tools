@@ -70,9 +70,60 @@ public final class App {
 
   /** Runs the CLI and returns the process exit code (never calls System.exit). */
   public static int run(String[] args) {
-    boolean color = chalkEnabled();
-    FshLogger.logger.setColorEnabled(color);
+    return run(args, chalkEnabled());
+  }
+
+  /**
+   * In-process entry point, for a program that runs SUSHI in its own JVM (the IG Publisher): runs
+   * {@code sushi build <args>} as the command line would (same options, messages, files and exit status), but everything
+   * it prints, stdout and stderr, goes to {@code output}, without colour, and the result is returned rather than exited
+   * with. Only {@code build} is run here ({@code init} and {@code update-dependencies} ask questions or change the
+   * project): any other first argument is refused with exit status 1.
+   *
+   * <p>SUSHI's logger and console are process-wide, so runs are serialized: one at a time per JVM, each starting from a
+   * clean logger (message counts, ignore lists, level), and the previous console and logger output are restored
+   * afterwards. Paths in {@code args} should be absolute (relative ones resolve against {@code user.dir}). Nothing else
+   * is shared with the caller: SUSHI opens its own package cache (the default ~/.fhir/packages, as the CLI does), and
+   * network access goes through core's ManagedWebAccess as the caller has configured it.
+   *
+   * @return the exit status: the number of errors, as the CLI's (0: success)
+   */
+  public static synchronized int runInProcess(String[] args, PrintStream output) {
+    if (args.length > 0 && List.of("init", "update-dependencies", "help").contains(args[0])) {
+      output.println("error sushi in process runs only 'build', not '" + args[0] + "'");
+      return 1;
+    }
+    PrintStream oldOut = out, oldErr = err;
+    boolean oldColor = FshLogger.logger.colorEnabled();
+    FshLogger.logger.resetForTest();
+    out = output;
+    err = output;
+    java.util.function.Consumer<FshLogger.LogEntry> oldSink = null;
+    try {
+      oldSink = FshLogger.logger.setSink(FshLogger.consoleSink(output, false));
+      return runWith(args, false);
+    } finally {
+      output.flush();
+      out = oldOut;
+      err = oldErr;
+      if (oldSink != null) FshLogger.logger.setSink(oldSink);
+      FshLogger.logger.setColorEnabled(oldColor);
+      FshLogger.logger.resetForTest();
+    }
+  }
+
+  /** stderr as the CLI writes it (the console, or the output of {@link #runInProcess}) */
+  public static PrintStream stderr() {
+    return err;
+  }
+
+  private static int run(String[] args, boolean color) {
     FshLogger.logger.setSink(FshLogger.consoleSink(out, color));
+    return runWith(args, color);
+  }
+
+  private static int runWith(String[] args, boolean color) {
+    FshLogger.logger.setColorEnabled(color);
     try {
       app(args);
       return 0;

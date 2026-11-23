@@ -12,6 +12,10 @@ public interface ErrorListener {
    */
   void syntaxError(Recognizer recognizer, Token offendingSymbol, int line, int column, String msg);
 
-  /** ANTLR's ConsoleErrorListener (JS: {@code console.error("line " + line + ":" + column + " " + msg)}). */
-  ErrorListener CONSOLE = (r, t, line, column, msg) -> System.err.println("line " + line + ":" + column + " " + msg);
+  /**
+   * ANTLR's ConsoleErrorListener (JS: {@code console.error("line " + line + ":" + column + " " + msg)}), on the CLI's
+   * stderr (the output stream when sushi runs in process).
+   */
+  ErrorListener CONSOLE = (r, t, line, column, msg) -> org.hl7.fhir.sushi.App.stderr()
+      .println("line " + line + ":" + column + " " + msg);
 }

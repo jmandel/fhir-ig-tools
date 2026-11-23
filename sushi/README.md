@@ -52,6 +52,14 @@ folder on the `PATH` (the publisher runs `cmd /C sushi ...`).
 From source (in the repository root): `sushi/scripts/build.sh -B -q -DskipTests package` builds
 `sushi/target/sushi.jar`; `sushi/sushi` in a source checkout runs that jar.
 
+**In process.** A Java program (the IG Publisher) can run SUSHI in its own JVM with
+`org.hl7.fhir.sushi.App.runInProcess(String[] args, PrintStream output)`: the same `build` as the command line, with
+the same arguments, files, messages and exit status (returned), and everything it prints (stdout and stderr) on
+`output`, uncoloured. Runs are serialized (SUSHI's logger is process-wide; each run starts from a clean one), only
+`build` is accepted, and nothing else is shared with the caller: SUSHI opens its own package cache and uses
+`ManagedWebAccess` as the caller configured it. Pass absolute paths. There is no timeout in process. The dependency
+is the thin `fhir-ig-sushi` jar plus `fhir-ig-common`, with the caller's org.hl7.fhir.core (7.0.6 or later).
+
 ## Why
 
 SUSHI is the FSH compiler most IGs use. It needs Node.js and npm packages on every machine that builds an IG,
@@ -87,7 +95,7 @@ with no Node/npm at all.
 |---|---|
 | 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **4 / 6 identical** `fsh-generated/` byte for byte, console log and exit status, using `scripts/diff-run.sh`; ch-term and smart-anc read predefined XML: 3 and 1 ImplementationGuide `description` texts differ (XML attribute whitespace), smart-anc also logs 4 XML warnings; exit status equal |
 | Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **259 / 267 identical** `fsh-generated/`, exit status equal in 267 / 267; the 8 others read predefined FHIR XML (converted with core, not fhir-tool) and differ only in `ImplementationGuide.definition.resource` entries and link references. Console log identical in 250 / 267: 6 differ in package-loading lines (core's package handling), 11 in XML warnings or resource counts. `scripts/corpus-diff.sh`; per IG in `docs/core-divergences.md` C6 |
-| Unit tests | **3,735 JUnit tests** in this module, 0 failures (3,693 run in CI, 42 skipped). Of SUSHI's 3,604 Jest tests, **3,581 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 23 are skipped or pending in SUSHI itself (15), spy on a private method (2), test an HTTP wrapper the port doesn't have (3), or read invalid FHIR XML that core's parser rejects (3, C6). Plus oracle tests against the JavaScript libraries |
+| Unit tests | **3,738 JUnit tests** in this module, 0 failures (3,696 run in CI, 42 skipped). Of SUSHI's 3,604 Jest tests, **3,581 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 23 are skipped or pending in SUSHI itself (15), spy on a private method (2), test an HTTP wrapper the port doesn't have (3), or read invalid FHIR XML that core's parser rejects (3, C6). Plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
 
@@ -102,10 +110,10 @@ The comparisons use a frozen FHIR package snapshot, so both implementations see 
 
 ## Tests
 
-The JUnit suite (3,735 tests in this module, plus 13 in `common`) runs in every build and in
+The JUnit suite (3,738 tests in this module, plus 13 in `common`) runs in every build and in
 CI with nothing but the repository:
 
-- **In CI (self-contained): 3,693 run and pass, 42 skipped,** on Linux (and the wrapper checks on Linux, macOS, Windows). That includes **3,581 ported Jest tests**: all that
+- **In CI (self-contained): 3,696 run and pass, 42 skipped,** on Linux, and on JDK 17 (and the wrapper checks on Linux, macOS, Windows). That includes **3,581 ported Jest tests**: all that
   pass in TypeScript SUSHI except 3 below (`python3 sushi/scripts/test-inventory.py --coverage sushi/tests/inventory.tsv
   <surefire-reports>`). Their fixtures, the files they read from SUSHI 3.21.1's own test tree, are vendored in
   `src/test/resources/sushi-ts` (377 files, about 23 MB; Apache-2.0, see its `README.md`).
@@ -120,7 +128,7 @@ CI with nothing but the repository:
   `-Dsushi.vmdata=<data root>` (the build VM's layout: `sushi-wp1/`, `sushi-wp3/`, `sushi-port/...`) enables them
   all, or per test `-Dwp1.data=`, `-Dsushi.config.oracle.dir=`, `-Dsushi.wp5.gate.dir=`, `-Dsushi.genomics.fsh=`;
   a few heavy sets also need `-Dwp1.heavy=true`, `-Dwp2.corpus=`, `-Dsushi.wp7gate.ig=`. With `-Dsushi.vmdata` on
-  the build VM, 3,703 run and 32 stay skipped.
+  the build VM, 3,706 run and 32 stay skipped.
 
 `-Dsushi.ts.dir=<a full SUSHI checkout>` runs the tests against another copy of SUSHI's test tree.
 
