@@ -100,16 +100,6 @@ public class BasePackageLoader {
       return LoadStatus.LOADED;
     }
 
-    // If it's a "dev" version, but it wasn't found in the cache, fall back to using the current version
-    // (core does the fallback; the message and the #current label are FPL's)
-    if ("dev".equals(version) && !packageProvider.isCached(name, version)) {
-      log.accept("info", "Falling back to " + name + "#current since " + packageLabel + " is not locally cached. To "
-          + "avoid this, add " + packageLabel + " to your local FHIR cache by building it locally with the HL7 FHIR "
-          + "IG Publisher.");
-      version = "current";
-      packageLabel = name + "#" + version;
-    }
-
     boolean wildcard = PATCH_WILDCARD.matcher(version).matches();
     boolean current = isCurrentVersion(version);
     boolean wasCached = current || wildcard || packageProvider.isCached(name, version);

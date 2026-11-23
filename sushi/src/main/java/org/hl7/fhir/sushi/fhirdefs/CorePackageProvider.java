@@ -76,17 +76,8 @@ public final class CorePackageProvider implements PackageProvider {
     return pcm().getLatestVersion(name, false);
   }
 
-  /**
-   * FPL rule R1 (probe case hl7-eu__imaging-api, docs/package-resolution-differences.md): {@code dev} counts as cached
-   * only when the {@code name#dev} folder itself exists. core's loadPackageFromCacheOnly answers a {@code dev}
-   * request with a cached {@code current} build, which would hide SUSHI's "Falling back to X#current ..." message
-   * and register the package as {@code #dev} instead of {@code #current}.
-   */
   @Override
   public boolean isCached(String name, String version) {
-    if ("dev".equals(version)) {
-      return Fs.isDirectory(Path.of(pcm().getFolder(), name + "#dev").toString());
-    }
     try {
       return pcm().loadPackageFromCacheOnly(name, version) != null;
     } catch (Exception e) {

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** The core-backed provider on a local cache folder (no network) and the FPL rules ported on top of core. */
+/** The core-backed provider on a local cache folder (no network): core's package semantics as is. */
 class CorePackageProviderTest {
   @TempDir Path cache;
   private final List<String> logs = new ArrayList<>();
@@ -55,12 +55,16 @@ class CorePackageProviderTest {
   }
 
   @Test
-  @DisplayName("rule R1: dev falls back to current with FPL's message when only #current is cached")
-  void devFallsBackToCurrent() throws Exception {
+  @DisplayName("dev with only #current cached: core's answer (the cached current build, registered as #dev)")
+  void devUsesCachedCurrentAsCoreDoes() throws Exception {
+    // FPL instead logs "Falling back to my.pkg#current since my.pkg#dev is not locally cached. ..." and registers
+    // the package as #current; log-only on the corpus (hl7-eu__imaging-api), so the port follows core
     pkg("my.pkg#current", "my.pkg", "current", "A");
-    CorePackageProvider p = new CorePackageProvider(cache.toString());
-    assertFalse(p.isCached("my.pkg", "dev"));
-    assertTrue(p.isCached("my.pkg", "current"));
+    assertTrue(new CorePackageProvider(cache.toString()).isCached("my.pkg", "dev"));
+    FHIRDefinitions defs = defs();
+    assertEquals(LoadStatus.LOADED, defs.loadPackage("my.pkg", "dev"));
+    assertEquals(List.of("info Loaded my.pkg#dev with 1 resources"), logs);
+    assertEquals("http://x/A", defs.fishForMetadata("A").url);
   }
 
   /** A missing cache folder (first use on a machine) is created, as FPL does, instead of failing every download. */
