@@ -93,8 +93,12 @@ public final class PredefinedResources {
     JsObject packageJSON = new JsObject();
     packageJSON.put("name", PREDEFINED_PACKAGE_NAME);
     packageJSON.put("version", PREDEFINED_PACKAGE_VERSION);
+    // XML files are read with core's model for the IG's FHIR version (that of the loaded FHIR core package)
+    Object sd = defs.fishForFHIR("StructureDefinition");
+    Object fhirVersion = sd instanceof Map<?, ?> m ? m.get("fhirVersion") : null;
     return defs.loadVirtualPackage(new DiskBasedVirtualPackage(packageJSON, localResourcePaths,
-        FshLogger.logger::logMessage, true /* support for logical instances */, true));
+        FshLogger.logger::logMessage, true /* support for logical instances */, true,
+        fhirVersion instanceof String v ? v : null));
   }
 
   public static LoadStatus loadPredefinedResources(FHIRDefinitions defs, String resourceDir) {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide xmlns="http://hl7.org/fhir">
+  <!-- the ig-XML fixture of TS SUSHI's tests, as valid FHIR R4 XML -->
+  <url value="http://example.org/ImplementationGuide"/>
+  <name value="TestIG"/>
+  <status value="draft"/>
+  <packageId value="fhir.test.ig"/>
+  <fhirVersion value="4.0.1"/>
+  <dependsOn>
+    <packageId value="Foo.Bar"/>
+    <version value="1.2.3"/>
+  </dependsOn>
+  <dependsOn>
+    <packageId value="bar.foo"/>
+    <version value="current"/>
+  </dependsOn>
+</ImplementationGuide>

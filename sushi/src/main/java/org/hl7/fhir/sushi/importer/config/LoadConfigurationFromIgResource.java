@@ -1,6 +1,6 @@
 package org.hl7.fhir.sushi.importer.config;
 
-import org.hl7.fhir.sushi.fhirdefs.xml.FhirXmlToJs;
+import org.hl7.fhir.sushi.fhirdefs.FhirXml;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -67,7 +67,7 @@ public final class LoadConfigurationFromIgResource {
         if (ext.equals(".json")) {
           fileContent = Json.parseFile(Fs.readUtf8Strict(filePath));
         } else if (ext.equals(".xml")) {
-          fileContent = FhirXmlToJs.xmlToObj(Fs.readUtf8Strict(filePath));
+          fileContent = xmlToObj(Fs.readUtf8Strict(filePath));
         }
       } catch (IOException e) {
         throw new UncheckedIOException(e);
@@ -214,5 +214,21 @@ public final class LoadConfigurationFromIgResource {
     }
     if (esc) sb.append('\\');
     return sb.toString().strip();
+  }
+
+  /**
+   * An XML file of the input folder as JS values, read with core's R4 parser, else its R5 parser (the FHIR version is
+   * not known before the IG resource is found); null when neither reads it, so the file is not taken for an IG
+   * resource. TypeScript SUSHI uses fhir-tool's xmlToObj (docs/core-divergences.md C6).
+   */
+  private static Object xmlToObj(String xml) {
+    for (String version : new String[] {"4.0.1", "5.0.0"}) {
+      try {
+        return FhirXml.xmlToObj(xml, version);
+      } catch (Exception e) {
+        // try the next version
+      }
+    }
+    return null;
   }
 }

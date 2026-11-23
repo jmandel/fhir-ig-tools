@@ -44,6 +44,36 @@
       <artifactId>org.hl7.fhir.utilities</artifactId>
       <version>${hl7.fhir.core.version}</version>
     </dependency>
+    <!-- org.hl7.fhir.r4 / r4b / r5: the XML parser and JSON composer of each FHIR version, used only to read
+         predefined resources and a legacy ig.xml given in FHIR XML (fhirdefs.FhirXml; docs/core-divergences.md C6). -->
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r4</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r4b</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r5</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+      <exclusions>
+        <!-- used by r5's publishing/signature/diagram code, not by its XmlParser/JsonParser -->
+        <exclusion><groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId></exclusion>
+        <exclusion><groupId>com.nimbusds</groupId><artifactId>nimbus-jose-jwt</artifactId></exclusion>
+        <exclusion><groupId>net.sourceforge.plantuml</groupId><artifactId>plantuml-mit</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- optional in core's poms, but their XmlParsers need it (XmlPullParser, also in their method signatures, so
+           at compile time too); the version core uses. Our code must not import it (build.DependencyRuleTest). -->
+      <groupId>org.codelibs</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c.0</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
@@ -83,7 +113,7 @@
                   <message>sushi needs JDK 21. On JDK 17, build only the shim: ./build.sh -B -pl jekyll -am package</message>
                 </requireJavaVersion>
                 <bannedDependencies>
-                  <message>sushi may depend only on fhir-ig-common, org.hl7.fhir.core modules and commons-compress (runtime); see docs/MONOREPO.md</message>
+                  <message>sushi may depend only on fhir-ig-common, org.hl7.fhir.core modules, xpp3 and (runtime) commons-compress; see docs/MONOREPO.md</message>
                   <!-- direct dependencies only: core's own libraries come with it (DependencyRuleTest keeps our code off them) -->
                   <searchTransitive>false</searchTransitive>
                   <excludes>
@@ -96,6 +126,7 @@
                     <include>org.hl7.fhir:fhir-ig-common</include>
                     <include>ca.uhn.hapi.fhir:org.hl7.fhir.*</include>
                     <include>org.apache.commons:commons-compress:*:jar:runtime</include>
+                    <include>org.codelibs:xpp3</include>
                   </includes>
                 </bannedDependencies>
               </rules>

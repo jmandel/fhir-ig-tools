@@ -18,17 +18,29 @@ import org.hl7.fhir.sushi.utils.Fs;
 // port of fhir-package-loader 2.2.4 src/virtual/DiskBasedVirtualPackage.ts
 /** Resources from local files/folders (SUSHI: predefined resources in input/, test fixtures). */
 public class DiskBasedVirtualPackage implements VirtualPackage {
-  /** FHIR XML -> JS value model (FPL uses fhir-tool's xmlToObj). Pluggable; see {@link #setXmlConverter}. */
+  /**
+   * FHIR XML -> JS value model. FPL (TypeScript SUSHI) uses fhir-tool's xmlToObj; the port uses org.hl7.fhir.core's
+   * parser for the IG's FHIR version ({@link FhirXml}; docs/core-divergences.md C6).
+   */
   @FunctionalInterface
   public interface XmlConverter {
-    Object xmlToObj(String xml) throws Exception;
+    Object xmlToObj(String xml, String fhirVersion) throws Exception;
   }
 
-  /** default: the port of fhir-tool 5.0.2's xmlToObj, which FPL uses */
-  private static volatile XmlConverter xmlConverter = org.hl7.fhir.sushi.fhirdefs.xml.FhirXmlToJs::xmlToObj;
+  private static volatile XmlConverter xmlConverter = FhirXml::xmlToObj;
 
+  /** Replaces the XML converter (harnesses); null restores the default, {@link FhirXml#xmlToObj}. */
   public static void setXmlConverter(XmlConverter c) {
-    xmlConverter = c;
+    xmlConverter = c != null ? c : FhirXml::xmlToObj;
+  }
+
+  /** an XML file that the converter could not read: skipped with a warning */
+  static final class XmlConversionException extends IllegalStateException {
+    private static final long serialVersionUID = 1L;
+
+    XmlConversionException(String message, Throwable cause) {
+      super(message, cause);
+    }
   }
 
   private static final Pattern JSON_NAME = Pattern.compile("\\.json$", Pattern.CASE_INSENSITIVE);
@@ -38,22 +50,30 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
   private static final Pattern XML_KEY = Pattern.compile(".xml$", Pattern.CASE_INSENSITIVE);
   private static final Pattern JSON_KEY = Pattern.compile(".json$", Pattern.CASE_INSENSITIVE);
   private static final Pattern EXCEL = Pattern.compile("<\\?mso-application progid=\"Excel\\.Sheet\"\\?>", Pattern.MULTILINE);
-  private static final Pattern UNKNOWN_TYPE = Pattern.compile("convert XML .* Unknown resource type");
 
   private final Map<String, Object> packageJSON;
   private final List<String> paths;
   private final BiConsumer<String, String> log;
   private final boolean allowNonResources;
   private final boolean recursive;
+  private final String fhirVersion;
   private final Set<String> registeredKeys = new HashSet<>();
 
   public DiskBasedVirtualPackage(Map<String, Object> packageJSON, List<String> paths) {
-    this(packageJSON, paths, null, false, false);
+    this(packageJSON, paths, null, false, false, null);
   }
 
   public DiskBasedVirtualPackage(
       Map<String, Object> packageJSON, List<String> paths, BiConsumer<String, String> log, boolean allowNonResources,
       boolean recursive) {
+    this(packageJSON, paths, log, allowNonResources, recursive, null);
+  }
+
+  /** @param fhirVersion the IG's FHIR version, which selects the model that reads XML files (null: R4) */
+  public DiskBasedVirtualPackage(
+      Map<String, Object> packageJSON, List<String> paths, BiConsumer<String, String> log, boolean allowNonResources,
+      boolean recursive, String fhirVersion) {
+    this.fhirVersion = fhirVersion;
     this.packageJSON = packageJSON;
     this.paths = paths == null ? List.of() : paths;
     this.log = log != null ? log : (l, m) -> {};
@@ -83,23 +103,26 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
           if (EXCEL.matcher(xml).find()) {
             spreadSheetCounts.merge(parent, 1, Integer::sum);
             log.accept("debug", "Skipped spreadsheet XML file: " + filePath);
+            // FPL still tries to register it (fhir-tool fails with an unknown type, silently); the port skips it,
+            // since core's parser would fail too and it is already reported as a skipped spreadsheet
+            continue;
           }
-          // NOTE: FPL does not skip it here; it still tries to register the spreadsheet
           register.register(filePath, getResourceAtPath(filePath), allowNonResources);
           registeredKeys.add(filePath);
         } else {
           invalidFileCounts.merge(parent, 1, Integer::sum);
           log.accept("debug", "Skipped non-JSON / non-XML file: " + filePath);
         }
+      } catch (XmlConversionException e) {
+        // Not FHIR XML that core's parser for this FHIR version reads (instances of logical models, CDA documents,
+        // resource types of another FHIR version, invalid FHIR XML). FPL skips unknown resource types silently and
+        // reads the rest with fhir-tool's lenient R4 converter; the port says so (core-divergences.md C6).
+        log.accept("warn", "Skipped predefined XML file " + filePath + ": the FHIR " + FhirXml.model(fhirVersion)
+            + " XML parser could not read it (" + e.getCause().getMessage() + ")");
+        log.accept("debug", BasePackageLoader.stack(e));
       } catch (Exception e) {
-        String msg = e.getMessage() == null ? "" : e.getMessage();
-        if (UNKNOWN_TYPE.matcher(msg).find()) {
-          // Skip unknown FHIR resource types. When we have instances of Logical Models,
-          // the resourceType will not be recognized as a known FHIR resourceType, but that's okay.
-        } else {
-          log.accept("error", "Failed to register resource at path: " + filePath);
-          log.accept("debug", BasePackageLoader.stack(e));
-        }
+        log.accept("error", "Failed to register resource at path: " + filePath);
+        log.accept("debug", BasePackageLoader.stack(e));
       }
     }
     spreadSheetCounts.forEach((folder, count) -> {
@@ -140,9 +163,9 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
         throw new IllegalStateException("Failed to get XML resource at path " + key);
       }
       try {
-        return xmlConverter.xmlToObj(xml);
+        return xmlConverter.xmlToObj(xml, fhirVersion);
       } catch (Exception e) {
-        throw new IllegalStateException("Failed to convert XML resource at path " + key + ": " + e.getMessage(), e);
+        throw new XmlConversionException("Failed to convert XML resource at path " + key + ": " + e.getMessage(), e);
       }
     } else if (JSON_KEY.matcher(key).find()) {
       try {
