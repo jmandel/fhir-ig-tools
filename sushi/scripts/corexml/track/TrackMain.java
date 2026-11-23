@@ -7,8 +7,8 @@ import org.hl7.fhir.sushi.fhirdefs.FhirXml;
 public class TrackMain {
   @SuppressWarnings("unchecked")
   public static void main(String[] args) {
-    DiskBasedVirtualPackage.setXmlConverter((xml, fhirVersion) -> {
-      Object o = FhirXml.xmlToObj(xml, fhirVersion);
+    DiskBasedVirtualPackage.setXmlConverter((xml, fhirVersion, partial) -> {
+      Object o = FhirXml.xmlToObj(xml, fhirVersion, partial);
       if (!(o instanceof Map<?, ?> m)) return o;
       return new XmlTrack.Root(m.get("resourceType") + "/" + m.get("id"), (Map<String, Object>) m);
     });

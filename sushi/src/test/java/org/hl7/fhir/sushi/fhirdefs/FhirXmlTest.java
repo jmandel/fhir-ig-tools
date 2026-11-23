@@ -55,15 +55,29 @@ class FhirXmlTest {
   }
 
   @Test
+  void unknownContentIsReadLenientlyAndReported() throws Exception {
+    String obs = OBS.replace("<status value=\"final\"/>", "<status value=\"final\"/><foo value=\"x\"/>");
+    List<String> partial = new ArrayList<>();
+    assertThrows(Exception.class, () -> FhirXml.xmlToObj(obs, "4.0.1", m -> { throw new IllegalStateException(m); }));
+    Map<?, ?> o = (Map<?, ?>) FhirXml.xmlToObj(obs, "4.0.1", partial::add);
+    assertEquals("final", o.get("status"));
+    assertNull(o.get("foo"));
+    assertEquals(1, partial.size());
+    assertTrue(partial.get(0).startsWith("Unknown Content foo"), partial.get(0));
+  }
+
+  @Test
   void unreadableXmlIsSkippedWithAWarning(@TempDir Path dir) throws Exception {
     Files.writeString(dir.resolve("good.xml"), OBS);
     Files.writeString(dir.resolve("cda.xml"), "<ClinicalDocument xmlns=\"urn:hl7-org:v3\"/>");
+    Files.writeString(dir.resolve("partial.xml"), OBS.replace("<id value=\"o1\"/>", "<id value=\"o2\"/><foo value=\"x\"/>"));
     List<String> logs = new ArrayList<>();
     List<String> registered = new ArrayList<>();
     DiskBasedVirtualPackage pkg = new DiskBasedVirtualPackage(new JsObject().with("name", "t").with("version", "1"),
         List.of(dir.toString()), (level, msg) -> logs.add(level + " " + msg), true, true, "4.0.1");
     pkg.registerResources((key, resource, allowNonResources) -> registered.add(Path.of(key).getFileName().toString()));
-    assertEquals(List.of("good.xml"), registered);
+    assertEquals(List.of("good.xml", "partial.xml"), registered);
+    assertTrue(logs.stream().anyMatch(l -> l.startsWith("warn Predefined XML file ") && l.contains("partial.xml was read only partially: the FHIR R4 XML parser skipped content it does not allow there (Unknown Content foo")), logs.toString());
     assertTrue(logs.stream().anyMatch(l -> l.startsWith("warn Skipped predefined XML file ") && l.contains("cda.xml: the FHIR R4 XML parser could not read it (")), logs.toString());
     assertTrue(logs.stream().noneMatch(l -> l.startsWith("error")), logs.toString());
   }

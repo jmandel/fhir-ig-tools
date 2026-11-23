@@ -1,8 +1,8 @@
 package org.hl7.fhir.sushi.fhirdefs;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 import org.hl7.fhir.common.js.Json;
 import org.hl7.fhir.sushi.utils.FHIRVersionUtils;
 
@@ -12,6 +12,10 @@ import org.hl7.fhir.sushi.utils.FHIRVersionUtils;
  * {@code org.hl7.fhir.r5.formats} (core has no R6 model; R6 IGs are read as R5). Not a port: TypeScript SUSHI reads
  * XML through fhir-package-loader with fhir-tool's {@code xmlToObj} and R4 type data for every version; this differs
  * on some inputs, see docs/core-divergences.md C6.
+ *
+ * <p>The strict parse is tried first. If it fails, the parse is repeated with core's {@code allowUnknownContent}
+ * (elements the model does not have at that place are skipped); when that succeeds the resource is used and
+ * {@code partial} is told what the strict parse rejected, since content was dropped.
  */
 public final class FhirXml {
   private FhirXml() {}
@@ -26,17 +30,50 @@ public final class FhirXml {
     };
   }
 
-  /** Parses FHIR XML as a resource of {@code fhirVersion} (null: R4) and returns its FHIR JSON as JS values. */
+  /** {@link #xmlToObj(String, String, Consumer)} that ignores partial reads. */
   public static Object xmlToObj(String xml, String fhirVersion) throws Exception {
-    InputStream in = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-    String json = switch (model(fhirVersion)) {
-      case "R4B" -> new org.hl7.fhir.r4b.formats.JsonParser().composeString(
-          new org.hl7.fhir.r4b.formats.XmlParser().parse(in));
-      case "R5" -> new org.hl7.fhir.r5.formats.JsonParser().composeString(
-          new org.hl7.fhir.r5.formats.XmlParser().parse(in));
-      default -> new org.hl7.fhir.r4.formats.JsonParser().composeString(
-          new org.hl7.fhir.r4.formats.XmlParser().parse(in));
+    return xmlToObj(xml, fhirVersion, m -> {});
+  }
+
+  /**
+   * Parses FHIR XML as a resource of {@code fhirVersion} (null: R4) and returns its FHIR JSON as JS values. Throws
+   * the strict parse's exception when even the lenient parse fails.
+   */
+  public static Object xmlToObj(String xml, String fhirVersion, Consumer<String> partial) throws Exception {
+    byte[] b = xml.getBytes(StandardCharsets.UTF_8);
+    String model = model(fhirVersion);
+    try {
+      return Json.parse(toJson(b, model, false));
+    } catch (Exception strict) {
+      String json;
+      try {
+        json = toJson(b, model, true);
+      } catch (Exception lenient) {
+        throw strict;
+      }
+      partial.accept(strict.getMessage());
+      return Json.parse(json);
+    }
+  }
+
+  private static String toJson(byte[] xml, String model, boolean lenient) throws Exception {
+    ByteArrayInputStream in = new ByteArrayInputStream(xml);
+    return switch (model) {
+      case "R4B" -> {
+        org.hl7.fhir.r4b.formats.XmlParser p = new org.hl7.fhir.r4b.formats.XmlParser();
+        p.setAllowUnknownContent(lenient);
+        yield new org.hl7.fhir.r4b.formats.JsonParser().composeString(p.parse(in));
+      }
+      case "R5" -> {
+        org.hl7.fhir.r5.formats.XmlParser p = new org.hl7.fhir.r5.formats.XmlParser();
+        p.setAllowUnknownContent(lenient);
+        yield new org.hl7.fhir.r5.formats.JsonParser().composeString(p.parse(in));
+      }
+      default -> {
+        org.hl7.fhir.r4.formats.XmlParser p = new org.hl7.fhir.r4.formats.XmlParser();
+        p.setAllowUnknownContent(lenient);
+        yield new org.hl7.fhir.r4.formats.JsonParser().composeString(p.parse(in));
+      }
     };
-    return Json.parse(json);
   }
 }

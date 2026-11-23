@@ -24,7 +24,8 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
    */
   @FunctionalInterface
   public interface XmlConverter {
-    Object xmlToObj(String xml, String fhirVersion) throws Exception;
+    /** @param partial told what was dropped when the file could be read only leniently */
+    Object xmlToObj(String xml, String fhirVersion, java.util.function.Consumer<String> partial) throws Exception;
   }
 
   private static volatile XmlConverter xmlConverter = FhirXml::xmlToObj;
@@ -107,7 +108,11 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
             // since core's parser would fail too and it is already reported as a skipped spreadsheet
             continue;
           }
-          register.register(filePath, getResourceAtPath(filePath), allowNonResources);
+          String path = filePath;
+          Object resource = getResourceAtPath(filePath, dropped -> log.accept("warn", "Predefined XML file " + path
+              + " was read only partially: the FHIR " + FhirXml.model(fhirVersion) + " XML parser skipped content it "
+              + "does not allow there (" + dropped + ")"));
+          register.register(filePath, resource, allowNonResources);
           registeredKeys.add(filePath);
         } else {
           invalidFileCounts.merge(parent, 1, Integer::sum);
@@ -149,12 +154,16 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
   @Override
   public Object getResourceByKey(String key) {
     if (registeredKeys.contains(key)) {
-      return getResourceAtPath(key);
+      return getResourceAtPath(key, dropped -> {});
     }
     throw new IllegalStateException("Unregistered resource key: " + key);
   }
 
   private Object getResourceAtPath(String key) {
+    return getResourceAtPath(key, dropped -> {});
+  }
+
+  private Object getResourceAtPath(String key, java.util.function.Consumer<String> partial) {
     if (XML_KEY.matcher(key).find()) {
       String xml;
       try {
@@ -163,7 +172,7 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
         throw new IllegalStateException("Failed to get XML resource at path " + key);
       }
       try {
-        return xmlConverter.xmlToObj(xml, fhirVersion);
+        return xmlConverter.xmlToObj(xml, fhirVersion, partial);
       } catch (Exception e) {
         throw new XmlConversionException("Failed to convert XML resource at path " + key + ": " + e.getMessage(), e);
       }
