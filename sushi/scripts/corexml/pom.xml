@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Not a module of the build: only resolves the class path of the core-XML harness (scripts/corexml/run.sh).
+     The FHIR model jars are a harness dependency, never a dependency of sushi (PORTING.md D1). -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.hl7.fhir</groupId>
+  <artifactId>sushi-corexml-harness</artifactId>
+  <version>0</version>
+  <packaging>pom</packaging>
+  <dependencies>
+    <dependency><groupId>ca.uhn.hapi.fhir</groupId><artifactId>org.hl7.fhir.r4</artifactId><version>7.0.6</version></dependency>
+    <dependency><groupId>ca.uhn.hapi.fhir</groupId><artifactId>org.hl7.fhir.r5</artifactId><version>7.0.6</version></dependency>
+    <!-- optional in core's poms; the XML pull parser its XmlParsers need -->
+    <dependency><groupId>org.codelibs</groupId><artifactId>xpp3</artifactId><version>1.1.4c.0</version></dependency>
+    <!-- needed by r5's SimpleWorkerContext (element model, r6 baseline) -->
+    <dependency><groupId>org.apache.commons</groupId><artifactId>commons-collections4</artifactId><version>4.4</version></dependency>
+    <dependency><groupId>org.fhir</groupId><artifactId>ucum</artifactId><version>1.0.10</version></dependency>
+    <dependency><groupId>com.google.code.gson</groupId><artifactId>gson</artifactId><version>2.13.1</version></dependency>
+  </dependencies>
+</project>
