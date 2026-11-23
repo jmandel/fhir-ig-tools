@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">common: the code jekyll.jar and sushi.jar share</title>
+  <desc id="d">The common module holds zero-dependency Java 17 code. Its YAML event layer, a port of libyaml 0.2.5, is used by both tools: the shim's Psych and SafeYAML construction builds Ruby values on it with plain libyaml behaviour, and SUSHI's yaml@1.10 composer builds JavaScript values on it in the opt-in yaml110 mode. Its JS value model (JsObject, JsNumber, Json, Js, Lodash, Frozen) is used by the SUSHI port.</desc>
+  <style>
+    .bg{fill:#ffffff;stroke:#d0d7de}
+    .ink{fill:#1f2328}.muted{fill:#59636e}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .card{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.2}
+    .pub{fill:#f6f8fa;stroke:#8c959f;stroke-width:1.5}
+    .tool{fill:#ddf4ff;stroke:#0969da;stroke-width:2}
+    .tool2{fill:#fbefff;stroke:#8250df;stroke-width:2}
+    .shared{fill:#fff8c5;stroke:#9a6700;stroke-width:1.5}
+    .stage{fill:#ffffff;stroke:#54aeff;stroke-width:1.2}
+    .stage2{fill:#ffffff;stroke:#c297ff;stroke-width:1.2}
+    .stage3{fill:#ffffff;stroke:#d4a72c;stroke-width:1.2}
+    .ext{fill:#ffffff;stroke:#8c959f;stroke-width:1.2;stroke-dasharray:5 4}
+    .out{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+    .accent{fill:#0969da}.accent2{fill:#8250df}.accent3{fill:#9a6700}.good{fill:#1a7f37}
+    .wire{stroke:#59636e;stroke-width:2;fill:none}
+    .wire-d{stroke:#8c959f;stroke-width:1.6;fill:none;stroke-dasharray:6 5}
+    .head{fill:#59636e}
+    .chip-g{fill:#dafbe1;stroke:#1a7f37}.chip-a{fill:#fff8c5;stroke:#9a6700}.chip-p{fill:#fbefff;stroke:#8250df}
+    .chip-r{fill:#ffebe9;stroke:#cf222e}.chip-b{fill:#ddf4ff;stroke:#0969da}
+    .t-g{fill:#1a7f37}.t-a{fill:#7d4e00}.t-p{fill:#8250df}.t-r{fill:#a40e26}.t-b{fill:#0550ae}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#0d1117;stroke:#3d444d}
+      .ink{fill:#e6edf3}.muted{fill:#9198a1}
+      .card{fill:#151b23;stroke:#3d444d}
+      .pub{fill:#151b23;stroke:#656c76}
+      .tool{fill:#0c2d4b;stroke:#4493f8}
+      .tool2{fill:#271a3c;stroke:#ab7df8}
+      .shared{fill:#2e2306;stroke:#d29922}
+      .stage{fill:#0d1117;stroke:#1f6feb}
+      .stage2{fill:#0d1117;stroke:#8957e5}
+      .stage3{fill:#0d1117;stroke:#9e6a03}
+      .ext{fill:#0d1117;stroke:#656c76}
+      .out{fill:#0f2e1b;stroke:#3fb950}
+      .accent{fill:#4493f8}.accent2{fill:#ab7df8}.accent3{fill:#d29922}.good{fill:#3fb950}
+      .wire{stroke:#9198a1}.wire-d{stroke:#656c76}.head{fill:#9198a1}
+      .chip-g{fill:#0f2e1b;stroke:#3fb950}.chip-a{fill:#2e2306;stroke:#d29922}.chip-p{fill:#271a3c;stroke:#ab7df8}
+      .chip-r{fill:#3c1618;stroke:#f85149}.chip-b{fill:#0c2d4b;stroke:#4493f8}
+      .t-g{fill:#3fb950}.t-a{fill:#d29922}.t-p{fill:#ab7df8}.t-r{fill:#ff7b72}.t-b{fill:#79c0ff}
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="head"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0.5" y="0.5" width="959" height="559" rx="12"/>
+  <text x="24" y="40" class="ink mono" font-size="22" font-weight="700">common</text>
+  <text x="124" y="40" class="muted" font-size="14">zero-dependency code shared by jekyll.jar and sushi.jar · JDK only · Java 17</text>
+
+  <!-- consumers -->
+  <rect class="tool" x="24" y="76" width="440" height="132" rx="10"/>
+  <text x="42" y="102" class="ink mono" font-size="15" font-weight="700">jekyll.jar</text>
+  <text x="446" y="102" class="muted mono" font-size="12" text-anchor="end">org.hl7.fhir.jekyll.yaml</text>
+  <text x="42" y="128" class="ink mono" font-size="13">PsychParser → PsychHandler → Transform</text>
+  <text x="42" y="152" class="muted" font-size="12">Psych 5.0.1 and SafeYAML 1.0.5: Ruby typing (dates,</text>
+  <text x="42" y="169" class="muted" font-size="12">symbols, YAML 1.1 booleans), Psych's error messages</text>
+  <text x="42" y="186" class="muted" font-size="12">→ _config.yml, _data/, front matter</text>
+  <rect class="tool2" x="496" y="76" width="440" height="132" rx="10"/>
+  <text x="514" y="102" class="ink mono" font-size="15" font-weight="700">sushi.jar</text>
+  <text x="918" y="102" class="muted mono" font-size="12" text-anchor="end">org.hl7.fhir.sushi.yaml</text>
+  <text x="514" y="128" class="ink mono" font-size="13">Yaml (the yaml@1.10 composer)</text>
+  <text x="514" y="152" class="muted" font-size="12">YAML 1.2 core schema, anchors, duplicate keys,</text>
+  <text x="514" y="169" class="muted" font-size="12">yaml@1.10's error wording (YamlError)</text>
+  <text x="514" y="186" class="muted" font-size="12">→ sushi-config.yaml; everything else: JS values</text>
+  <path class="wire" d="M244,208 L244,270" marker-end="url(#arrow)"/>
+  <text x="256" y="246" class="ink mono" font-size="12">new Parser(bytes, enc)</text>
+  <path class="wire" d="M560,208 L560,270" marker-end="url(#arrow)"/>
+  <text x="572" y="246" class="ink mono" font-size="12">new Parser(bytes, enc, true)</text>
+  <path class="wire" d="M840,208 L840,270" marker-end="url(#arrow)"/>
+
+  <!-- common module -->
+  <rect class="shared" x="24" y="274" width="912" height="266" rx="10"/>
+  <text x="42" y="300" class="ink mono" font-size="15" font-weight="700">common</text>
+  <text x="918" y="300" class="muted" font-size="12" text-anchor="end">artifact org.hl7.fhir:fhir-ig-common</text>
+  <rect class="stage3" x="42" y="314" width="642" height="208" rx="8"/>
+  <text x="58" y="338" class="accent3 mono" font-size="14" font-weight="700">org.hl7.fhir.common.yaml</text>
+  <text x="668" y="338" class="muted" font-size="12" text-anchor="end">libyaml 0.2.5, ported</text>
+  <rect class="card" x="58" y="352" width="128" height="40" rx="6"/>
+  <text x="122" y="377" class="ink mono" font-size="13" font-weight="600" text-anchor="middle">Reader</text>
+  <path class="wire" d="M186,372 L210,372" marker-end="url(#arrow)"/>
+  <rect class="card" x="212" y="352" width="128" height="40" rx="6"/>
+  <text x="276" y="377" class="ink mono" font-size="13" font-weight="600" text-anchor="middle">Scanner</text>
+  <path class="wire" d="M340,372 L364,372" marker-end="url(#arrow)"/>
+  <rect class="card" x="366" y="352" width="128" height="40" rx="6"/>
+  <text x="430" y="377" class="ink mono" font-size="13" font-weight="600" text-anchor="middle">Parser</text>
+  <path class="wire" d="M494,372 L518,372" marker-end="url(#arrow)"/>
+  <rect class="card" x="520" y="352" width="128" height="40" rx="6"/>
+  <text x="584" y="377" class="ink mono" font-size="13" font-weight="600" text-anchor="middle">Event</text>
+  <text x="58" y="418" class="ink" font-size="12">bytes → tokens → events, exactly as yaml_parser_parse; errors as LibyamlError</text>
+  <text x="58" y="435" class="ink" font-size="12">(libyaml's problem, context and marks). Public: Parser, Event, Mark, LibyamlError.</text>
+  <rect class="chip-b" x="58" y="458" width="260" height="22" rx="11"/>
+  <text x="188.0" y="473" class="t-b" font-size="12" font-weight="600" text-anchor="middle">default: plain libyaml (the shim)</text>
+  <rect class="chip-p" x="330" y="458" width="334" height="22" rx="11"/>
+  <text x="497.0" y="473" class="t-p" font-size="12" font-weight="600" text-anchor="middle">yaml110 mode: what yaml@1.10 also accepts (sushi)</text>
+  <text x="58" y="504" class="muted" font-size="12">opt-in, off by default: the shim's YAML behaviour does not change</text>
+  <rect class="stage3" x="700" y="314" width="218" height="208" rx="8"/>
+  <text x="716" y="338" class="accent3 mono" font-size="13" font-weight="700">org.hl7.fhir.common.js</text>
+  <text x="716" y="364" class="ink mono" font-size="13">JsObject</text>
+  <text x="716" y="383" class="ink mono" font-size="13">JsNumber, Json</text>
+  <text x="716" y="402" class="ink mono" font-size="13">Js, Lodash</text>
+  <text x="716" y="421" class="ink mono" font-size="13">Frozen</text>
+  <text x="716" y="448" class="muted" font-size="12">JavaScript values: key order,</text>
+  <text x="716" y="465" class="muted" font-size="12">doubles, JSON.stringify/parse,</text>
+  <text x="716" y="482" class="muted" font-size="12">lodash; used by sushi</text>
+</svg>

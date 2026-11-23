@@ -16,6 +16,7 @@ common/            zero-dependency shared code, Java 17
   src/main/java/org/hl7/fhir/common/js/      the JS value model: Js, JsNumber, JsObject, Json, JsonSerializable,
                                              Lodash, Frozen (JSON.stringify/parse, Number formatting, lodash)
   src/test/java/…                            JUnit tests (event layer API, JS value model with node-generated vectors)
+  README.md
 jekyll/            the shim
   pom.xml          artifact org.hl7.fhir:fhir-ig-jekyll; also writes target/jekyll.jar, the release jar
   src/main/java/org/hl7/fhir/jekyll/…        Shim, IncludeProvider, ShimException, liquid, kramdown, rouge,
@@ -31,9 +32,13 @@ sushi/             the SUSHI port, Java 21 (sushi-java before the move, see "The
                                              ig, run, utils, xhtml, yaml (the yaml@1.10 composer over common's events)
   src/test/java/…, src/test/antlr4/          JUnit tests (~3.7k), SUSHI's grammar for the ANTLR test oracle
   scripts/         build.sh (module build), diff-run.sh / corpus-diff.sh (differential vs TypeScript SUSHI), oracles
-  PORTING.md, README.md, docs/, tests/inventory.tsv
-scripts/           as before, plus sushi-sync.sh and sushi-restructure.sh (importing/re-syncing the SUSHI port)
-docs/ docker/ lima/ third_party/ tracker-app/   as before
+  sushi, sushi.cmd                           the self-downloading wrappers (stamped at release)
+  tests/           inventory.tsv (Jest → JUnit), e2e/ig (the wrapper end-to-end project)
+  PORTING.md, README.md, docs/
+scripts/           test drivers, corpus and golden tools; sushi-e2e.sh, test-sushi-wrapper.sh; sushi-sync.sh and
+                   sushi-restructure.sh (importing/re-syncing the SUSHI port)
+docs/              this file, img/ (the diagrams), TRACKER.md, archive/
+docker/ lima/ third_party/ tracker-app/
 ```
 
 ## Naming decisions (M1–M3: placeholders until the owner decides; M4: decided)
@@ -99,6 +104,8 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 | In-process API | `java -cp jekyll/target/jekyll.jar:jekyll/target/test-classes org.hl7.fhir.jekyll.test.site.ShimApiCheck` | |
 | Wrapper end to end | `scripts/e2e.sh` | `jekyll/jekyll-shim` picks up `jekyll/target/jekyll.jar` (then `jekyll/build/jekyll.jar`) in a source checkout |
 | Wrapper bootstrap | `scripts/test-wrapper.sh [jar]` | defaults to `jekyll/target/jekyll.jar` |
+| SUSHI wrapper end to end | `scripts/sushi-e2e.sh [wrapper-dir] [sushi.jar]` | `sushi/tests/e2e/ig` through the wrapper (default `sushi/sushi`, which picks up `sushi/target/sushi.jar`) and through `java -jar sushi.jar`: same `fsh-generated/`, output and exit status; `--version` and an error exit pass through. Downloads the FHIR packages the project needs on first use |
+| SUSHI wrapper bootstrap | `scripts/test-sushi-wrapper.sh [jar]` | a stamped `sushi` wrapper downloads, verifies and caches the jar (local HTTP server), works offline from the cache, refuses a bad checksum, and stops with a clear message on Java < 21 |
 | Golden corpus | `scripts/shim-golden.sh`, `scripts/shim-all.sh` | use a `--fast` build dir (default `build-site`) |
 | Output regression between two jars | `scripts/jar-compare.sh <golden> <ref.jar> <new.jar>...` | byte-for-byte, every output file; for refactors that must not change output |
 
@@ -106,6 +113,8 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 `BUILD` unset to use the Maven build.
 
 ## Module rules
+
+![Modules: jekyll (Java 17) depends only on common and builds jekyll.jar; sushi (Java 21) depends on common and org.hl7.fhir.core's utilities and builds sushi.jar; common (Java 17) depends on nothing; JUnit and ANTLR are test scope only](img/modules.svg)
 
 The Maven enforcer plugin checks the dependency rules on every build (`bannedDependencies`).
 
@@ -191,15 +200,21 @@ version and re-apply the upstream change by hand.
 - **Release assets:** `jekyll-shim`, `jekyll-shim.cmd` (stamped with the release version and `jekyll.jar`'s
   SHA-256; on first use they download `releases/download/v<version>/jekyll.jar`, verify it and cache it under
   `~/.fhir-ig-jekyll/<version>/`), `jekyll.jar`, `fhir-ig-jekyll.zip` (offline bundle: `jekyll.jar`, both wrappers,
-  README, licenses, `INTEGRATION.md`) and `SHA256SUMS`. The version comes from the git tag
-  (`scripts/stamp-wrappers.sh`), not from the POM.
+  README, licenses, `INTEGRATION.md`); `sushi`, `sushi.cmd` (stamped the same way for `sushi.jar`, cache
+  `~/.fhir-ig-sushi/<version>/`), `sushi.jar`; and `SHA256SUMS` over all of them. The version comes from the git
+  tag (`scripts/stamp-wrappers.sh`, `--sushi` for the SUSHI wrappers), not from the POM. The workflow runs both
+  wrappers end to end before publishing, and again against the published assets.
 - **jekyll.jar:** one self-contained jar, `Main-Class` `org.hl7.fhir.jekyll.site.Main`, CLI
   `java -jar jekyll.jar build --destination <dir>`, no dependencies: common's YAML event layer is shaded in (its JS
   value model is left out). The in-process route (the publisher calling `Shim.build`) can use it as one jar; a Maven
   consumer would use `fhir-ig-jekyll` + `fhir-ig-common`, which are not published to a Maven repository.
-- **sushi.jar is built and tested but not published.** The release workflow has a disabled step that would add it
-  as an asset; shipping it is the owner's decision (it bundles core's libraries, whose notices would have to be
-  included, see `THIRD_PARTY_NOTICES.md`).
+- **sushi.jar:** one self-contained jar (about 40 MB), `Main-Class` `org.hl7.fhir.sushi.App`, `Multi-Release: true`,
+  SUSHI's command line. It bundles `common`, org.hl7.fhir.core's utilities and their libraries; their Apache
+  `NOTICE` files are merged into `META-INF/NOTICE`, and `THIRD_PARTY_NOTICES.md` (which lists every bundled library
+  and its license) and the repository license are in `META-INF/fhir-ig-tools/`.
+- **CI:** the `build` job (JDK 21, Linux) builds everything and runs all JUnit tests and the shim suites; the `shim`
+  job runs that `jekyll.jar` on JDK 17 and 21 on Linux, macOS and Windows; the `sushi` job runs that `sushi.jar`
+  through the wrapper (`sushi-e2e.sh`, `test-sushi-wrapper.sh`) on Linux, macOS and Windows with JDK 21.
 
 ## Verification of the multi-module move (2026-11-22)
 
