@@ -300,3 +300,40 @@ shim, `sushi` = this port). This repo is laid out to move as is:
 5. **YAML**: shared layer refactor in the shim is outside this repo; WP-3 vendored the event layer (package `yaml`, from
    fhir-ig-jekyll@dc6cf398) plus a yaml@1.10 composer; switch to `common` at the monorepo move.
 6. **Test-port volume** (~3,600 tests, ~80k TS lines) dominates effort; keep tests 1:1 to make it mechanical.
+
+## 9. Final status (phase 2 complete)
+
+**Tests.** Full suite: 3,713 JUnit tests, 0 failures, 29 skipped. Jest inventory (`tests/inventory.tsv`, 3,604 tests)
+ported and passing: **3,584**. The other 20 are all accounted for: 15 are skipped/pending/todo in TS SUSHI 3.21.1
+itself (ported and kept `@Disabled` with the TS marker), 2 assert a Jest spy on a private method (TS-only), 3 test the
+axios HTTP wrapper, which the port doesn't have (HTTP goes through core's ManagedWebAccess).
+
+| WP | area | passing / inventory | not passing (all `@Disabled` or n/a, with reason) |
+|---|---|---|---|
+| WP-1 | parser | 23 / 23 | – |
+| WP-2 | importer | 690 / 693 | 2 TS-only (`jest.spyOn(importer, 'visitDoc')`), 1 `it.skip` in TS |
+| WP-3 | config, errors, YAML, fshtypes tests | 420 / 420 | – |
+| WP-4 | ElementDefinition | 589 / 591 | 2 skipped in TS |
+| WP-5 | StructureDefinition, common, PathUtils | 260 / 260 | – |
+| WP-6 | SD export, Package, MasterFisher | 648 / 656 | 7 `it.todo` + 1 `it.skip` in TS |
+| WP-7 | instance + terminology export | 558 / 562 | 4 pending in TS |
+| WP-8 | packages (+ WP-9 xhtml) | 77 / 80 | 3 axiosUtils tests: no axios in the port |
+| WP-10 | IG, CLI, Processing, logger | 319 / 319 | – |
+
+The one TS test that needed a Jest prototype mock (`StructureDefinition.prototype.validate`) is ported with real
+validation errors instead (same logging assertions).
+
+**Gates.**
+- End to end (`java -jar`, `scripts/diff-run.sh`): the 6 reference IGs (genomics-reporting, ITI.MHD, ch-term,
+  EEHRxF logical-model, ch-ekm, smart-anc; 2,153 files) have byte-identical `fsh-generated/`, identical logs (pun and
+  version lines normalised, D7) and equal exit codes.
+- Corpus (`scripts/corpus-diff.sh`, WP-10): **267 / 267 FSH IGs identical** (files, logs, exit codes) against TS SUSHI
+  3.21.1 on Node 22 with the frozen package snapshot. 11 IGs differed on the first pass; root causes fixed on main with
+  regression tests (`regress.CorpusRegressionTest`, `export.RegressSliceTypeDiffTest`): undefined config.version
+  written as null; cleanResource not walking ElementDefinition._original; `#latest` = registry dist-tags.latest
+  (rule R2); FPL's `#current` freshness warning, `Failed to resolve version` and `Attempting to download` messages;
+  a V8 TypeError text.
+- Package resolution (WP-8 probe): every lookup on the reference IGs and corpus picks the same definition as TS;
+  FPL rules R1, R2 ported where core differed (`docs/package-resolution-differences.md`).
+- Known, accepted differences: `docs/differences.md` (KD-1..KD-15; none changes output on real inputs).
+
