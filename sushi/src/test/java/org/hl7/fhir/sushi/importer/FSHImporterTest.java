@@ -26,19 +26,19 @@ class FSHImporterTest {
       loggerSpy.reset();
     }
 
-    @Test @DisplayName("should default filename to blank string")
+    @Test @DisplayName("FSHImporter should default filename to blank string")
     void defaultFilename() {
       FSHDocument result = importSingleText("");
       assertEquals("", result.file);
     }
 
-    @Test @DisplayName("should retain the passed in file name")
+    @Test @DisplayName("FSHImporter should retain the passed in file name")
     void retainFileName() {
       FSHDocument result = importSingleText("", "FSHImporter.test.ts");
       assertEquals("FSHImporter.test.ts", result.file);
     }
 
-    @Test @DisplayName("should allow a blank FSH document")
+    @Test @DisplayName("FSHImporter should allow a blank FSH document")
     void blankDocument() {
       FSHDocument result = importSingleText("");
       assertEquals(0, result.aliases.size());
@@ -46,7 +46,7 @@ class FSHImporterTest {
       assertEquals(0, result.extensions.size());
     }
 
-    @Test @DisplayName("should recover from extraneous input errors from antlr")
+    @Test @DisplayName("FSHImporter should recover from extraneous input errors from antlr")
     void recoverExtraneous() {
       String input = leftAlign("""
 
@@ -63,7 +63,7 @@ class FSHImporterTest {
           .matcher(loggerSpy.getLastMessage("error")).find());
     }
 
-    @Test @DisplayName("should parse escaped double-quote and backslash characters in strings")
+    @Test @DisplayName("FSHImporter should parse escaped double-quote and backslash characters in strings")
     void escapedQuotes() {
       String input = leftAlign("""
 
@@ -81,7 +81,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(0), "code", expectedCode);
     }
 
-    @Test @DisplayName("should parse escaped hash and backslash characters in system identifiers in codings")
+    @Test @DisplayName("FSHImporter should parse escaped hash and backslash characters in system identifiers in codings")
     void escapedHash() {
       String input = leftAlign("""
 
@@ -105,7 +105,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(2), "bonusCode", expectedBonusCode);
     }
 
-    @Test @DisplayName("should parse escaped unicode characters in strings and multiline strings")
+    @Test @DisplayName("FSHImporter should parse escaped unicode characters in strings and multiline strings")
     void escapedUnicode() {
       String input = leftAlign("""
 
@@ -127,7 +127,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(0), "valueString", "This cool ☃ can read music in 𝄞!");
       assertAssignmentRule(profile.rules.get(1), "category.text", expectedCategoryText);
     }
-    @Test @DisplayName("should parse unescaped unicode characters in strings and multiline strings")
+    @Test @DisplayName("FSHImporter should parse unescaped unicode characters in strings and multiline strings")
     void unescapedUnicode() {
       String input = leftAlign("""
 
@@ -150,7 +150,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(1), "category.text", expectedCategoryText);
     }
 
-    @Test @DisplayName("should parse a code that has an unmatched quote (\") at the start of the code")
+    @Test @DisplayName("FSHImporter should parse a code that has an unmatched quote (\") at the start of the code")
     void unmatchedQuote() {
       String input = "\n    Profile: MismatchedQuote\n    Parent: Observation\n"
           + "    * code = https://breakfast.com/goodfood#\"potatoes\n    ";
@@ -162,7 +162,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(0), "code", expectedCode);
     }
 
-    @Test @DisplayName("should parse a rule that uses non-breaking spaces in a concept string")
+    @Test @DisplayName("FSHImporter should parse a rule that uses non-breaking spaces in a concept string")
     void nonBreakingConcept() {
       String input = leftAlign("\n    Profile: NonBreakingObservation\n    Parent: Observation\n"
           + "    * code = #\"These are non-breaking.\"\n    ");
@@ -174,7 +174,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(0), "code", expectedCode);
     }
 
-    @Test @DisplayName("should log an error when a concept string starts with whitespace")
+    @Test @DisplayName("FSHImporter should log an error when a concept string starts with whitespace")
     void conceptLeadingWhitespace() {
       String input = leftAlign("\n    Profile: NonBreakingObservation\n    Parent: Observation\n"
           + "    * code = #\" Leading whitespace prohibited.\"\n    ");
@@ -184,7 +184,7 @@ class FSHImporterTest {
       assertTrue(dotall("extraneous input.*File: NonBreaking\\.fsh.*Line: 4\\D*", loggerSpy.getLastMessage("error")));
     }
 
-    @Test @DisplayName("should parse a rule on an element named system")
+    @Test @DisplayName("FSHImporter should parse a rule on an element named system")
     void elementNamedSystem() {
       String input = leftAlign("""
 
@@ -198,7 +198,7 @@ class FSHImporterTest {
       assertAssignmentRule(profile.rules.get(0), "system", true);
     }
 
-    @Test @DisplayName("should parse rules on a list of paths that includes system")
+    @Test @DisplayName("FSHImporter should parse rules on a list of paths that includes system")
     void listOfPathsWithSystem() {
       String input = leftAlign("""
 
@@ -220,7 +220,7 @@ class FSHImporterTest {
       assertFlagRule(profile.rules.get(6), "system", true, null, null, null, null, null);
     }
 
-    @Test @DisplayName("should parse a rule on an element named exclude")
+    @Test @DisplayName("FSHImporter should parse a rule on an element named exclude")
     void elementNamedExclude() {
       String input = leftAlign("""
 
@@ -235,7 +235,7 @@ class FSHImporterTest {
       assertFlagRule(profile.rules.get(0), "characteristic.exclude", true, null, null, null, null, null);
     }
 
-    @Test @DisplayName("should parse entity names that look like dates or times")
+    @Test @DisplayName("FSHImporter should parse entity names that look like dates or times")
     void dateLikeNames() {
       String input = leftAlign("""
 
@@ -343,7 +343,7 @@ class FSHImporterTest {
       assertTrue(loggerSpy.getAllLogs("warn").isEmpty());
     }
 
-    @Test @DisplayName("should allow two FSH documents")
+    @Test @DisplayName("FSHImporter should allow two FSH documents")
     void twoDocuments() {
       List<FSHDocument> results = ImportText.importText(List.of(new RawFSH(""), new RawFSH("")));
       assertEquals(2, results.size());
@@ -354,7 +354,7 @@ class FSHImporterTest {
       }
     }
 
-    @Test @DisplayName("should allow two FSH documents even when first is invalid")
+    @Test @DisplayName("FSHImporter should allow two FSH documents even when first is invalid")
     void twoDocumentsFirstInvalid() {
       List<FSHDocument> results = ImportText.importText(
           List.of(new RawFSH("invalid FSH string", "Invalid.fsh"), new RawFSH("", "Blank.fsh")));
@@ -366,7 +366,7 @@ class FSHImporterTest {
       }
     }
 
-    @Test @DisplayName("should allow a FSH document with a line comment at EOF without newline")
+    @Test @DisplayName("FSHImporter should allow a FSH document with a line comment at EOF without newline")
     void lineCommentAtEof() {
       String input = leftAlign("\n    Profile: ObservationProfile\n    Parent: Observation\n    //Comment");
       FSHDocument result = importSingleText(input);
@@ -374,7 +374,7 @@ class FSHImporterTest {
       assertEquals(0, loggerSpy.getAllLogs("error").size());
     }
 
-    @Test @DisplayName("should allow a FSH document with a block comment at EOF without newline")
+    @Test @DisplayName("FSHImporter should allow a FSH document with a block comment at EOF without newline")
     void blockCommentAtEof() {
       String input = leftAlign("\n    Profile: ObservationProfile\n    Parent: Observation\n    /*\n    Comment\n"
           + "    Comment\n    */");
@@ -383,7 +383,7 @@ class FSHImporterTest {
       assertEquals(0, loggerSpy.getAllLogs("error").size());
     }
 
-    @Test @DisplayName("should allow a FSH document with a single-line block comment")
+    @Test @DisplayName("FSHImporter should allow a FSH document with a single-line block comment")
     void singleLineBlockComment() {
       String input = leftAlign("""
 
@@ -397,7 +397,7 @@ class FSHImporterTest {
       assertEquals(0, loggerSpy.getAllLogs("error").size());
     }
 
-    @Test @DisplayName("should allow a FSH document with a block comment containing no whitespace")
+    @Test @DisplayName("FSHImporter should allow a FSH document with a block comment containing no whitespace")
     void blockCommentNoWhitespace() {
       String input = leftAlign("""
 
@@ -411,7 +411,7 @@ class FSHImporterTest {
       assertEquals(1, result.profiles.size());
     }
 
-    @Test @DisplayName("should adjust indentation of multi-line strings that include blank lines")
+    @Test @DisplayName("FSHImporter should adjust indentation of multi-line strings that include blank lines")
     void multilineBlankLines() {
       String input = leftAlign("\n    Profile: ObservationProfile\n    Parent: Observation\n    Description: \"\"\"\n"
           + "    SUSHI stands for:\n      SUSHI\n      Unshortens\n      Short\n      Hand\n      Inputs\n\n"
@@ -422,7 +422,7 @@ class FSHImporterTest {
       assertEquals(expectedDescription, result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should not change indentation of multi-line strings when there is at least one unindented non-blank line")
+    @Test @DisplayName("FSHImporter should not change indentation of multi-line strings when there is at least one unindented non-blank line")
     void multilineUnindented() {
       String input = "\n    Profile: ObservationProfile\n    Parent: Observation\n"
           + "    Description: \"\"\"A long statement follows this.\n\nLong statement:\n\n"
@@ -433,7 +433,7 @@ class FSHImporterTest {
       assertEquals(expectedDescription, result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should truncate whitespace lines in multi-line strings")
+    @Test @DisplayName("FSHImporter should truncate whitespace lines in multi-line strings")
     void multilineTruncateWhitespace() {
       String input = leftAlign("\n    Profile: StaircaseObservation\n    Parent: Observation\n"
           + "    Description: \"\"\"\n    This\n      Description\n\n        Looks\n          Like\n\n"
@@ -444,7 +444,7 @@ class FSHImporterTest {
       assertEquals(expectedDescription, result.profiles.get("StaircaseObservation").description);
     }
 
-    @Test @DisplayName("should parse multi-line strings with CRLF line breaks")
+    @Test @DisplayName("FSHImporter should parse multi-line strings with CRLF line breaks")
     void multilineCrlf() {
       String input = String.join("\r\n", "Profile: ObservationProfile", "Parent: Observation", "Description: \"\"\"",
           "Line endings", "are always", "troublesome.", "\"\"\"");
@@ -453,7 +453,7 @@ class FSHImporterTest {
       assertEquals(expectedDescription, result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should parse multi-line strings that only occupy one line")
+    @Test @DisplayName("FSHImporter should parse multi-line strings that only occupy one line")
     void multilineOneLine() {
       String input = leftAlign("""
 
@@ -465,7 +465,7 @@ class FSHImporterTest {
       assertEquals("Descriptions come in only one size.", result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should parse the multiline string ending in a quote from issue #1569")
+    @Test @DisplayName("FSHImporter should parse the multiline string ending in a quote from issue #1569")
     void multilineEndingQuote() {
       String input = String.join("\n", "Instance: TestPatient", "InstanceOf: Patient",
           "* name.text = \"\"\"Porous Robert \"SpongeBob\"\"\"\"");
@@ -484,22 +484,22 @@ class FSHImporterTest {
       assertTrue(loggerSpy.getAllMessages("error").isEmpty());
     }
 
-    @Test @DisplayName("should parse multiline string content ending in zero quote characters")
+    @Test @DisplayName("FSHImporter should parse multiline string content ending in zero quote characters")
     void endingZeroQuotes() {
       endingQuotes("no trailing quote");
     }
 
-    @Test @DisplayName("should parse multiline string content ending in one quote characters")
+    @Test @DisplayName("FSHImporter should parse multiline string content ending in one quote characters")
     void endingOneQuote() {
       endingQuotes("one trailing quote\"");
     }
 
-    @Test @DisplayName("should parse multiline string content ending in two quote characters")
+    @Test @DisplayName("FSHImporter should parse multiline string content ending in two quote characters")
     void endingTwoQuotes() {
       endingQuotes("two trailing quotes\"\"");
     }
 
-    @Test @DisplayName("should preserve ordinary quotes and non-delimiter quote runs inside multiline strings")
+    @Test @DisplayName("FSHImporter should preserve ordinary quotes and non-delimiter quote runs inside multiline strings")
     void internalQuotes() {
       String expected = "ordinary \"quotes\" and a double run \"\" stay content";
       String input = String.join("\n", "Profile: InternalQuotesProfile", "Parent: Observation",
@@ -509,7 +509,7 @@ class FSHImporterTest {
       assertTrue(loggerSpy.getAllMessages("error").isEmpty());
     }
 
-    @Test @DisplayName("should keep adjacent multiline strings and neighboring tokens separate")
+    @Test @DisplayName("FSHImporter should keep adjacent multiline strings and neighboring tokens separate")
     void adjacentMultiline() {
       String input = String.join("\n", "Instance: NeighboringStrings", "InstanceOf: Patient",
           "* name[0].text = \"\"\"first value\"\"\"", "* name[1].text = \"\"\"second value\"\"\"", "* active = true");
@@ -522,7 +522,7 @@ class FSHImporterTest {
       assertTrue(loggerSpy.getAllMessages("error").isEmpty());
     }
 
-    @Test @DisplayName("should parse an empty multiline string")
+    @Test @DisplayName("FSHImporter should parse an empty multiline string")
     void emptyMultiline() {
       String input = String.join("\n", "Profile: EmptyMultilineProfile", "Parent: Observation",
           "Description: \"\"\"\"\"\"");
@@ -531,7 +531,7 @@ class FSHImporterTest {
       assertTrue(loggerSpy.getAllMessages("error").isEmpty());
     }
 
-    @Test @DisplayName("should reject an unterminated multiline string")
+    @Test @DisplayName("FSHImporter should reject an unterminated multiline string")
     void unterminatedMultiline() {
       String input = String.join("\n", "Profile: UnterminatedMultilineProfile", "Parent: Observation",
           "Description: \"\"\"unterminated");
@@ -541,14 +541,14 @@ class FSHImporterTest {
       assertTrue(dotall("File: Unterminated\\.fsh.*Line: 3\\D*", loggerSpy.getLastMessage("error")));
     }
 
-    @Test @DisplayName("should parse non-breaking space characters as whitespace")
+    @Test @DisplayName("FSHImporter should parse non-breaking space characters as whitespace")
     void nonBreakingSpaces() {
       String input = leftAlign("\n    Profile: NonBreakingObservation\n    Parent: Observation \n    ");
       FSHDocument result = importSingleText(input);
       assertEquals("Observation", result.profiles.get("NonBreakingObservation").parent);
     }
 
-    @Test @DisplayName("should properly parse a string with newline, return, and tab characters")
+    @Test @DisplayName("FSHImporter should properly parse a string with newline, return, and tab characters")
     void stringEscapes() {
       String input = leftAlign("""
 
@@ -562,7 +562,7 @@ class FSHImporterTest {
           result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should properly parse a string with an escaped newline")
+    @Test @DisplayName("FSHImporter should properly parse a string with an escaped newline")
     void escapedNewline() {
       String input = leftAlign("""
 
@@ -575,7 +575,7 @@ class FSHImporterTest {
       assertEquals("Here is an escaped \\n newline character.", result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should properly parse a multiline string with newline, return, and tab characters")
+    @Test @DisplayName("FSHImporter should properly parse a multiline string with newline, return, and tab characters")
     void multilineEscapes() {
       String input = leftAlign("""
 
@@ -596,7 +596,7 @@ class FSHImporterTest {
       assertEquals(expected, result.profiles.get("ObservationProfile").description);
     }
 
-    @Test @DisplayName("should parse numbers using exponential notation")
+    @Test @DisplayName("FSHImporter should parse numbers using exponential notation")
     void exponentialNumbers() {
       String input = leftAlign("""
 
@@ -631,7 +631,7 @@ class FSHImporterTest {
       assertAssignmentRule(instance.rules.get(7), "extension[0].valueDecimal", 0.48);
     }
 
-    @Test @DisplayName("should log info messages during import")
+    @Test @DisplayName("FSHImporter should log info messages during import")
     void infoMessages() {
       String input = leftAlign("""
 
@@ -664,7 +664,7 @@ class FSHImporterTest {
       assertTrue(allLogs.get(1).message().contains("Imported 6 definitions and 1 instance"));
     }
 
-    @Test @DisplayName("should avoid crashing and log error messages because of mismatched input")
+    @Test @DisplayName("FSHImporter should avoid crashing and log error messages because of mismatched input")
     void mismatchedInput() {
       String input = leftAlign("""
 
@@ -684,7 +684,7 @@ class FSHImporterTest {
       assertNotNull(result);
     }
 
-    @Test @DisplayName("should log no error when two entities of different types have the same name")
+    @Test @DisplayName("FSHImporter should log no error when two entities of different types have the same name")
     void sameNameDifferentTypes() {
       String input = "\n      CodeSystem: Foo\n      Title: \"This\"\n\n      ValueSet: Foo\n      Title: \"That\"\n    ";
       FSHDocument result = importSingleText(input, "RepeatedName.fsh");

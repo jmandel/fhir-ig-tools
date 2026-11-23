@@ -92,7 +92,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#cardRule")
       class CardRuleTests {
-        @Test @DisplayName("should parse simple card rules")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should parse simple card rules")
         void simpleCardRules() {
           String input = leftAlign("""
 
@@ -111,7 +111,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(2), "component", 2, "*");
         }
 
-        @Test @DisplayName("should parse card rule with only min")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should parse card rule with only min")
         void onlyMin() {
           String input = leftAlign("""
 
@@ -126,7 +126,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(0), "category", 1, ""); // Unspecified max
         }
 
-        @Test @DisplayName("should parse card rule with only max")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should parse card rule with only max")
         void onlyMax() {
           String input = leftAlign("""
 
@@ -141,7 +141,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(0), "category", Double.NaN, "5"); // Unspecified min
         }
 
-        @Test @DisplayName("should log an error if neither side is specified")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should log an error if neither side is specified")
         void neitherSide() {
           String input = leftAlign("""
 
@@ -159,7 +159,7 @@ class FSHImporterSDRulesTest {
           assertMatchS("File: BadCard\\.fsh.*Line: 4\\D*", loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should parse card rules w/ flags")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should parse card rules w/ flags")
         void cardRulesWithFlags() {
           String input = leftAlign("""
 
@@ -190,7 +190,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(11), "bodySite", null, null, null, null, null, true);
         }
 
-        @Test @DisplayName("should parse card rules w/ multiple flags")
+        @Test @DisplayName("FSHImporter SD Rules #cardRule should parse card rules w/ multiple flags")
         void cardRulesWithMultipleFlags() {
           String input = leftAlign("""
 
@@ -216,7 +216,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#flagRule")
       class FlagRuleTests {
-        @Test @DisplayName("should parse single-path single-value flag rules")
+        @Test @DisplayName("FSHImporter SD Rules #flagRule should parse single-path single-value flag rules")
         void singlePathSingleValue() {
           String input = leftAlign("""
 
@@ -241,7 +241,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(5), "bodySite", null, null, null, null, null, true);
         }
 
-        @Test @DisplayName("should parse single-path multi-value flag rules")
+        @Test @DisplayName("FSHImporter SD Rules #flagRule should parse single-path multi-value flag rules")
         void singlePathMultiValue() {
           String input = leftAlign("""
 
@@ -260,7 +260,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(2), "component", true, true, true, true, null, null);
         }
 
-        @Test @DisplayName("should parse multi-path single-value flag rules")
+        @Test @DisplayName("FSHImporter SD Rules #flagRule should parse multi-path single-value flag rules")
         void multiPathSingleValue() {
           String input = leftAlign("""
 
@@ -283,7 +283,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(6), "note", null, null, null, null, true, null);
         }
 
-        @Test @DisplayName("should parse multi-path multi-value flag rules")
+        @Test @DisplayName("FSHImporter SD Rules #flagRule should parse multi-path multi-value flag rules")
         void multiPathMultiValue() {
           String input = leftAlign("""
 
@@ -303,7 +303,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(4), "focus", null, true, true, true, null, null);
         }
 
-        @Test @DisplayName("should log an error when paths are listed with commas")
+        @Test @DisplayName("FSHImporter SD Rules #flagRule should log an error when paths are listed with commas")
         void pathsWithCommas() {
           String input = leftAlign("""
 
@@ -323,7 +323,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#BindingRule")
       class BindingRuleTests {
-        @Test @DisplayName("should parse value set rules w/ names and strengths")
+        @Test @DisplayName("FSHImporter SD Rules #BindingRule should parse value set rules w/ names and strengths")
         void namesAndStrengths() {
           String input = leftAlign("""
 
@@ -344,7 +344,7 @@ class FSHImporterSDRulesTest {
           assertBindingRule(profile.rules.get(3), "component.code", "ComponentCodeValueSet", "example");
         }
 
-        @Test @DisplayName("should parse value set rules w/ urls and strengths")
+        @Test @DisplayName("FSHImporter SD Rules #BindingRule should parse value set rules w/ urls and strengths")
         void urlsAndStrengths() {
           String input = leftAlign("""
 
@@ -369,7 +369,7 @@ class FSHImporterSDRulesTest {
               "http://example.org/fhir/ValueSet/ComponentCodeValueSet", "example");
         }
 
-        @Test @DisplayName("should accept and translate aliases for value set URLs")
+        @Test @DisplayName("FSHImporter SD Rules #BindingRule should accept and translate aliases for value set URLs")
         void aliasesForValueSetUrls() {
           String input = leftAlign("""
 
@@ -399,7 +399,7 @@ class FSHImporterSDRulesTest {
               "http://example.org/fhir/ValueSet/ComponentCodeValueSet", "example");
         }
 
-        @Test @DisplayName("should parse value set rules w/ numeric names")
+        @Test @DisplayName("FSHImporter SD Rules #BindingRule should parse value set rules w/ numeric names")
         void numericNames() {
           String input = leftAlign("""
 
@@ -416,7 +416,7 @@ class FSHImporterSDRulesTest {
           assertBindingRule(profile.rules.get(1), "code", "456", "extensible");
         }
 
-        @Test @DisplayName("should parse value set rules w/ no strength and default to required")
+        @Test @DisplayName("FSHImporter SD Rules #BindingRule should parse value set rules w/ no strength and default to required")
         void noStrength() {
           String input = leftAlign("""
 
@@ -435,7 +435,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should ignore the units keyword and log an error when parsing value set rules on Quantity")
+        @DisplayName("FSHImporter SD Rules #BindingRule should ignore the units keyword and log an error when parsing value set rules on Quantity")
         void unitsKeyword() {
           String input = leftAlign("""
 
@@ -456,7 +456,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#assignmentRule")
       class AssignmentRuleTests {
-        @Test @DisplayName("should parse assigned value boolean rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value boolean rule")
         void booleanRule() {
           String input = leftAlign("""
 
@@ -471,7 +471,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueBoolean", true, false, false, "true");
         }
 
-        @Test @DisplayName("should parse assigned value boolean rule with (exactly) modifier")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value boolean rule with (exactly) modifier")
         void booleanRuleExactly() {
           String input = leftAlign("""
 
@@ -486,7 +486,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueBoolean", true, true, false, "true");
         }
 
-        @Test @DisplayName("should parse assigned value number (decimal) rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value number (decimal) rule")
         void decimalRule() {
           String input = leftAlign("""
 
@@ -501,7 +501,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueDecimal", 1.23, false, false, "1.23");
         }
 
-        @Test @DisplayName("should parse assigned value number (integer) rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value number (integer) rule")
         void integerRule() {
           String input = leftAlign("""
 
@@ -517,7 +517,7 @@ class FSHImporterSDRulesTest {
               "12E4");
         }
 
-        @Test @DisplayName("should parse assigned value string rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value string rule")
         void stringRule() {
           String input = leftAlign("""
 
@@ -532,7 +532,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueString", "hello world");
         }
 
-        @Test @DisplayName("should parse assigned value multi-line string rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value multi-line string rule")
         void multiLineStringRule() {
           String input = leftAlign("""
 
@@ -550,7 +550,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueString", "hello\nworld");
         }
 
-        @Test @DisplayName("should parse assigned value date rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value date rule")
         void dateRule() {
           String input = leftAlign("""
 
@@ -566,7 +566,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueDateTime", "2019-11-01T12:30:01.999Z");
         }
 
-        @Test @DisplayName("should parse assigned value time rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value time rule")
         void timeRule() {
           String input = leftAlign("""
 
@@ -582,7 +582,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueTime", "12:30:01.999-05:00");
         }
 
-        @Test @DisplayName("should parse assigned value code rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value code rule")
         void codeRule() {
           String input = leftAlign("""
 
@@ -600,7 +600,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "status", expectedCode);
         }
 
-        @Test @DisplayName("should parse assigned value CodeableConcept rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value CodeableConcept rule")
         void codeableConceptRule() {
           String input = leftAlign("""
 
@@ -619,7 +619,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueCodeableConcept", expectedCode);
         }
 
-        @Test @DisplayName("should parse assigned value CodeableConcept rule with (exactly) modifier")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value CodeableConcept rule with (exactly) modifier")
         void codeableConceptRuleExactly() {
           String input = leftAlign("""
 
@@ -639,7 +639,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should ignore the units keyword and log a warning when parsing an assigned value FSHCode rule with units on Quantity")
+        @DisplayName("FSHImporter SD Rules #assignmentRule should ignore the units keyword and log a warning when parsing an assigned value FSHCode rule with units on Quantity")
         void unitsKeywordAssignment() {
           String input = leftAlign("""
 
@@ -656,7 +656,7 @@ class FSHImporterSDRulesTest {
               loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should parse assigned value Quantity rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Quantity rule")
         void quantityRule() {
           String input = leftAlign("""
 
@@ -674,7 +674,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueQuantity", expectedQuantity);
         }
 
-        @Test @DisplayName("should parse assigned value Quantity rule with unit display")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Quantity rule with unit display")
         void quantityRuleWithUnitDisplay() {
           String input = leftAlign("""
 
@@ -694,7 +694,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueQuantity", expectedQuantity);
         }
 
-        @Test @DisplayName("should parse assigned value Quantity rule with UCUM units and no value")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Quantity rule with UCUM units and no value")
         void quantityRuleNoValue() {
           String input = leftAlign("""
 
@@ -712,7 +712,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueQuantity", expectedQuantity);
         }
 
-        @Test @DisplayName("should parse assigned value Quantity rule with UCUM units, display, and no value")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Quantity rule with UCUM units, display, and no value")
         void quantityRuleDisplayNoValue() {
           String input = leftAlign("""
 
@@ -732,7 +732,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueQuantity", expectedQuantity);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule")
         void ratioRule() {
           String input = leftAlign("""
 
@@ -754,7 +754,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule w/ numeric numerator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule w/ numeric numerator")
         void ratioNumericNumerator() {
           String input = leftAlign("""
 
@@ -775,7 +775,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule w/ numeric denominator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule w/ numeric denominator")
         void ratioNumericDenominator() {
           String input = leftAlign("""
 
@@ -796,7 +796,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule w/ numeric numerator and denominator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule w/ numeric numerator and denominator")
         void ratioNumericBoth() {
           String input = leftAlign("""
 
@@ -816,7 +816,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule with non-numeric numerator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule with non-numeric numerator")
         void ratioNonNumericNumerator() {
           String input = leftAlign("""
 
@@ -838,7 +838,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule with non-numeric denominator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule with non-numeric denominator")
         void ratioNonNumericDenominator() {
           String input = leftAlign("""
 
@@ -860,7 +860,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Ratio rule with non-numeric numerator and denominator")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Ratio rule with non-numeric numerator and denominator")
         void ratioNonNumericBoth() {
           String input = leftAlign("""
 
@@ -882,7 +882,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "valueRatio", expectedRatio);
         }
 
-        @Test @DisplayName("should parse assigned value Reference rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Reference rule")
         void referenceRule() {
           String input = leftAlign("""
 
@@ -901,7 +901,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "basedOn", expectedReference);
         }
 
-        @Test @DisplayName("should parse assigned value Reference rules while allowing and translating aliases")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Reference rules while allowing and translating aliases")
         void referenceRuleAliases() {
           String input = leftAlign("""
 
@@ -921,7 +921,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "basedOn", expectedReference);
         }
 
-        @Test @DisplayName("should parse assigned value Reference rule with a display string")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Reference rule with a display string")
         void referenceRuleDisplay() {
           String input = leftAlign("""
 
@@ -940,7 +940,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "basedOn", expectedReference);
         }
 
-        @Test @DisplayName("should parse assigned value Reference rule with whitespace")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value Reference rule with whitespace")
         void referenceRuleWhitespace() {
           String input = leftAlign("""
 
@@ -959,7 +959,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "basedOn", expectedReference);
         }
 
-        @Test @DisplayName("should log an error when an assigned value Reference rule has a choice of references")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should log an error when an assigned value Reference rule has a choice of references")
         void referenceRuleChoice() {
           String input = leftAlign("""
 
@@ -980,7 +980,7 @@ class FSHImporterSDRulesTest {
               loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should parse assigned value using Canonical")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value using Canonical")
         void canonical() {
           String input = leftAlign("""
 
@@ -1002,7 +1002,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "code.coding.system", expectedCanonical);
         }
 
-        @Test @DisplayName("should parse assigned value using Canonical with spaces around entity name")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value using Canonical with spaces around entity name")
         void canonicalSpaces() {
           String input = leftAlign("""
 
@@ -1025,7 +1025,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "code.coding.system", expectedCanonical);
         }
 
-        @Test @DisplayName("should parse assigned value using Canonical with a version")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value using Canonical with a version")
         void canonicalVersion() {
           String input = leftAlign("""
 
@@ -1048,7 +1048,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "code.coding.system", expectedCanonical);
         }
 
-        @Test @DisplayName("should parse assigned value using Canonical with a version which contains a |")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned value using Canonical with a version which contains a |")
         void canonicalVersionWithPipe() {
           String input = leftAlign("""
 
@@ -1071,7 +1071,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "code.coding.system", expectedCanonical);
         }
 
-        @Test @DisplayName("should parse assigned values that are an alias")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse assigned values that are an alias")
         void aliasValue() {
           String input = leftAlign("""
 
@@ -1088,7 +1088,7 @@ class FSHImporterSDRulesTest {
           assertAssignmentRule(profile.rules.get(0), "identifier.system", "http://example.org");
         }
 
-        @Test @DisplayName("should parse an assigned value Resource rule")
+        @Test @DisplayName("FSHImporter SD Rules #assignmentRule should parse an assigned value Resource rule")
         void resourceRule() {
           String input = leftAlign("""
 
@@ -1108,7 +1108,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#onlyRule")
       class OnlyRuleTests {
-        @Test @DisplayName("should parse an only rule with one type")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with one type")
         void oneType() {
           String input = leftAlign("""
 
@@ -1123,7 +1123,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "value[x]", ort("Quantity"));
         }
 
-        @Test @DisplayName("should parse an only rule with multiple types")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with multiple types")
         void multipleTypes() {
           String input = leftAlign("""
 
@@ -1138,7 +1138,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "value[x]", ort("Quantity"), ort("CodeableConcept"), ort("string"));
         }
 
-        @Test @DisplayName("should parse an only rule with one numeric type name")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with one numeric type name")
         void oneNumericType() {
           String input = leftAlign("""
 
@@ -1153,7 +1153,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "value[x]", ort("123"));
         }
 
-        @Test @DisplayName("should parse an only rule with multiple numeric type names")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with multiple numeric type names")
         void multipleNumericTypes() {
           String input = leftAlign("""
 
@@ -1168,7 +1168,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "value[x]", ort("123"), ort("456"), ort("789"));
         }
 
-        @Test @DisplayName("should parse an only rule with a reference to one type")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a reference to one type")
         void referenceOneType() {
           String input = leftAlign("""
 
@@ -1183,7 +1183,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "performer", ortRef("Practitioner"));
         }
 
-        @Test @DisplayName("should parse an only rule with a reference to multiple types")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a reference to multiple types")
         void referenceMultipleTypes() {
           String input = leftAlign("""
 
@@ -1198,7 +1198,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "performer", ortRef("Organization"), ortRef("CareTeam"));
         }
 
-        @Test @DisplayName("should parse an only rule with a reference to multiple types with whitespace")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a reference to multiple types with whitespace")
         void referenceMultipleTypesWhitespace() {
           String input = leftAlign("""
 
@@ -1213,7 +1213,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "performer", ortRef("Organization"), ortRef("CareTeam"));
         }
 
-        @Test @DisplayName("should parse an only rule with a CodeableReference to one type")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a CodeableReference to one type")
         void codeableReferenceOneType() {
           String input = leftAlign("""
 
@@ -1228,7 +1228,7 @@ class FSHImporterSDRulesTest {
           assertOnlyRule(profile.rules.get(0), "performer", ortCodeableRef("Practitioner"));
         }
 
-        @Test @DisplayName("should parse an only rule with a CodeableReference to multiple types")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a CodeableReference to multiple types")
         void codeableReferenceMultipleTypes() {
           String input = leftAlign("""
 
@@ -1244,7 +1244,7 @@ class FSHImporterSDRulesTest {
               ortCodeableRef("CareTeam"));
         }
 
-        @Test @DisplayName("should parse an only rule with a CodeableReference to multiple types with whitespace")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should parse an only rule with a CodeableReference to multiple types with whitespace")
         void codeableReferenceMultipleTypesWhitespace() {
           String input = leftAlign("""
 
@@ -1260,7 +1260,7 @@ class FSHImporterSDRulesTest {
               ortCodeableRef("CareTeam"));
         }
 
-        @Test @DisplayName("should allow and translate aliases for only types")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should allow and translate aliases for only types")
         void aliasesForOnlyTypes() {
           String input = leftAlign("""
 
@@ -1280,7 +1280,7 @@ class FSHImporterSDRulesTest {
               ort("http://hl7.org/fhir/StructureDefinition/Quantity"));
         }
 
-        @Test @DisplayName("should log an error when references are listed with pipes")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should log an error when references are listed with pipes")
         void referencesWithPipes() {
           String input = leftAlign("""
 
@@ -1298,7 +1298,7 @@ class FSHImporterSDRulesTest {
               loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should log an error when references are listed with pipes with whitespace")
+        @Test @DisplayName("FSHImporter SD Rules #onlyRule should log an error when references are listed with pipes with whitespace")
         void referencesWithPipesWhitespace() {
           String input = leftAlign("""
 
@@ -1320,7 +1320,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#containsRule")
       class ContainsRuleTests {
-        @Test @DisplayName("should parse contains rule with one item")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule with one item")
         void oneItem() {
           String input = leftAlign("""
 
@@ -1336,7 +1336,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(1), "component[SystolicBP]", 1, 1);
         }
 
-        @Test @DisplayName("should parse contains rule with one item declaring an aliased type")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule with one item declaring an aliased type")
         void oneItemAliasedType() {
           String input = leftAlign("""
 
@@ -1354,7 +1354,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(1), "component.extension[offset]", 0, 1);
         }
 
-        @Test @DisplayName("should parse contains rule with one item declaring an FSH extension type")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule with one item declaring an FSH extension type")
         void oneItemFshExtensionType() {
           String input = leftAlign("""
 
@@ -1374,7 +1374,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(1), "component.extension[compext]", 0, 1);
         }
 
-        @Test @DisplayName("should parse contains rules with multiple items")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rules with multiple items")
         void multipleItems() {
           String input = leftAlign("""
 
@@ -1391,7 +1391,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(2), "component[DiastolicBP]", 2, "*");
         }
 
-        @Test @DisplayName("should parse contains rule with mutliple items, some declaring types")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule with mutliple items, some declaring types")
         void multipleItemsSomeTypes() {
           String input = leftAlign("""
 
@@ -1418,7 +1418,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(profile.rules.get(4), "extension[pc]", 1, "*");
         }
 
-        @Test @DisplayName("should parse contains rules with flags")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rules with flags")
         void withFlags() {
           String input = leftAlign("""
 
@@ -1437,7 +1437,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(4), "component[DiastolicBP]", true, true, null, null, null, null);
         }
 
-        @Test @DisplayName("should parse contains rule with item declaring a type and flags")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule with item declaring a type and flags")
         void typeAndFlags() {
           String input = leftAlign("""
 
@@ -1456,7 +1456,7 @@ class FSHImporterSDRulesTest {
           assertFlagRule(profile.rules.get(2), "component.extension[offset]", true, null, null, true, null, null);
         }
 
-        @Test @DisplayName("should parse contains rule on a choice with two items")
+        @Test @DisplayName("FSHImporter SD Rules #containsRule should parse contains rule on a choice with two items")
         void choiceWithTwoItems() {
           String input = leftAlign("""
 
@@ -1483,7 +1483,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#caretValueRule")
       class CaretValueRuleTests {
-        @Test @DisplayName("should parse caret value rules with no path")
+        @Test @DisplayName("FSHImporter SD Rules #caretValueRule should parse caret value rules with no path")
         void noPath() {
           String input = leftAlign("""
 
@@ -1501,7 +1501,7 @@ class FSHImporterSDRulesTest {
               new FshCode("bar", "foo", "baz").withLocation(new int[] {6, 17, 6, 29}).withFile(""), false);
         }
 
-        @Test @DisplayName("should parse caret value rules with a path")
+        @Test @DisplayName("FSHImporter SD Rules #caretValueRule should parse caret value rules with a path")
         void withPath() {
           String input = leftAlign("""
 
@@ -1519,7 +1519,7 @@ class FSHImporterSDRulesTest {
               new FshCode("bar", "foo", "baz").withLocation(new int[] {6, 21, 6, 33}).withFile(""), false);
         }
 
-        @Test @DisplayName("should not include non-breaking spaces as part of the caret path")
+        @Test @DisplayName("FSHImporter SD Rules #caretValueRule should not include non-breaking spaces as part of the caret path")
         void nonBreakingSpaces() {
           String input = leftAlign("\n"
               + "        Profile: ObservationProfile\n"
@@ -1531,7 +1531,7 @@ class FSHImporterSDRulesTest {
           assertCaretValueRule(profile.rules.get(0), "status", "short", "Non-breaking", false);
         }
 
-        @Test @DisplayName("should add resources to the contained array using a CaretValueRule")
+        @Test @DisplayName("FSHImporter SD Rules #caretValueRule should add resources to the contained array using a CaretValueRule")
         void containedResource() {
           String input = leftAlign("""
 
@@ -1544,7 +1544,7 @@ class FSHImporterSDRulesTest {
           assertCaretValueRule(profile.rules.get(0), "", "contained", "myResource", true);
         }
 
-        @Test @DisplayName("should keep the raw value of a caret value rule when the value is a number or boolean")
+        @Test @DisplayName("FSHImporter SD Rules #caretValueRule should keep the raw value of a caret value rule when the value is a number or boolean")
         void rawValue() {
           String input = leftAlign("""
 
@@ -1564,7 +1564,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#obeysRule")
       class ObeysRuleTests {
-        @Test @DisplayName("should parse an obeys rule with one invariant and no path")
+        @Test @DisplayName("FSHImporter SD Rules #obeysRule should parse an obeys rule with one invariant and no path")
         void oneInvariantNoPath() {
           String input = leftAlign("""
 
@@ -1578,7 +1578,7 @@ class FSHImporterSDRulesTest {
           assertObeysRule(profile.rules.get(0), "", "SomeInvariant");
         }
 
-        @Test @DisplayName("should parse an obeys rule with one invariant and a path")
+        @Test @DisplayName("FSHImporter SD Rules #obeysRule should parse an obeys rule with one invariant and a path")
         void oneInvariantPath() {
           String input = leftAlign("""
 
@@ -1592,7 +1592,7 @@ class FSHImporterSDRulesTest {
           assertObeysRule(profile.rules.get(0), "category", "SomeInvariant");
         }
 
-        @Test @DisplayName("should parse an obeys rule with multiple invariants and no path")
+        @Test @DisplayName("FSHImporter SD Rules #obeysRule should parse an obeys rule with multiple invariants and no path")
         void multipleInvariantsNoPath() {
           String input = leftAlign("""
 
@@ -1608,7 +1608,7 @@ class FSHImporterSDRulesTest {
           assertObeysRule(profile.rules.get(2), "", "ThatInvariant");
         }
 
-        @Test @DisplayName("should parse an obeys rule with multiple invariants and a path")
+        @Test @DisplayName("FSHImporter SD Rules #obeysRule should parse an obeys rule with multiple invariants and a path")
         void multipleInvariantsPath() {
           String input = leftAlign("""
 
@@ -1624,7 +1624,7 @@ class FSHImporterSDRulesTest {
           assertObeysRule(profile.rules.get(2), "category", "ThatInvariant");
         }
 
-        @Test @DisplayName("should parse an obeys rule with a numeric invariant name")
+        @Test @DisplayName("FSHImporter SD Rules #obeysRule should parse an obeys rule with a numeric invariant name")
         void numericInvariant() {
           String input = leftAlign("""
 
@@ -1707,7 +1707,7 @@ class FSHImporterSDRulesTest {
           importer.paramRuleSets.forEach((name, prs) -> prs.contents = EOL + prs.contents);
         }
 
-        @Test @DisplayName("should parse an insert rule with a single RuleSet")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with a single RuleSet")
         void singleRuleSet() {
           String input = leftAlign("""
 
@@ -1721,7 +1721,7 @@ class FSHImporterSDRulesTest {
           assertInsertRule(profile.rules.get(0), "", "MyRuleSet");
         }
 
-        @Test @DisplayName("should parse an insert rule with a RuleSet with one parameter")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with a RuleSet with one parameter")
         void oneParameter() {
           String input = leftAlign("""
 
@@ -1742,7 +1742,7 @@ class FSHImporterSDRulesTest {
           assertToEqual(srcInfo("RuleSet.fsh", 2, 1, 2, 17), appliedRuleSet.rules.get(0).sourceInfo);
         }
 
-        @Test @DisplayName("should parse an insert rule with a RuleSet with multiple parameters")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with a RuleSet with multiple parameters")
         void multipleParameters() {
           String input = leftAlign("""
 
@@ -1780,7 +1780,7 @@ class FSHImporterSDRulesTest {
           assertEquals(7, appliedRuleSet.rules.get(2).sourceInfo.location.endLine);
         }
 
-        @Test @DisplayName("should parse an insert rule with a parameter that contains right parenthesis")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with a parameter that contains right parenthesis")
         void rightParenthesis() {
           String input = leftAlign("""
 
@@ -1805,7 +1805,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should parse an insert rule with parameters that contain newline, tab, or backslash characters")
+        @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with parameters that contain newline, tab, or backslash characters")
         void newlineTabBackslash() {
           String input = leftAlign("""
 
@@ -1833,7 +1833,7 @@ class FSHImporterSDRulesTest {
           assertCardRule(appliedRuleSet.rules.get(2), "note", 0, "1");
         }
 
-        @Test @DisplayName("should parse an insert rule that separates its parameters onto multiple lines")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule that separates its parameters onto multiple lines")
         void parametersOnMultipleLines() {
           String input = leftAlign("""
 
@@ -1865,7 +1865,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should generate a RuleSet only once when inserted with the same parameters multiple times in the same document")
+        @DisplayName("FSHImporter SD Rules #insertRule should generate a RuleSet only once when inserted with the same parameters multiple times in the same document")
         @Disabled("TS-only: jest.spyOn(importer, 'visitDoc') call count; FSHImporter.visitDoc is private")
         void generateRuleSetOnce() {
           String input = leftAlign("""
@@ -1894,7 +1894,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should parse an insert rule with parameters that will use the same RuleSet more than once with different parameters each time")
+        @DisplayName("FSHImporter SD Rules #insertRule should parse an insert rule with parameters that will use the same RuleSet more than once with different parameters each time")
         void sameRuleSetDifferentParameters() {
           String input = leftAlign("""
 
@@ -1934,7 +1934,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should log an error and not add a rule when an insert rule has the wrong number of parameters")
+        @DisplayName("FSHImporter SD Rules #insertRule should log an error and not add a rule when an insert rule has the wrong number of parameters")
         void wrongNumberOfParameters() {
           String input = leftAlign("""
 
@@ -1951,7 +1951,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should log an error and not add a rule when an insert rule with parameters refers to an undefined parameterized RuleSet")
+        @DisplayName("FSHImporter SD Rules #insertRule should log an error and not add a rule when an insert rule with parameters refers to an undefined parameterized RuleSet")
         void undefinedParameterizedRuleSet() {
           String input = leftAlign("""
 
@@ -1969,7 +1969,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should log an error when an insert rule with parameters results in a parser error in the generated RuleSet")
+        @DisplayName("FSHImporter SD Rules #insertRule should log an error when an insert rule with parameters results in a parser error in the generated RuleSet")
         void parserErrorInGeneratedRuleSet() {
           String input = leftAlign("""
 
@@ -1986,7 +1986,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should log one error when nested insert rules with parameters result in multiple parser errors in the generated RuleSets")
+        @DisplayName("FSHImporter SD Rules #insertRule should log one error when nested insert rules with parameters result in multiple parser errors in the generated RuleSets")
         void nestedParserErrors() {
           String input = leftAlign("""
 
@@ -2005,7 +2005,7 @@ class FSHImporterSDRulesTest {
         }
 
         @Test
-        @DisplayName("should not log an error when an insert rule with parameters results in rules that are syntactically correct but semantically invalid")
+        @DisplayName("FSHImporter SD Rules #insertRule should not log an error when an insert rule with parameters results in rules that are syntactically correct but semantically invalid")
         void semanticallyInvalid() {
           String input = leftAlign("""
 
@@ -2027,7 +2027,7 @@ class FSHImporterSDRulesTest {
           assertEquals(0, loggerSpy.getAllMessages("error").size());
         }
 
-        @Test @DisplayName("should log one error when an insert rule with parameters results in warnings")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should log one error when an insert rule with parameters results in warnings")
         void resultsInWarnings() {
           String input = leftAlign("""
 
@@ -2044,7 +2044,7 @@ class FSHImporterSDRulesTest {
               + "File: Insert\\.fsh.*Line: 4", loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should log one error when an insert rule with parameters results in non-parser errors")
+        @Test @DisplayName("FSHImporter SD Rules #insertRule should log one error when an insert rule with parameters results in non-parser errors")
         void nonParserErrors() {
           String input = leftAlign("""
 
@@ -2070,7 +2070,7 @@ class FSHImporterSDRulesTest {
       @Nested
       @DisplayName("#addElementRule")
       class AddElementRuleTests {
-        @Test @DisplayName("should parse basic addElement rules with defaulted definition")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse basic addElement rules with defaulted definition")
         void defaultedDefinition() {
           String input = leftAlign("""
 
@@ -2100,7 +2100,7 @@ class FSHImporterSDRulesTest {
               List.of(ortCodeableRef("Immunization")), defs("short CodeableReference", "short CodeableReference")));
         }
 
-        @Test @DisplayName("should parse basic addElement rules with specified definition")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse basic addElement rules with specified definition")
         void specifiedDefinition() {
           String input = leftAlign("""
 
@@ -2131,7 +2131,7 @@ class FSHImporterSDRulesTest {
               defs("short CodeableReference", "definition CodeableReference")));
         }
 
-        @Test @DisplayName("should parse addElement rules with multiple targetTypes")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse addElement rules with multiple targetTypes")
         void multipleTargetTypes() {
           String input = leftAlign("""
 
@@ -2165,7 +2165,7 @@ class FSHImporterSDRulesTest {
               defs("short multi-type 3", "short multi-type 3")));
         }
 
-        @Test @DisplayName("should parse addElement rules with flags")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse addElement rules with flags")
         void withFlags() {
           String input = leftAlign("""
 
@@ -2193,7 +2193,7 @@ class FSHImporterSDRulesTest {
                   defs("short Reference", "short Reference")));
         }
 
-        @Test @DisplayName("should parse addElement rules with docs")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse addElement rules with docs")
         void withDocs() {
           String input = leftAlign("""
 
@@ -2220,7 +2220,7 @@ class FSHImporterSDRulesTest {
                   defs("an associated patient", "added for TRIAL USE")));
         }
 
-        @Test @DisplayName("should log an error for missing path")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error for missing path")
         void missingPath() {
           String input = leftAlign("""
 
@@ -2239,7 +2239,7 @@ class FSHImporterSDRulesTest {
           assertEquals(3, resource.rules.size());
         }
 
-        @Test @DisplayName("should log an error for missing cardinality")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error for missing cardinality")
         void missingCardinality() {
           String input = leftAlign("""
 
@@ -2259,7 +2259,7 @@ class FSHImporterSDRulesTest {
           assertEquals(1, resource.rules.size());
         }
 
-        @Test @DisplayName("should log an error when min cardinality is not specified")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error when min cardinality is not specified")
         void minNotSpecified() {
           String input = leftAlign("""
 
@@ -2276,7 +2276,7 @@ class FSHImporterSDRulesTest {
           assertMatchS("The 'min' cardinality attribute in AddElementRule", loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should log an error when max cardinality is not specified")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error when max cardinality is not specified")
         void maxNotSpecified() {
           String input = leftAlign("""
 
@@ -2293,7 +2293,7 @@ class FSHImporterSDRulesTest {
           assertMatchS("The 'max' cardinality attribute in AddElementRule", loggerSpy.getLastMessage("error"));
         }
 
-        @Test @DisplayName("should log an error for extra docs/strings")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error for extra docs/strings")
         void extraDocs() {
           String input = leftAlign("""
 
@@ -2311,7 +2311,7 @@ class FSHImporterSDRulesTest {
           assertEquals(2, resource.rules.size());
         }
 
-        @Test @DisplayName("should log an error for missing short")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error for missing short")
         void missingShort() {
           String input = leftAlign("""
 
@@ -2331,7 +2331,7 @@ class FSHImporterSDRulesTest {
           assertAddElementRule(resource.rules.get(0), "isValid", args(1, "1", null, List.of(ort("boolean")), null));
         }
 
-        @Test @DisplayName("should log an error for missing targetType with docs")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log an error for missing targetType with docs")
         void missingTargetTypeWithDocs() {
           String input = leftAlign("""
 
@@ -2349,7 +2349,7 @@ class FSHImporterSDRulesTest {
           assertEquals(3, resource.rules.size());
         }
 
-        @Test @DisplayName("should log a warning for missing targetType with flags and docs")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log a warning for missing targetType with flags and docs")
         void missingTargetTypeWithFlagsAndDocs() {
           String input = leftAlign("""
 
@@ -2379,7 +2379,7 @@ class FSHImporterSDRulesTest {
                   defs("an associated patient", "added for TRIAL USE")));
         }
 
-        @Test @DisplayName("should log a error for missing targetType with modifier flag and docs")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should log a error for missing targetType with modifier flag and docs")
         void missingTargetTypeWithModifierFlag() {
           String input = leftAlign("""
 
@@ -2398,7 +2398,7 @@ class FSHImporterSDRulesTest {
           assertEquals(4, resource.rules.size());
         }
 
-        @Test @DisplayName("should parse rules according to rule patterns for CardRule and AddElementRule")
+        @Test @DisplayName("FSHImporter LR Rules #addElementRule should parse rules according to rule patterns for CardRule and AddElementRule")
         void cardRuleVsAddElementRule() {
           String input = leftAlign("""
 

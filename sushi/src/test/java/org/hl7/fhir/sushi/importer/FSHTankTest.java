@@ -275,7 +275,7 @@ class FSHTankTest {
     @Nested
     @DisplayName("#fish")
     class Fish {
-      @Test @DisplayName("should find valid fish when fishing by id for all types")
+      @Test @DisplayName("FSHTank #fish should find valid fish when fishing by id for all types")
       void byIdAllTypes() {
         assertEquals("Profile1", name(tank.fish("prf1")));
         assertEquals("Extension1", name(tank.fish("ext1")));
@@ -287,7 +287,7 @@ class FSHTankTest {
         // not applicable for Invariant or RuleSet or Mapping
       }
 
-      @Test @DisplayName("should find valid fish when fishing by name for all types")
+      @Test @DisplayName("FSHTank #fish should find valid fish when fishing by name for all types")
       void byNameAllTypes() {
         assertEquals("prf2", id(tank.fish("Profile2")));
         assertEquals("ext2", id(tank.fish("Extension2")));
@@ -301,7 +301,7 @@ class FSHTankTest {
         assertEquals("res2", id(tank.fish("Resource2")));
       }
 
-      @Test @DisplayName("should find valid fish when fishing by url for all types")
+      @Test @DisplayName("FSHTank #fish should find valid fish when fishing by url for all types")
       void byUrlAllTypes() {
         assertEquals("Profile1", name(tank.fish("http://hl7.org/fhir/us/minimal/StructureDefinition/prf1")));
         assertEquals("Extension1", name(tank.fish("http://hl7.org/fhir/us/minimal/StructureDefinition/ext1")));
@@ -312,7 +312,7 @@ class FSHTankTest {
         // not applicable for Instance or Invariant or RuleSet or Mapping
       }
 
-      @Test @DisplayName("should find valid fish by id, name, or url after the rules change")
+      @Test @DisplayName("FSHTank #fish should find valid fish by id, name, or url after the rules change")
       void afterRulesChange() {
         assertEquals("CodeSystem1", name(tank.fish("cs1")));
         assertNull(tank.fish("new-cs1"));
@@ -332,12 +332,12 @@ class FSHTankTest {
         assertNull(tank.fish("new-cs1"));
       }
 
-      @Test @DisplayName("should not find fish when fishing by invalid name/id/url")
+      @Test @DisplayName("FSHTank #fish should not find fish when fishing by invalid name/id/url")
       void invalid() {
         assertNull(tank.fish("ProfileFake"));
       }
 
-      @Test @DisplayName("should only find profiles when profiles are requested")
+      @Test @DisplayName("FSHTank #fish should only find profiles when profiles are requested")
       void onlyProfiles() {
         assertEquals("Profile1", name(tank.fish("prf1", FishableType.Profile)));
         assertNull(tank.fish("prf1", FishableType.Extension, FishableType.ValueSet, FishableType.CodeSystem,
@@ -345,7 +345,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find profiles defined as instance definitions when profiles are requested")
+      @Test @DisplayName("FSHTank #fish should find profiles defined as instance definitions when profiles are requested")
       void profileInstances() {
         assertEquals("ProfileInstance", name(tank.fish("ProfileInstance", FishableType.Profile)));
         assertNull(tank.fish("ProfileInstance", FishableType.Extension, FishableType.ValueSet,
@@ -353,7 +353,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should not find instances where the derivation is not constraint when profiles are requested")
+      @Test @DisplayName("FSHTank #fish should not find instances where the derivation is not constraint when profiles are requested")
       void profileInstanceWrongDerivation() {
         Instance instance = tank.docs.get(0).instances.get("ProfileInstance");
         AssignmentRule profileInstanceDerivation = assign("derivation", new FshCode("specialization"));
@@ -363,42 +363,42 @@ class FSHTankTest {
         assertNull(tank.fish("ProfileInstance", FishableType.Profile));
       }
 
-      @Test @DisplayName("should find a profile when fishing by id when the profile id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a profile when fishing by id when the profile id is set by a caret rule")
       void profileCaretId() {
         assertEquals("Profile3", name(tank.fish("prf3")));
       }
 
-      @Test @DisplayName("should find a profile when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a profile when fishing with a version")
       void profileVersion() {
         assertEquals("Profile1", name(tank.fish("prf1|1.0.0", FishableType.Profile))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find a profile when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a profile when fishing with a version that is set by a caret rule")
       void profileCaretVersion() {
         assertEquals("Profile3", name(tank.fish("prf3|v-2.0.0", FishableType.Profile)));
       }
 
-      @Test @DisplayName("should not find a profile when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a profile when fishing with a version that does not match")
       void profileVersionMismatch() {
         assertNull(tank.fish("prf1|2.0.0", FishableType.Profile));
       }
 
-      @Test @DisplayName("should find a profile defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a profile defined as an instance definition when fishing with a version")
       void profileInstanceVersion() {
         assertEquals("ProfileInstance", name(tank.fish("ProfileInstance|1.0.0", FishableType.Profile)));
       }
 
-      @Test @DisplayName("should find a profile defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find a profile defined as an instance definition when fishing with a version that is set by an assignment rule")
       void profileInstanceAssignedVersion() {
         assertEquals("ProfileInstance2", name(tank.fish("ProfileInstance2|v-2.0.0", FishableType.Profile)));
       }
 
-      @Test @DisplayName("should not find a profile defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a profile defined as an instance definition when fishing with a version that does not match")
       void profileInstanceVersionMismatch() {
         assertNull(tank.fish("ProfileInstance|2.0.0", FishableType.Profile));
       }
 
-      @Test @DisplayName("should only find extensions when extensions are requested")
+      @Test @DisplayName("FSHTank #fish should only find extensions when extensions are requested")
       void onlyExtensions() {
         assertEquals("Extension1", name(tank.fish("ext1", FishableType.Extension)));
         assertNull(tank.fish("ext1", FishableType.Profile, FishableType.ValueSet, FishableType.CodeSystem,
@@ -406,7 +406,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find extensions defined as instance definitions when extensions are requested")
+      @Test @DisplayName("FSHTank #fish should find extensions defined as instance definitions when extensions are requested")
       void extensionInstances() {
         assertEquals("ExtensionInstance", name(tank.fish("ExtensionInstance", FishableType.Extension)));
         assertNull(tank.fish("ExtensionInstance", FishableType.Profile, FishableType.ValueSet,
@@ -414,7 +414,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should not find instances where the type is not Extension when extensions are requested")
+      @Test @DisplayName("FSHTank #fish should not find instances where the type is not Extension when extensions are requested")
       void extensionInstanceWrongType() {
         Instance instance = tank.docs.get(1).instances.get("ExtensionInstance");
         AssignmentRule extensionInstanceType = assign("type", "Observation");
@@ -425,7 +425,7 @@ class FSHTankTest {
         assertNull(tank.fish("ExtensionInstance", FishableType.Extension));
       }
 
-      @Test @DisplayName("should not find instances where the derivation is not constraint when extensions are requested")
+      @Test @DisplayName("FSHTank #fish should not find instances where the derivation is not constraint when extensions are requested")
       void extensionInstanceWrongDerivation() {
         Instance instance = tank.docs.get(1).instances.get("ExtensionInstance");
         AssignmentRule extensionInstanceType = assign("type", "Extension");
@@ -436,48 +436,48 @@ class FSHTankTest {
         assertNull(tank.fish("ExtensionInstance", FishableType.Extension));
       }
 
-      @Test @DisplayName("should find an extension when fishing by id when the extension id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find an extension when fishing by id when the extension id is set by a caret rule")
       void extensionCaretId() {
         assertEquals("Extension3", name(tank.fish("ext3")));
       }
 
-      @Test @DisplayName("should find an extension when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find an extension when fishing with a version")
       void extensionVersion() {
         assertEquals("Extension1", name(tank.fish("ext1|1.0.0", FishableType.Extension))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find an extension when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find an extension when fishing with a version that is set by a caret rule")
       void extensionCaretVersion() {
         assertEquals("Extension3", name(tank.fish("ext3|v-2.0.0", FishableType.Extension)));
       }
 
-      @Test @DisplayName("should not find an extension when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find an extension when fishing with a version that does not match")
       void extensionVersionMismatch() {
         assertNull(tank.fish("ext1|2.0.0", FishableType.Extension));
       }
 
-      @Test @DisplayName("should find an extension defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find an extension defined as an instance definition when fishing with a version")
       void extensionInstanceVersion() {
         assertEquals("ExtensionInstance", name(tank.fish("ExtensionInstance|1.0.0", FishableType.Extension)));
       }
 
-      @Test @DisplayName("should find an extension defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find an extension defined as an instance definition when fishing with a version that is set by an assignment rule")
       void extensionInstanceAssignedVersion() {
         assertEquals("ExtensionInstance2", name(tank.fish("ExtensionInstance2|v-2.0.0", FishableType.Extension)));
       }
 
-      @Test @DisplayName("should not find an extension defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find an extension defined as an instance definition when fishing with a version that does not match")
       void extensionInstanceVersionMismatch() {
         assertNull(tank.fish("ExtensionInstance|2.0.0", FishableType.Extension));
       }
 
-      @Test @DisplayName("should find an extension defined as an instance definition when fishing by its default url")
+      @Test @DisplayName("FSHTank #fish should find an extension defined as an instance definition when fishing by its default url")
       void extensionInstanceDefaultUrl() {
         assertEquals("ExtensionInstance", name(
             tank.fish("http://hl7.org/fhir/us/minimal/StructureDefinition/ExtensionInstance", FishableType.Extension)));
       }
 
-      @Test @DisplayName("should only find logical models when logical models are requested")
+      @Test @DisplayName("FSHTank #fish should only find logical models when logical models are requested")
       void onlyLogicals() {
         assertEquals("Logical1", name(tank.fish("log1", FishableType.Logical)));
         assertNull(tank.fish("log1", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -485,7 +485,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find logical models defined as instance definitions when logical models are requested")
+      @Test @DisplayName("FSHTank #fish should find logical models defined as instance definitions when logical models are requested")
       void logicalInstances() {
         assertEquals("LogicalInstance", name(tank.fish("LogicalInstance", FishableType.Logical)));
         assertNull(tank.fish("LogicalInstance", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -493,42 +493,42 @@ class FSHTankTest {
             FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find a logical model when fishing by id when the logical model id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a logical model when fishing by id when the logical model id is set by a caret rule")
       void logicalCaretId() {
         assertEquals("Logical3", name(tank.fish("log3")));
       }
 
-      @Test @DisplayName("should find a logical when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a logical when fishing with a version")
       void logicalVersion() {
         assertEquals("Logical1", name(tank.fish("log1|1.0.0", FishableType.Logical))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find a logical when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a logical when fishing with a version that is set by a caret rule")
       void logicalCaretVersion() {
         assertEquals("Logical3", name(tank.fish("log3|v-2.0.0", FishableType.Logical)));
       }
 
-      @Test @DisplayName("should not find a logical when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a logical when fishing with a version that does not match")
       void logicalVersionMismatch() {
         assertNull(tank.fish("log1|2.0.0", FishableType.Logical));
       }
 
-      @Test @DisplayName("should find a logical defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a logical defined as an instance definition when fishing with a version")
       void logicalInstanceVersion() {
         assertEquals("LogicalInstance", name(tank.fish("LogicalInstance|1.0.0", FishableType.Logical)));
       }
 
-      @Test @DisplayName("should find a logical defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find a logical defined as an instance definition when fishing with a version that is set by an assignment rule")
       void logicalInstanceAssignedVersion() {
         assertEquals("LogicalInstance2", name(tank.fish("LogicalInstance2|v-2.0.0", FishableType.Logical)));
       }
 
-      @Test @DisplayName("should not find a logical defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a logical defined as an instance definition when fishing with a version that does not match")
       void logicalInstanceVersionMismatch() {
         assertNull(tank.fish("LogicalInstance|2.0.0", FishableType.Logical));
       }
 
-      @Test @DisplayName("should only find resources when resources are requested")
+      @Test @DisplayName("FSHTank #fish should only find resources when resources are requested")
       void onlyResources() {
         assertEquals("Resource2", name(tank.fish("res2", FishableType.Resource)));
         assertNull(tank.fish("res2", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -536,7 +536,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Logical, FishableType.Type));
       }
 
-      @Test @DisplayName("should find resources defined as instance definitions when resources are requested")
+      @Test @DisplayName("FSHTank #fish should find resources defined as instance definitions when resources are requested")
       void resourceInstances() {
         assertEquals("ResourceInstance", name(tank.fish("ResourceInstance", FishableType.Resource)));
         assertNull(tank.fish("ResourceInstance", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -544,42 +544,42 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Type));
       }
 
-      @Test @DisplayName("should find a resource when fishing by id when the resource id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a resource when fishing by id when the resource id is set by a caret rule")
       void resourceCaretId() {
         assertEquals("Resource3", name(tank.fish("res3")));
       }
 
-      @Test @DisplayName("should find a resource when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a resource when fishing with a version")
       void resourceVersion() {
         assertEquals("Resource1", name(tank.fish("res1|1.0.0", FishableType.Resource))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find a resource when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a resource when fishing with a version that is set by a caret rule")
       void resourceCaretVersion() {
         assertEquals("Resource3", name(tank.fish("res3|v-2.0.0", FishableType.Resource)));
       }
 
-      @Test @DisplayName("should not find a resource when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a resource when fishing with a version that does not match")
       void resourceVersionMismatch() {
         assertNull(tank.fish("res1|2.0.0", FishableType.Resource));
       }
 
-      @Test @DisplayName("should find a resource defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a resource defined as an instance definition when fishing with a version")
       void resourceInstanceVersion() {
         assertEquals("ResourceInstance", name(tank.fish("ResourceInstance|1.0.0", FishableType.Resource)));
       }
 
-      @Test @DisplayName("should find a resource defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find a resource defined as an instance definition when fishing with a version that is set by an assignment rule")
       void resourceInstanceAssignedVersion() {
         assertEquals("ResourceInstance2", name(tank.fish("ResourceInstance2|v-2.0.0", FishableType.Resource)));
       }
 
-      @Test @DisplayName("should not find a resource defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a resource defined as an instance definition when fishing with a version that does not match")
       void resourceInstanceVersionMismatch() {
         assertNull(tank.fish("ResourceInstance|2.0.0", FishableType.Resource));
       }
 
-      @Test @DisplayName("should only find valuesets when valuesets are requested")
+      @Test @DisplayName("FSHTank #fish should only find valuesets when valuesets are requested")
       void onlyValueSets() {
         assertEquals("ValueSet1", name(tank.fish("vs1", FishableType.ValueSet)));
         assertNull(tank.fish("vs1", FishableType.Profile, FishableType.Extension, FishableType.CodeSystem,
@@ -587,7 +587,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find valuesets defined as instance definitions when valuesets are requested")
+      @Test @DisplayName("FSHTank #fish should find valuesets defined as instance definitions when valuesets are requested")
       void valueSetInstances() {
         assertEquals("ValueSetInstance", name(tank.fish("ValueSetInstance", FishableType.ValueSet)));
         assertNull(tank.fish("ValueSetInstance", FishableType.Profile, FishableType.Extension,
@@ -595,7 +595,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find valuesets defined as inline instances when valuesets are requested")
+      @Test @DisplayName("FSHTank #fish should find valuesets defined as inline instances when valuesets are requested")
       void valueSetInlineInstances() {
         assertEquals("ValueSetInstance4", name(tank.fish("ValueSetInstance4", FishableType.ValueSet)));
         assertNull(tank.fish("ValueSetInstance4", FishableType.Profile, FishableType.Extension,
@@ -603,59 +603,59 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should not find valuesets defined as example instances when valuesets are requested")
+      @Test @DisplayName("FSHTank #fish should not find valuesets defined as example instances when valuesets are requested")
       void valueSetExampleInstances() {
         assertNull(tank.fish("ValueSetInstance5", FishableType.ValueSet));
       }
 
-      @Test @DisplayName("should find a valueset when fishing by id when the valueset id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a valueset when fishing by id when the valueset id is set by a caret rule")
       void valueSetCaretId() {
         assertEquals("ValueSet3", name(tank.fish("vs3")));
       }
 
-      @Test @DisplayName("should find a valueset when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a valueset when fishing with a version")
       void valueSetVersion() {
         assertEquals("ValueSet1", name(tank.fish("vs1|1.0.0", FishableType.ValueSet))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find a valueset when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a valueset when fishing with a version that is set by a caret rule")
       void valueSetCaretVersion() {
         assertEquals("ValueSet3", name(tank.fish("vs3|v-2.0.0", FishableType.ValueSet)));
       }
 
-      @Test @DisplayName("should not find a valueset when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a valueset when fishing with a version that does not match")
       void valueSetVersionMismatch() {
         assertNull(tank.fish("vs1|2.0.0", FishableType.ValueSet));
       }
 
-      @Test @DisplayName("should find a valueset defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a valueset defined as an instance definition when fishing with a version")
       void valueSetInstanceVersion() {
         assertEquals("ValueSetInstance", name(tank.fish("ValueSetInstance|1.0.0", FishableType.ValueSet)));
       }
 
-      @Test @DisplayName("should find a valueset defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find a valueset defined as an instance definition when fishing with a version that is set by an assignment rule")
       void valueSetInstanceAssignedVersion() {
         assertEquals("ValueSetInstance2", name(tank.fish("ValueSetInstance2|v-2.0.0", FishableType.ValueSet)));
       }
 
-      @Test @DisplayName("should not find a valueset defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a valueset defined as an instance definition when fishing with a version that does not match")
       void valueSetInstanceVersionMismatch() {
         assertNull(tank.fish("ValueSetInstance|2.0.0", FishableType.ValueSet));
       }
 
-      @Test @DisplayName("should find a valueset defined as an instance definition when fishing by its default url")
+      @Test @DisplayName("FSHTank #fish should find a valueset defined as an instance definition when fishing by its default url")
       void valueSetInstanceDefaultUrl() {
         assertEquals("ValueSetInstance2",
             name(tank.fish("http://hl7.org/fhir/us/minimal/ValueSet/ValueSetInstance2", FishableType.ValueSet)));
       }
 
-      @Test @DisplayName("should not find a valueset defined as an instance definition when fishing by a StructureDefinition url")
+      @Test @DisplayName("FSHTank #fish should not find a valueset defined as an instance definition when fishing by a StructureDefinition url")
       void valueSetInstanceSdUrl() {
         assertNull(
             tank.fish("http://hl7.org/fhir/us/minimal/StructureDefinition/ValueSetInstance2", FishableType.ValueSet));
       }
 
-      @Test @DisplayName("should only find codesystems when codesystems are requested")
+      @Test @DisplayName("FSHTank #fish should only find codesystems when codesystems are requested")
       void onlyCodeSystems() {
         assertEquals("CodeSystem1", name(tank.fish("cs1", FishableType.CodeSystem)));
         assertNull(tank.fish("cs1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -663,7 +663,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find codesystems defined as instance definitions when codesystems are requested")
+      @Test @DisplayName("FSHTank #fish should find codesystems defined as instance definitions when codesystems are requested")
       void codeSystemInstances() {
         assertEquals("CodeSystemInstance", name(tank.fish("CodeSystemInstance", FishableType.CodeSystem)));
         assertNull(tank.fish("CodeSystemInstance", FishableType.Profile, FishableType.Extension,
@@ -671,55 +671,55 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find a codesystem when fishing by id when the codesystem id is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a codesystem when fishing by id when the codesystem id is set by a caret rule")
       void codeSystemCaretId() {
         assertEquals("CodeSystem3", name(tank.fish("cs3")));
       }
 
-      @Test @DisplayName("should find a codesystem when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a codesystem when fishing with a version")
       void codeSystemVersion() {
         assertEquals("CodeSystem1", name(tank.fish("cs1|1.0.0", FishableType.CodeSystem))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find a codesystem when fishing with a version that is set by a caret rule")
+      @Test @DisplayName("FSHTank #fish should find a codesystem when fishing with a version that is set by a caret rule")
       void codeSystemCaretVersion() {
         assertEquals("CodeSystem3", name(tank.fish("cs3|v-2.0.0", FishableType.CodeSystem)));
       }
 
-      @Test @DisplayName("should not find a codesystem when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a codesystem when fishing with a version that does not match")
       void codeSystemVersionMismatch() {
         assertNull(tank.fish("cs1|2.0.0", FishableType.CodeSystem));
       }
 
-      @Test @DisplayName("should find a codesystem defined as an instance definition when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find a codesystem defined as an instance definition when fishing with a version")
       void codeSystemInstanceVersion() {
         assertEquals("CodeSystemInstance", name(tank.fish("CodeSystemInstance|1.0.0", FishableType.CodeSystem)));
       }
 
-      @Test @DisplayName("should find a codesystem defined as an instance definition when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find a codesystem defined as an instance definition when fishing with a version that is set by an assignment rule")
       void codeSystemInstanceAssignedVersion() {
         assertEquals("CodeSystemInstance2",
             name(tank.fish("CodeSystemInstance2|v-2.0.0", FishableType.CodeSystem)));
       }
 
-      @Test @DisplayName("should not find a codesystem defined as an instance definition when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find a codesystem defined as an instance definition when fishing with a version that does not match")
       void codeSystemInstanceVersionMismatch() {
         assertNull(tank.fish("CodeSystemInstance|2.0.0", FishableType.CodeSystem));
       }
 
-      @Test @DisplayName("should find a codesystem defined as an instance definition when fishing by its default url")
+      @Test @DisplayName("FSHTank #fish should find a codesystem defined as an instance definition when fishing by its default url")
       void codeSystemInstanceDefaultUrl() {
         assertEquals("CodeSystemInstance2",
             name(tank.fish("http://hl7.org/fhir/us/minimal/CodeSystem/CodeSystemInstance2", FishableType.CodeSystem)));
       }
 
-      @Test @DisplayName("should not find a codesystem defined as an instance definition when fishing by a StructureDefinition url")
+      @Test @DisplayName("FSHTank #fish should not find a codesystem defined as an instance definition when fishing by a StructureDefinition url")
       void codeSystemInstanceSdUrl() {
         assertNull(tank.fish("http://hl7.org/fhir/us/minimal/StructureDefinition/CodeSystemInstance2",
             FishableType.CodeSystem));
       }
 
-      @Test @DisplayName("should only find instances when instances are requested")
+      @Test @DisplayName("FSHTank #fish should only find instances when instances are requested")
       void onlyInstances() {
         assertEquals("Instance1", name(tank.fish("inst1", FishableType.Instance)));
         assertNull(tank.fish("inst1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -727,32 +727,32 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find an instance when fishing by id when the instance id is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find an instance when fishing by id when the instance id is set by an assignment rule")
       void instanceAssignedId() {
         assertEquals("Instance2", name(tank.fish("inst2")));
       }
 
-      @Test @DisplayName("should find an instance when fishing by name when the instance name is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find an instance when fishing by name when the instance name is set by an assignment rule")
       void instanceAssignedName() {
         assertEquals("ValueSetInstance6", name(tank.fish("VS6Instance")));
       }
 
-      @Test @DisplayName("should find an instance when fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find an instance when fishing with a version")
       void instanceVersion() {
         assertEquals("Instance1", name(tank.fish("inst1|1.0.0", FishableType.Instance))); // tank.config.version = 1.0.0
       }
 
-      @Test @DisplayName("should find an instance when fishing with a version that is set by an assignment rule")
+      @Test @DisplayName("FSHTank #fish should find an instance when fishing with a version that is set by an assignment rule")
       void instanceAssignedVersion() {
         assertEquals("Instance2", name(tank.fish("inst2|v-2.0.0", FishableType.Instance)));
       }
 
-      @Test @DisplayName("should not find an instance when fishing with a version that does not match")
+      @Test @DisplayName("FSHTank #fish should not find an instance when fishing with a version that does not match")
       void instanceVersionMismatch() {
         assertNull(tank.fish("inst1|2.0.0", FishableType.Instance));
       }
 
-      @Test @DisplayName("should only find invariants when invariants are requested")
+      @Test @DisplayName("FSHTank #fish should only find invariants when invariants are requested")
       void onlyInvariants() {
         assertEquals("Invariant1", name(tank.fish("Invariant1", FishableType.Invariant)));
         assertNull(tank.fish("Invariant1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -760,7 +760,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find ruleSets when ruleSets are requested")
+      @Test @DisplayName("FSHTank #fish should only find ruleSets when ruleSets are requested")
       void onlyRuleSets() {
         assertEquals("RuleSet1", name(tank.fish("RuleSet1", FishableType.RuleSet)));
         assertNull(tank.fish("RuleSet1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -768,13 +768,13 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find ruleSets even if fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find ruleSets even if fishing with a version")
       void ruleSetsWithVersion() {
         // NOTE: this doesn't make much sense and wouldn't happen in real FSH, but testing for completeness
         assertEquals("RuleSet1", name(tank.fish("RuleSet1|any", FishableType.RuleSet)));
       }
 
-      @Test @DisplayName("should only find Mappings when Mappings are requested")
+      @Test @DisplayName("FSHTank #fish should only find Mappings when Mappings are requested")
       void onlyMappings() {
         assertEquals("Mapping1", name(tank.fish("Mapping1", FishableType.Mapping)));
         assertNull(tank.fish("Mapping1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -782,7 +782,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should find Mappings even if fishing with a version")
+      @Test @DisplayName("FSHTank #fish should find Mappings even if fishing with a version")
       void mappingsWithVersion() {
         // NOTE: this doesn't make much sense and wouldn't happen in real FSH, but testing for completeness
         assertEquals("Mapping1", name(tank.fish("Mapping1|any", FishableType.Mapping)));
@@ -792,7 +792,7 @@ class FSHTankTest {
     @Nested
     @DisplayName("#fishAll")
     class FishAll {
-      @Test @DisplayName("should return all matches when there are multiple matches")
+      @Test @DisplayName("FSHTank #fishAll should return all matches when there are multiple matches")
       void multipleMatches() {
         List<FshEntity> results = tank.fishAll("SomeCodes");
         assertEquals(2, results.size());
@@ -805,7 +805,7 @@ class FSHTankTest {
         assertToEqual(results.subList(1, 2), tank.fishAll("http://hl7.org/fhir/us/minimal/CodeSystem/some-codes"));
       }
 
-      @Test @DisplayName("should return one match when there is a single match")
+      @Test @DisplayName("FSHTank #fishAll should return one match when there is a single match")
       void singleMatch() {
         List<FshEntity> results = tank.fishAll("Profile2");
         assertEquals(1, results.size());
@@ -814,7 +814,7 @@ class FSHTankTest {
         assertToEqual(results, tank.fishAll("http://hl7.org/fhir/us/minimal/StructureDefinition/prf2"));
       }
 
-      @Test @DisplayName("should return empty array when there are no matches")
+      @Test @DisplayName("FSHTank #fishAll should return empty array when there are no matches")
       void noMatches() {
         List<FshEntity> results = tank.fishAll("NonExistentItem");
         assertTrue(results.isEmpty());
@@ -892,7 +892,7 @@ class FSHTankTest {
         m.name = "Mapping1";
       });
 
-      @Test @DisplayName("should find valid fish metadata when fishing by id for all types")
+      @Test @DisplayName("FSHTank #fishForMetadata should find valid fish metadata when fishing by id for all types")
       void byIdAllTypes() {
         assertToEqual(prf1MD, tank.fishForMetadata("prf1"));
         assertToEqual(ext1MD, tank.fishForMetadata("ext1"));
@@ -904,7 +904,7 @@ class FSHTankTest {
         // not applicable for Invariant or RuleSet or Mapping
       }
 
-      @Test @DisplayName("should find valid fish when fishing by name for all types")
+      @Test @DisplayName("FSHTank #fishForMetadata should find valid fish when fishing by name for all types")
       void byNameAllTypes() {
         assertToEqual(prf1MD, tank.fishForMetadata("Profile1"));
         assertToEqual(ext1MD, tank.fishForMetadata("Extension1"));
@@ -918,7 +918,7 @@ class FSHTankTest {
         assertToEqual(map1MD, tank.fishForMetadata("Mapping1"));
       }
 
-      @Test @DisplayName("should find valid fish when fishing by url for all types")
+      @Test @DisplayName("FSHTank #fishForMetadata should find valid fish when fishing by url for all types")
       void byUrlAllTypes() {
         assertToEqual(prf1MD, tank.fishForMetadata("http://hl7.org/fhir/us/minimal/StructureDefinition/prf1"));
         assertToEqual(ext1MD, tank.fishForMetadata("http://hl7.org/fhir/us/minimal/StructureDefinition/ext1"));
@@ -929,7 +929,7 @@ class FSHTankTest {
         // not applicable for Instance or Invariant or RuleSet or Mapping
       }
 
-      @Test @DisplayName("should find valid fish metadata for definitions defined as instances")
+      @Test @DisplayName("FSHTank #fishForMetadata should find valid fish metadata for definitions defined as instances")
       void definitionsAsInstances() {
         assertToEqual(md(m -> {
           m.instanceUsage = "Definition";
@@ -977,7 +977,7 @@ class FSHTankTest {
         }), tank.fishForMetadata("CodeSystemInstance"));
       }
 
-      @Test @DisplayName("should find fsh imposeProfiles when they are declared using indexed rules")
+      @Test @DisplayName("FSHTank #fishForMetadata should find fsh imposeProfiles when they are declared using indexed rules")
       void imposeProfilesIndexed() {
         Profile profile = new Profile("ImposeProfile1");
         profile.setId("ip1");
@@ -1000,7 +1000,7 @@ class FSHTankTest {
         }), tank.fishForMetadata("ImposeProfile1"));
       }
 
-      @Test @DisplayName("should find fsh imposeProfiles when they are declared using indexed rules and default 0 index")
+      @Test @DisplayName("FSHTank #fishForMetadata should find fsh imposeProfiles when they are declared using indexed rules and default 0 index")
       void imposeProfilesIndexedDefault0() {
         Profile profile = new Profile("ImposeProfile2");
         profile.setId("ip2");
@@ -1023,7 +1023,7 @@ class FSHTankTest {
         }), tank.fishForMetadata("ImposeProfile2"));
       }
 
-      @Test @DisplayName("should find fsh imposeProfiles when they are declared using named rules")
+      @Test @DisplayName("FSHTank #fishForMetadata should find fsh imposeProfiles when they are declared using named rules")
       void imposeProfilesNamed() {
         Profile profile = new Profile("ImposeProfile3");
         profile.setId("ip3");
@@ -1046,7 +1046,7 @@ class FSHTankTest {
         }), tank.fishForMetadata("ImposeProfile3"));
       }
 
-      @Test @DisplayName("should find fsh imposeProfiles when they are declared using named rules with aliases")
+      @Test @DisplayName("FSHTank #fishForMetadata should find fsh imposeProfiles when they are declared using named rules with aliases")
       void imposeProfilesNamedAliases() {
         Profile profile = new Profile("ImposeProfile4");
         profile.setId("ip4");
@@ -1070,7 +1070,7 @@ class FSHTankTest {
         }), tank.fishForMetadata("ImposeProfile4"));
       }
 
-      @Test @DisplayName("should find fsh imposeProfiles when they are declared using the Canonical keyword")
+      @Test @DisplayName("FSHTank #fishForMetadata should find fsh imposeProfiles when they are declared using the Canonical keyword")
       void imposeProfilesCanonical() {
         FSHDocument doc4 = new FSHDocument("doc4.fsh");
         Profile imposedProfileA = new Profile("ImposedProfileA");
@@ -1101,12 +1101,12 @@ class FSHTankTest {
         }), tank.fishForMetadata("ImposeProfile5"));
       }
 
-      @Test @DisplayName("should not find fish when fishing by invalid name/id/url")
+      @Test @DisplayName("FSHTank #fishForMetadata should not find fish when fishing by invalid name/id/url")
       void invalid() {
         assertNull(tank.fishForMetadata("ProfileFake"));
       }
 
-      @Test @DisplayName("should only find profiles when profiles are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find profiles when profiles are requested")
       void onlyProfiles() {
         assertToEqual(prf1MD, tank.fishForMetadata("prf1", FishableType.Profile));
         assertNull(tank.fishForMetadata("prf1", FishableType.Extension, FishableType.ValueSet,
@@ -1114,7 +1114,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find extensions when extensions are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find extensions when extensions are requested")
       void onlyExtensions() {
         assertToEqual(ext1MD, tank.fishForMetadata("ext1", FishableType.Extension));
         assertNull(tank.fishForMetadata("ext1", FishableType.Profile, FishableType.ValueSet, FishableType.CodeSystem,
@@ -1122,7 +1122,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find logical models when logical models are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find logical models when logical models are requested")
       void onlyLogicals() {
         assertToEqual(log1MD, tank.fishForMetadata("log1", FishableType.Logical));
         assertNull(tank.fishForMetadata("log1", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -1130,7 +1130,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find resources when resources are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find resources when resources are requested")
       void onlyResources() {
         assertToEqual(res1MD, tank.fishForMetadata("res1", FishableType.Resource));
         assertNull(tank.fishForMetadata("res1", FishableType.Extension, FishableType.Profile, FishableType.ValueSet,
@@ -1138,7 +1138,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Logical, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find valuesets when valuesets are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find valuesets when valuesets are requested")
       void onlyValueSets() {
         assertToEqual(vs1MD, tank.fishForMetadata("vs1", FishableType.ValueSet));
         assertNull(tank.fishForMetadata("vs1", FishableType.Profile, FishableType.Extension, FishableType.CodeSystem,
@@ -1146,7 +1146,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find codesystems when codesystems are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find codesystems when codesystems are requested")
       void onlyCodeSystems() {
         assertToEqual(cs1MD, tank.fishForMetadata("cs1", FishableType.CodeSystem));
         assertNull(tank.fishForMetadata("cs1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -1154,7 +1154,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find instances when instances are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find instances when instances are requested")
       void onlyInstances() {
         assertToEqual(inst1MD, tank.fishForMetadata("inst1", FishableType.Instance));
         assertNull(tank.fishForMetadata("inst1", FishableType.Profile, FishableType.Extension, FishableType.ValueSet,
@@ -1162,7 +1162,7 @@ class FSHTankTest {
             FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find invariants when invariants are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find invariants when invariants are requested")
       void onlyInvariants() {
         assertToEqual(inv1MD, tank.fishForMetadata("Invariant1", FishableType.Invariant));
         assertNull(tank.fishForMetadata("Invariant1", FishableType.Profile, FishableType.Extension,
@@ -1170,7 +1170,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find ruleSets when ruleSets are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find ruleSets when ruleSets are requested")
       void onlyRuleSets() {
         assertToEqual(rul1MD, tank.fishForMetadata("RuleSet1", FishableType.RuleSet));
         assertNull(tank.fishForMetadata("RuleSet1", FishableType.Profile, FishableType.Extension,
@@ -1178,7 +1178,7 @@ class FSHTankTest {
             FishableType.Mapping, FishableType.Logical, FishableType.Resource, FishableType.Type));
       }
 
-      @Test @DisplayName("should only find Mappings when Mappings are requested")
+      @Test @DisplayName("FSHTank #fishForMetadata should only find Mappings when Mappings are requested")
       void onlyMappings() {
         assertToEqual(map1MD, tank.fishForMetadata("Mapping1", FishableType.Mapping));
         assertNull(tank.fishForMetadata("Mapping1", FishableType.Profile, FishableType.Extension,
@@ -1190,7 +1190,7 @@ class FSHTankTest {
     @Nested
     @DisplayName("#fishForMetadatas")
     class FishForMetadatas {
-      @Test @DisplayName("should return all matches when there are multiple matches")
+      @Test @DisplayName("FSHTank #fishForMetadatas should return all matches when there are multiple matches")
       void multipleMatches() {
         List<Metadata> results = tank.fishForMetadatas("SomeCodes");
         assertEquals(2, results.size());
@@ -1214,7 +1214,7 @@ class FSHTankTest {
             tank.fishForMetadatas("http://hl7.org/fhir/us/minimal/CodeSystem/some-codes"));
       }
 
-      @Test @DisplayName("should return one match when there is a single match")
+      @Test @DisplayName("FSHTank #fishForMetadatas should return one match when there is a single match")
       void singleMatch() {
         List<Metadata> results = tank.fishForMetadatas("Logical1");
         assertEquals(1, results.size());
@@ -1233,7 +1233,7 @@ class FSHTankTest {
         assertToEqual(results, tank.fishForMetadatas("http://hl7.org/fhir/us/minimal/StructureDefinition/log1"));
       }
 
-      @Test @DisplayName("should return empty array when there are no matches")
+      @Test @DisplayName("FSHTank #fishForMetadatas should return empty array when there are no matches")
       void noMatches() {
         List<Metadata> results = tank.fishForMetadatas("NonExistentItem");
         assertTrue(results.isEmpty());
@@ -1243,7 +1243,7 @@ class FSHTankTest {
     @Nested
     @DisplayName("#fishForFHIR")
     class FishForFHIR {
-      @Test @DisplayName("should never return any results for fishForFHIR")
+      @Test @DisplayName("FSHTank #fishForFHIR should never return any results for fishForFHIR")
       void neverReturns() {
         assertNull(tank.fishForFHIR("prf1"));
         assertNull(tank.fishForFHIR("prf1", FishableType.Profile));
@@ -1325,7 +1325,7 @@ class FSHTankTest {
         m.canBind = false;
       });
 
-      @Test @DisplayName("should find valid HL7 fish metadata when fishing by id for logical models")
+      @Test @DisplayName("FSHTank for HL7 #fishForMetadata should find valid HL7 fish metadata when fishing by id for logical models")
       void hl7LogicalById() {
         assertToEqual(hl7logMD, hl7Tank.fishForMetadata("hl7-log"));
       }
