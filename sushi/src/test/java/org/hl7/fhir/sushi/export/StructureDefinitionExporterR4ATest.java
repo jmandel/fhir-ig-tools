@@ -357,8 +357,6 @@ class StructureDefinitionExporterR4ATest extends SdeTestBase {
     }
 
     @Test
-    @Disabled("needs jest mock: jest.spyOn(StructureDefinition.prototype, 'validate').mockReturnValue([...]); the exporter"
-        + " builds its own StructureDefinition (no injection point to substitute a subclass)")
     @DisplayName("StructureDefinitionExporter R4 #StructureDefinition should log error messages for validation errors on the StructureDefinition")
     void shouldLogValidationErrors() {
       Profile profile = new Profile("MyPatientProfile");
@@ -366,13 +364,25 @@ class StructureDefinitionExporterR4ATest extends SdeTestBase {
       profile.setId("my-patient");
       doc.profiles.put(profile.name, profile);
 
-      // TS: StructureDefinition.prototype.validate mocked to return
-      // [new ValidationError('issue1', 'fhirPath1'), new ValidationError('issue2', 'fhirPath2')]
+      // TS mocks StructureDefinition.prototype.validate to return two errors; Java has no prototype to mock, so two
+      // real validation errors are produced instead (invalid slicing values), and the same logging is asserted.
+      org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule rules = new org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule("name");
+      rules.caretPath = "slicing.rules";
+      rules.value = new FshCode("issue1");
+      org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule disc = new org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule("name");
+      disc.caretPath = "slicing.discriminator[0].type";
+      disc.value = new FshCode("issue2");
+      org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule dpath = new org.hl7.fhir.sushi.fshtypes.rules.CaretValueRule("name");
+      dpath.caretPath = "slicing.discriminator[0].path";
+      dpath.value = "family";
+      profile.rules.add(rules);
+      profile.rules.add(disc);
+      profile.rules.add(dpath);
 
       exporter.exportStructDef(profile);
 
-      assertMatches("fhirPath2: issue2", loggerSpy.getMessageAtIndex(-1, "error"));
-      assertMatches("fhirPath1: issue1", loggerSpy.getMessageAtIndex(-2, "error"));
+      assertMatches("Patient\\.name \\^slicing\\.discriminator\\[0\\]\\.type: Invalid value: #issue2", loggerSpy.getMessageAtIndex(-1, "error"));
+      assertMatches("Patient\\.name \\^slicing\\.rules: Invalid value: #issue1", loggerSpy.getMessageAtIndex(-2, "error"));
 
       StructureDefinition exported = pkg.profiles.get(0);
       assertEquals("MyPatientProfile", at(exported, "name"));
