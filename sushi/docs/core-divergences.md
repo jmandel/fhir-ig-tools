@@ -169,6 +169,9 @@ hits it: `fsh-generated/` identical and exit codes equal; only these log lines d
   first): for all 12 distinct `x.y.x` dependencies in the corpus, the snapshot's newest patch equals
   packages.fhir.org's.
 - `latest` / `x.y.x` offline use the newest cached version (FPL fails): the corpus runs are online; not exercised.
+  Observed once (2026-11-23, packages.fhir.org unreachable): `hl7.fhir.uv.extensions.r4#latest` resolved to the
+  cached `#current` build rather than the latest release (5.4.0), because core's offline fallback takes whatever
+  version of the package is cached. TS SUSHI fails the run in the same situation.
 - `x.x` and two-part `x.y` versions resolve the core way (FPL errors / fails): no corpus config uses either.
 - A package's resources are core's `.index.json` list (FPL scans `package/*.json`): every `Loaded X with N
   resources` line matched TS on all 267 corpus IGs.
