@@ -72,7 +72,7 @@ with no Node/npm at all.
 |---|---|
 | 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **6 / 6 identical**: `fsh-generated/` byte for byte (2,153 files), console log and exit status, using `scripts/diff-run.sh` |
 | Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** (files, log, exit status), `scripts/corpus-diff.sh` |
-| Unit tests | **3,713 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
+| Unit tests | **3,714 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
 

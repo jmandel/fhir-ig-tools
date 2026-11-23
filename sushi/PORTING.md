@@ -313,7 +313,7 @@ The port lives in this repository's `sushi/` module, next to `common` (zero-depe
 
 ## 9. Final status (phase 2 complete)
 
-**Tests.** Full suite: 3,713 JUnit tests, 0 failures, 29 skipped. Jest inventory (`tests/inventory.tsv`, 3,604 tests)
+**Tests.** Full suite: 3,714 JUnit tests, 0 failures, 29 skipped (3,713 at the end of the port, plus the package-cache regression test added in this repository). Jest inventory (`tests/inventory.tsv`, 3,604 tests)
 ported and passing: **3,584**. The other 20 are all accounted for: 15 are skipped/pending/todo in TS SUSHI 3.21.1
 itself (ported and kept `@Disabled` with the TS marker), 2 assert a Jest spy on a private method (TS-only), 3 test the
 axios HTTP wrapper, which the port doesn't have (HTTP goes through core's ManagedWebAccess).

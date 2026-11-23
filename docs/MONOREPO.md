@@ -280,8 +280,20 @@ Branch `monorepo-sushi` (from `multimodule` 29c24084), with the SUSHI port impor
 - `jekyll/target/jekyll.jar` is byte-identical to the jar the checks above ran (same SHA-256; only the output
   file name differs), and `scripts/jar-compare.sh` against the `multimodule` jar gives identical output on
   IHE__ITI.MHD (2,112 files) and kitchen-sink (4,031 files).
-- With the final names: a clean build (common 13, sushi 3,706 / 0 failures / 29 skipped), `scripts/test-suites.sh`
+- With the final names: a clean build (common 13, sushi 3,707 / 0 failures / 29 skipped), `scripts/test-suites.sh`
   with `SHIM_W_SUITES=1` (Maven jar and `--fast` build, which writes `jekyll/build/jekyll.jar`), `ShimApiCheck`,
   `scripts/e2e.sh` (the wrapper finds `jekyll/target/jekyll.jar`), `scripts/test-wrapper.sh` (a stamped wrapper
   downloads, verifies and caches `jekyll.jar`), a release `Package` dry run (stamped wrappers name
   `.../releases/download/v<version>/jekyll.jar`; `SHA256SUMS` lists `jekyll.jar`) and `actionlint`: all pass.
+
+### The sushi wrappers and the released sushi.jar
+
+- `scripts/sushi-e2e.sh` (source-checkout wrapper) and `scripts/test-sushi-wrapper.sh` (stamped wrapper: download,
+  checksum, cache, offline, bad checksum, Java < 21 message) pass in the reference image; a release `Package` dry run
+  stamps both wrappers, runs `sushi-e2e.sh` on the stamped `sushi` wrapper and writes `SHA256SUMS` over all assets.
+- They found a bug the differential runs could not: on a machine without `~/.fhir/packages`, every package failed to
+  download (core's cache manager refuses a missing folder; fhir-package-loader creates it). Fixed in
+  `fhirdefs.CorePackageProvider`, with a regression test (sushi now runs 3,707 tests; with common's JS tests 3,714).
+- The final `sushi.jar` (with that fix and the merged notices) gives the same result on the 6 reference IGs as above:
+  2,153 files byte-identical, logs identical, exit codes 0/0. `jekyll.jar` is unchanged by these commits (same
+  SHA-256). A clean rebuild reproduces both jars byte for byte.
