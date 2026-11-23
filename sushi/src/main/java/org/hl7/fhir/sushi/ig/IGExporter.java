@@ -1,6 +1,8 @@
 package org.hl7.fhir.sushi.ig;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.hl7.fhir.sushi.export.Package;
+import org.hl7.fhir.utilities.IniFile;
 import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirdefs.FindResourceInfoOptions;
 import org.hl7.fhir.sushi.fhirdefs.PackageInfo;
@@ -1616,50 +1619,32 @@ public class IGExporter {
     }
   }
 
-  private static final Pattern TEMPLATE_ESCAPED = Pattern.compile("^template\\s*=\\s*.*?(\\\\#.+)?$",
-      Pattern.MULTILINE);
-  private static final Pattern TEMPLATE_HASH = Pattern.compile("^\\s*template\\s*=\\s*[^#]*(#.+)?$",
-      Pattern.MULTILINE);
-
-  /** Generates the contents of an ig.ini file using the information in the configuration. */
+  /**
+   * Generates the contents of an ig.ini file using the information in the configuration (only shown in an error
+   * message). TS encodes it with the npm ini library and then unescapes the template's '#'; the result is this text.
+   */
   public String generateIgIniString() {
-    // Create an ig.ini object from the configuration
-    Map<String, Object> iniObj = new LinkedHashMap<>();
-    String igFolder = "fsh-generated/resources";
-    iniObj.put("ig", igFolder + "/ImplementationGuide-" + Js.toStr(undef(config.id)) + ".json");
-    iniObj.put("template", undef(config.template));
-    String outputIniContents = Ini.encode(iniObj, "IG", true);
-
-    // The encoder escapes '#' but FHIR doesn't like that, so if `#` is escaped in the template, then unescape it.
-    outputIniContents = replaceFirstJs(TEMPLATE_ESCAPED, outputIniContents,
-        (m0, m1) -> m1 != null ? m0.replace(m1, m1.substring(1)) : m0);
-    return outputIniContents;
-  }
-
-  /** JS str.replace(regex-without-g, fn): replace the first match only. Java's multiline $ is fine here. */
-  private static String replaceFirstJs(Pattern p, String s, java.util.function.BinaryOperator<String> fn) {
-    java.util.regex.Matcher m = jsMultiline(p).matcher(s);
-    if (!m.find()) return s;
-    return s.substring(0, m.start()) + fn.apply(m.group(), m.group(1)) + s.substring(m.end());
-  }
-
-  /** JS /m: ^ and $ at \n, \r,  ,   (Java MULTILINE also stops at \r\n as one break; close enough). */
-  private static Pattern jsMultiline(Pattern p) {
-    return p;
+    return "[IG]\nig = fsh-generated/resources/ImplementationGuide-" + Js.toStr(undef(config.id)) + ".json\n"
+        + "template = " + Js.toStr(undef(config.template)) + "\n";
   }
 
   /**
    * Process an existing ig.ini. When one of the required properties is missing, an error is logged but the file is
-   * not changed.
+   * not changed. Read with core's IniFile (TS: the npm ini library; docs/core-divergences.md C9: the same checks on
+   * every corpus ig.ini).
    */
   public void processIgIni(String inputIniPath) {
     String inputIniContents = Processing.readFile(inputIniPath);
-    // FHIR allows templates to have versions identified using #.  E.g.,
-    //   template = hl7.fhir.template#0.1.0
-    // The ini library, however, treats # as a comment unless it is escaped.  So if it exists, we need to escape it.
-    inputIniContents = replaceFirstJs(TEMPLATE_HASH, inputIniContents,
-        (m0, m1) -> m1 != null ? m0.replace(m1, "\\" + m1) : m0);
-    Map<String, Object> inputIni = Ini.parse(inputIniContents);
+    IniFile ini = new IniFile(new java.io.ByteArrayInputStream(inputIniContents.getBytes(StandardCharsets.UTF_8)));
+    String[] sections = ini.getAllSectionNames();
+    boolean hasIg = sections != null && Arrays.asList(sections).contains("IG");
+    Map<String, Object> inputIni = new LinkedHashMap<>();
+    if (hasIg) {
+      Map<String, Object> igSection = new LinkedHashMap<>();
+      String[] names = ini.getPropertyNames("IG");
+      if (names != null) for (String n : names) igSection.put(n, ini.getStringProperty("IG", n));
+      inputIni.put("IG", igSection);
+    }
     SourceInfo src = new SourceInfo();
     src.file = inputIniPath;
     if (inputIni.get("IG") == null) {
