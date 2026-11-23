@@ -55,6 +55,11 @@ public final class Main {
       }
     } finally {
       ex.shutdownNow();
+      // pages already rendering finish (a render isn't interruptible): wait, so nothing writes into the staging
+      // folder after the caller has removed it (Site#abortOutput)
+      while (!ex.awaitTermination(1, java.util.concurrent.TimeUnit.MINUTES)) {
+        // keep waiting
+      }
     }
   }
 

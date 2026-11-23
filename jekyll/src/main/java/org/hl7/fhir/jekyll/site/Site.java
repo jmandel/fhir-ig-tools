@@ -458,27 +458,107 @@ public final class Site {
 
   // ---------------------------------------------------------------- writing + cleaning
 
+  /*
+   * A failed build leaves the destination as it was, as Jekyll's does (site.rb#process renders every page in memory
+   * before cleaner.rb and the writes touch the destination). The shim streams pages to disk as they are rendered (to
+   * bound memory), so it writes them, and copies the static files, into a staging folder inside the destination
+   * (STAGE_PREFIX + random, a dot folder: never read as source, skipped by the cleaner) and commits only after the
+   * whole build succeeded: cleaner, then each staged file moved into place (a rename: same file system), then the
+   * staging folder removed. On failure the staging folder is deleted, and the destination too if this build created it.
+   */
+  static final String STAGE_PREFIX = ".jekyll-shim-staging-";
+  private Path stage;            // where this build writes until commitOutput (null before prepareOutput)
+  private Path createdRoot;      // the topmost folder of dest this build created (deleted again on abort), or null
+  private Set<Path> newFiles;    // destination paths of this build's pages and static files (for the cleaner)
+  private java.util.Set<Path> newDirs;
+
   /**
-   * Cleaner first (cleaner.rb: remove destination files this build won't produce), then create all
-   * output directories, so pages can be written as soon as each is rendered (writePage).
+   * Creates the staging folder and in it all output directories, so pages can be written as soon as each is rendered
+   * (writePage). The destination itself is not changed until {@link #commitOutput}.
    */
   public void prepareOutput() throws IOException {
-    Set<Path> newFiles = new HashSet<>();
-    java.util.Set<Path> dirs = new java.util.TreeSet<>();
+    newFiles = new HashSet<>();
+    newDirs = new java.util.TreeSet<>();
     for (Page p : pages) {
       Path out = dest.resolve(p.destinationRelative());
       newFiles.add(out);
-      dirs.add(out.getParent());
+      newDirs.add(out.getParent());
     }
     for (StaticFile s : staticFiles) {
       Path out = dest.resolve(s.destinationRelative);
       newFiles.add(out);
-      dirs.add(out.getParent());
+      newDirs.add(out.getParent());
     }
     staticDests = staticDestinations();
+    createdRoot = null;
+    for (Path d = dest; d != null && !Files.exists(d); d = d.getParent()) {
+      createdRoot = d;
+    }
+    Files.createDirectories(dest);
+    stage = Files.createTempDirectory(dest, STAGE_PREFIX);
+    for (Path d : newDirs) {
+      Files.createDirectories(staged(d));
+    }
+  }
+
+  /** The staging path of a destination path (the destination itself before prepareOutput). */
+  private Path staged(Path destPath) {
+    return stage == null ? destPath : stage.resolve(dest.relativize(destPath).toString());
+  }
+
+  /**
+   * The build succeeded: cleaner.rb (remove destination files this build doesn't produce), then move every staged
+   * file into place and remove the staging folder.
+   */
+  public void commitOutput() throws IOException {
+    if (stage == null) {
+      return;
+    }
     cleanup(newFiles);
-    for (Path d : dirs) {
+    for (Path d : newDirs) {
       Files.createDirectories(d);
+    }
+    List<Path> files = new ArrayList<>();
+    try (Stream<Path> w = Files.walk(stage)) {
+      w.filter(Files::isRegularFile).forEach(files::add);
+    }
+    List<java.util.concurrent.Callable<Void>> jobs = new ArrayList<>();
+    int chunk = Math.max(1, files.size() / (ioThreads() * 4) + 1);
+    for (int i = 0; i < files.size(); i += chunk) {
+      List<Path> part = files.subList(i, Math.min(files.size(), i + chunk));
+      jobs.add(() -> {
+        for (Path f : part) {
+          Path to = dest.resolve(stage.relativize(f).toString());
+          try {
+            Files.move(f, to, StandardCopyOption.REPLACE_EXISTING);
+          } catch (java.nio.file.NoSuchFileException e) { // a late static file's folder: not among newDirs
+            Files.createDirectories(to.getParent());
+            Files.move(f, to, StandardCopyOption.REPLACE_EXISTING);
+          }
+        }
+        return null;
+      });
+    }
+    runParallel(jobs, ioThreads());
+    deleteRecursively(stage);
+    stage = null;
+    createdRoot = null;
+  }
+
+  /** The build failed: remove what it wrote, leaving the destination as it was before the build. */
+  public void abortOutput() {
+    try {
+      if (stage != null) {
+        deleteRecursively(stage);
+      }
+      if (createdRoot != null) {
+        deleteRecursively(createdRoot);
+      }
+    } catch (IOException e) {
+      // best effort: the build's own failure is what the caller reports
+    } finally {
+      stage = null;
+      createdRoot = null;
     }
   }
 
@@ -490,7 +570,7 @@ public final class Site {
       p.output = null;
       return;
     }
-    Files.writeString(dest.resolve(p.destinationRelative()), p.output == null ? "" : p.output, StandardCharsets.UTF_8);
+    Files.writeString(staged(dest.resolve(p.destinationRelative())), p.output == null ? "" : p.output, StandardCharsets.UTF_8);
     p.output = null;
   }
 
@@ -499,7 +579,7 @@ public final class Site {
     List<java.util.concurrent.Callable<Void>> jobs = new ArrayList<>();
     for (StaticFile s : staticWriteSet()) {
       jobs.add(() -> {
-        Files.copy(s.path, dest.resolve(s.destinationRelative), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        Files.copy(s.path, staged(dest.resolve(s.destinationRelative)), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
         return null;
       });
     }
@@ -524,7 +604,7 @@ public final class Site {
         continue;
       }
       StaticFile s = new StaticFile(rel, p);
-      Path out = dest.resolve(s.destinationRelative);
+      Path out = staged(dest.resolve(s.destinationRelative));
       Files.createDirectories(out.getParent());
       Files.copy(p, out, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
       staticFiles.add(s);
@@ -533,15 +613,24 @@ public final class Site {
     return late;
   }
 
-  /** Non-streaming equivalent (tests / callers that render first): prepare, write all pages, copy statics. */
+  /** Non-streaming equivalent (tests / callers that render first): prepare, write all pages, copy statics, commit. */
   public void write() throws IOException {
     prepareOutput();
-    for (Page p : pages) {
-      if (p.output != null) {
-        writePage(p);
+    boolean done = false;
+    try {
+      for (Page p : pages) {
+        if (p.output != null) {
+          writePage(p);
+        }
+      }
+      writeStatics();
+      commitOutput();
+      done = true;
+    } finally {
+      if (!done) {
+        abortOutput();
       }
     }
-    writeStatics();
   }
 
   static int ioThreads() {
@@ -594,6 +683,9 @@ public final class Site {
     Files.walkFileTree(dest, new SimpleFileVisitor<>() {
       @Override
       public FileVisitResult preVisitDirectory(Path d, BasicFileAttributes a) {
+        if (stage != null && d.equals(stage)) {
+          return FileVisitResult.SKIP_SUBTREE;
+        }
         if (!d.equals(dest)) {
           check(d);
         }
@@ -607,6 +699,9 @@ public final class Site {
       }
 
       private void check(Path f) {
+        if (stage != null && f.startsWith(stage)) {
+          return;
+        }
         String rel = dest.relativize(f).toString().replace('\\', '/');
         for (String k : keepFiles) {
           if (rel.startsWith(k)) {

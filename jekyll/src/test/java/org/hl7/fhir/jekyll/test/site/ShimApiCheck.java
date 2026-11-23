@@ -89,7 +89,66 @@ public final class ShimApiCheck {
     } catch (ShimException e) {
       check(e.isRenderFailure() && e.getMessage().contains("Include provider failed for '") && e.getMessage().contains("boom"), "provider failure: " + e.getMessage());
     }
+    failedBuildLeavesTheDestinationAsItWas(root.resolve("atomic"));
     System.out.println("ShimApiCheck: " + checks + " checks passed");
+  }
+
+  /**
+   * As Jekyll (site.rb#process renders everything before cleaner.rb and the writes): a failed build changes nothing
+   * in an existing destination and creates no destination; a successful one cleans and writes as before, and no
+   * staging folder is left behind either way.
+   */
+  private static void failedBuildLeavesTheDestinationAsItWas(Path root) throws Exception {
+    Path src = root.resolve("src");
+    write(src.resolve("_config.yml"), "keep_files: [keep]\n");
+    for (int i = 0; i < 200; i++) { // many pages, rendered in parallel: most are written before the bad one fails
+      write(src.resolve("p" + i + ".html"), "---\n---\nnew " + i);
+    }
+    write(src.resolve("img/a.png"), "png");
+    write(src.resolve("zz-bad.html"), "---\n---\n{% include nowhere.xhtml %}");
+    Path dest = root.resolve("out");
+    write(dest.resolve("p1.html"), "old 1");
+    write(dest.resolve("obsolete.html"), "old");
+    write(dest.resolve("keep/k.txt"), "kept");
+    Map<String, String> before = snapshot(dest);
+    try {
+      Shim.build(src, dest, new Shim.Options().log(l -> { }).renderThreads(8));
+      check(false, "bad include must fail");
+    } catch (ShimException e) {
+      check(e.isRenderFailure(), "render failure");
+    }
+    check(snapshot(dest).equals(before), "failed build: destination unchanged: " + snapshot(dest).keySet());
+    Path fresh = root.resolve("fresh/deeper/out");
+    try {
+      Shim.build(src, fresh, new Shim.Options().log(l -> { }));
+      check(false, "bad include must fail");
+    } catch (ShimException e) {
+      check(!Files.exists(root.resolve("fresh")), "failed build: no destination (or parent) created");
+    }
+    Files.delete(src.resolve("zz-bad.html"));
+    Shim.build(src, dest, new Shim.Options().log(l -> { }).renderThreads(8));
+    Map<String, String> after = snapshot(dest);
+    check(after.get("p1.html").equals("new 1") && after.get("p199.html").equals("new 199") && after.get("img/a.png").equals("png"), "success: written");
+    check(!after.containsKey("obsolete.html") && after.get("keep/k.txt").equals("kept"), "success: cleaned, keep_files kept");
+    check(after.size() == 204, "success: nothing else (no staging folder): " + after.size());
+    try (var s = Files.list(dest)) {
+      check(s.noneMatch(p -> p.getFileName().toString().startsWith(".jekyll-shim-staging")), "no staging folder left");
+    }
+  }
+
+  private static Map<String, String> snapshot(Path dir) throws Exception {
+    Map<String, String> m = new java.util.TreeMap<>();
+    if (!Files.isDirectory(dir)) {
+      return m;
+    }
+    try (var w = Files.walk(dir)) {
+      for (Path p : w.toList()) {
+        String rel = dir.relativize(p).toString().replace('\\', '/');
+        m.put(rel + (Files.isDirectory(p) ? "/" : ""), Files.isDirectory(p) ? "" : read(p));
+      }
+    }
+    m.remove("/");
+    return m;
   }
 
   private static void check(boolean ok, String what) {

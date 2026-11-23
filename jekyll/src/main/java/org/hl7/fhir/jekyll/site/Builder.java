@@ -63,6 +63,7 @@ public final class Builder {
     long a, b, c, d, e;
     List<String> warnings = new ArrayList<>();
     List<String> late = List.of();
+    boolean committed = false;
     try {
       a = System.nanoTime();
       site.read();
@@ -98,6 +99,8 @@ public final class Builder {
       if (options.rescanStaticsAfterRender()) {
         late = site.copyLateStatics();
       }
+      site.commitOutput(); // only now does the destination change (a failed build leaves it as it was)
+      committed = true;
       e = System.nanoTime();
       if (timing) {
         System.err.printf(Locale.ROOT, "SHIM_TIMING config=%.2fs read=%.2fs prepare=%.2fs render=%.2fs write=%.2fs pages=%d static=%d%n",
@@ -111,6 +114,10 @@ public final class Builder {
       log.accept("  Liquid Exception: " + ex.getMessage());
       log.accept("             Error: Run jekyll build --trace for more information.");
       throw new ShimException(ex.getMessage(), ex, true);
+    } finally {
+      if (!committed) {
+        site.abortOutput();
+      }
     }
     long end = System.nanoTime();
     log.accept(String.format(Locale.ROOT, "                    done in %.3f seconds.", (end - t0) / 1e9));

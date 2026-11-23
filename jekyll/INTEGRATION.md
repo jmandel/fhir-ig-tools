@@ -11,7 +11,10 @@ The publisher already lets you replace the Jekyll command:
 `jekyll-shim` (a release copy downloads and verifies its pinned `jekyll.jar` on first use; see the README) runs `java -XX:MaxRAMPercentage=75 -jar jekyll.jar "$@"` (no -Xss/-Xmx needed: the build runs on its own large-stack thread and the heap grows as needed). The publisher calls it exactly as it calls Jekyll
 (`<cmd> build --destination <output>` with cwd = `temp/pages`), and the shim prints Jekyll's console
 lines, including `done in N seconds.`, which `PublisherGenerator#passJekyllFilter` keys on.
-Errors print `Liquid Exception: …` and exit 1, like Jekyll.
+Errors print `Liquid Exception: …` and exit 1, like Jekyll. Like Jekyll, a failed build leaves the destination as it
+was (Jekyll renders every page before its cleaner and writes run; the shim streams pages into a staging folder
+`<destination>/.jekyll-shim-staging-*` and moves them into place only after the whole build succeeded, so a
+failure creates or deletes nothing in the destination; a destination that didn't exist isn't created).
 
 Tunables (environment): `SHIM_RENDER_THREADS` (default = CPUs), `SHIM_IO_THREADS` (default 2×CPUs,
 4–32), `SHIM_TIMING=1` (per-phase timings on stderr).
