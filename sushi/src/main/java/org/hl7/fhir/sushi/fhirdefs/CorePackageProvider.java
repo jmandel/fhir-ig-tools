@@ -40,6 +40,10 @@ public final class CorePackageProvider implements PackageProvider {
   public synchronized FilesystemPackageCacheManager pcm() {
     if (pcm == null) {
       try {
+        // FPL creates the cache folder when it is missing (a machine that never had a FHIR package cache); core's
+        // withCacheFolder throws "The folder ... could not be found" instead, which surfaced as every package
+        // failing to download
+        Files.createDirectories(Path.of(cacheFolder));
         pcm = new FilesystemPackageCacheManager.Builder().withCacheFolder(cacheFolder).build();
       } catch (IOException e) {
         throw new UncheckedIOException(e);

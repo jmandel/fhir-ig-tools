@@ -62,4 +62,12 @@ class CorePackageProviderTest {
     assertFalse(p.isCached("my.pkg", "dev"));
     assertTrue(p.isCached("my.pkg", "current"));
   }
+
+  /** A missing cache folder (first use on a machine) is created, as FPL does, instead of failing every download. */
+  @Test void missingCacheFolderIsCreated() {
+    Path missing = cache.resolve("no-such").resolve("packages");
+    CorePackageProvider p = new CorePackageProvider(missing.toString());
+    assertFalse(p.isCached("hl7.fhir.r4.core", "4.0.1"));
+    assertTrue(Files.isDirectory(missing));
+  }
 }
