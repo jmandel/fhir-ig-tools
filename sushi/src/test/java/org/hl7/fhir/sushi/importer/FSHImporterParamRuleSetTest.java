@@ -67,7 +67,7 @@ class FSHImporterParamRuleSetTest {
         assertEquals(0, loggerSpy.getAllMessages("error").size());
         assertEquals(1, docs.size());
         var appliedRuleSet = docs.get(0).appliedRuleSets.get(
-          org.hl7.fhir.sushi.js.Json.stringify(List.of("QuotedValueRuleSet", "ends in a quote"))
+          org.hl7.fhir.common.js.Json.stringify(List.of("QuotedValueRuleSet", "ends in a quote"))
         );
         assertNotNull(appliedRuleSet);
         assertEquals(1, appliedRuleSet.rules.size());

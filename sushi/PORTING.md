@@ -277,7 +277,7 @@ The port lives in this repository's `sushi/` module, next to `common` (zero-depe
 (the Jekyll shim); see docs/MONOREPO.md for the layout and module rules. It was imported with its history by
 `scripts/sushi-sync.sh` (git filter-repo into `sushi/`, then a merge); the mechanical changes are in
 `scripts/sushi-restructure.sh`, which a re-sync runs again:
-- **JS value model in `common`:** `org.hl7.fhir.sushi.js` is now `org.hl7.fhir.common.js` (`Js`, `JsNumber`,
+- **JS value model in `common`:** `org.hl7.fhir.common.js` is now `org.hl7.fhir.common.js` (`Js`, `JsNumber`,
   `JsObject`, `Json`, `JsonSerializable`, `Lodash`, `Frozen`), compiled with `--release 17` like the rest of
   `common`. `JsonTest` and `FrozenTest` moved with it; `LodashTest` (it also checks `utils.ValidUrl`) is
   `utils.LodashOracleTest`. `utils.FshLogger` stays SUSHI-specific.
