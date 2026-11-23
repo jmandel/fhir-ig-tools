@@ -2,12 +2,12 @@ package org.hl7.fhir.sushi.fhirdefs;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hl7.fhir.common.js.Json;
+import org.hl7.fhir.sushi.utils.Fs;
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager;
 import org.hl7.fhir.utilities.npm.NpmPackage;
 
@@ -20,7 +20,9 @@ import org.hl7.fhir.utilities.npm.NpmPackage;
  *       {@code loadPackage(id, version)} (cache first, then the package servers / build.fhir.org);</li>
  *   <li>the resources of a package: {@code NpmPackage.listResources()} (the {@code package/.index.json} index).</li>
  * </ul>
- * Created lazily, so tests with a fake provider never touch the user's cache.
+ * Created lazily, so tests with a fake provider never touch the user's cache. Its own file and network access
+ * goes through core's ManagedFileAccess / ManagedWebAccess; so does this class's (registry and build.fhir.org
+ * lookups, via {@code utils.Fs} and ManagedWebAccess), PORTING.md "I/O policy".
  */
 public final class CorePackageProvider implements PackageProvider {
   private final String cacheFolder;
@@ -43,7 +45,7 @@ public final class CorePackageProvider implements PackageProvider {
         // FPL creates the cache folder when it is missing (a machine that never had a FHIR package cache); core's
         // withCacheFolder throws "The folder ... could not be found" instead, which surfaced as every package
         // failing to download
-        Files.createDirectories(Path.of(cacheFolder));
+        Fs.createDirectories(cacheFolder);
         pcm = new FilesystemPackageCacheManager.Builder().withCacheFolder(cacheFolder).build();
       } catch (IOException e) {
         throw new UncheckedIOException(e);
@@ -87,7 +89,7 @@ public final class CorePackageProvider implements PackageProvider {
   @Override
   public boolean isCached(String name, String version) {
     if ("dev".equals(version)) {
-      return Files.isDirectory(Path.of(pcm().getFolder(), name + "#dev"));
+      return Fs.isDirectory(Path.of(pcm().getFolder(), name + "#dev").toString());
     }
     try {
       return pcm().loadPackageFromCacheOnly(name, version) != null;
@@ -109,7 +111,7 @@ public final class CorePackageProvider implements PackageProvider {
     for (String f : npm.listResources()) {
       files.add(Path.of(dir, f).toString());
     }
-    return new CachedPackage(npm.name(), npm.version(), path, Files.exists(pj) ? pj.toString() : null, files);
+    return new CachedPackage(npm.name(), npm.version(), path, Fs.exists(pj.toString()) ? pj.toString() : null, files);
   }
 
   @Override

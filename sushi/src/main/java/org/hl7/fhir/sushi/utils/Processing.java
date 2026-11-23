@@ -3,7 +3,6 @@ package org.hl7.fhir.sushi.utils;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -975,12 +974,11 @@ public final class Processing {
   }
 
   private static void collectFiles(String absPath, List<String> out) {
-    Path p = Path.of(absPath);
-    if (Files.isDirectory(p)) {
+    if (Fs.isDirectory(absPath)) {
       for (String f : readdir(absPath)) {
         collectFiles(NodePath.join(absPath, f), out);
       }
-    } else if (Files.exists(p)) {
+    } else if (Fs.exists(absPath)) {
       out.add(absPath);
     }
   }
@@ -990,9 +988,13 @@ public final class Processing {
    * directory cannot be read.
    */
   public static List<String> readdir(String dir) {
-    String[] names = new java.io.File(dir).list();
-    if (names == null) return new ArrayList<>();
-    List<String> l = new ArrayList<>(Arrays.asList(names));
+    List<String> l;
+    if (dir.isEmpty()) return new ArrayList<>(); // as java.io.File("").list() before: null
+    try {
+      l = Fs.listNames(dir);
+    } catch (IOException e) {
+      return new ArrayList<>();
+    }
     l.sort(Processing::compareUtf8);
     return l;
   }
@@ -1264,8 +1266,7 @@ public final class Processing {
         outputFile(NodePath.join(outputDir, script), data);
         if (script.endsWith(".sh")) {
           try {
-            Files.setPosixFilePermissions(Path.of(NodePath.join(outputDir, script)),
-                java.nio.file.attribute.PosixFilePermissions.fromString("rwxr-xr-x"));
+            Fs.setPosixPermissions(NodePath.join(outputDir, script), "rwxr-xr-x");
           } catch (UnsupportedOperationException ignored) {
             // non-POSIX file system
           }
@@ -1356,17 +1357,13 @@ public final class Processing {
   /** fs.existsSync (follows symlinks; "" is false). */
   public static boolean exists(String p) {
     if (p == null || p.isEmpty()) return false;
-    try {
-      return Files.exists(Path.of(p));
-    } catch (java.nio.file.InvalidPathException e) {
-      return false;
-    }
+    return Fs.exists(p);
   }
 
   /** fs.readFileSync(p, 'utf8'): lenient UTF-8 (U+FFFD for malformed input), BOM kept. */
   public static String readFile(String p) {
     try {
-      return new String(Files.readAllBytes(Path.of(p)), StandardCharsets.UTF_8);
+      return Fs.readUtf8(p);
     } catch (IOException e) {
       throw new java.io.UncheckedIOException(nodeMessage(e), e);
     }
@@ -1375,7 +1372,7 @@ public final class Processing {
   /** fs-extra ensureDirSync. */
   public static void ensureDir(String dir) {
     try {
-      Files.createDirectories(Path.of(dir));
+      Fs.createDirectories(dir);
     } catch (IOException e) {
       throw new java.io.UncheckedIOException(nodeMessage(e), e);
     }
@@ -1383,32 +1380,26 @@ public final class Processing {
 
   /** fs-extra emptyDirSync: remove everything inside dir (create it when missing). */
   public static void emptyDir(String dir) throws IOException {
-    Path d = Path.of(dir);
-    if (!Files.exists(d)) {
-      Files.createDirectories(d);
+    if (!Fs.exists(dir)) {
+      Fs.createDirectories(dir);
       return;
     }
-    try (var s = Files.list(d)) {
-      for (Path c : s.toList()) deleteRecursively(c);
-    }
+    for (Path c : Fs.list(dir)) deleteRecursively(c.toString());
   }
 
-  private static void deleteRecursively(Path p) throws IOException {
-    if (Files.isDirectory(p, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
-      try (var s = Files.list(p)) {
-        for (Path c : s.toList()) deleteRecursively(c);
-      }
+  private static void deleteRecursively(String p) throws IOException {
+    if (Fs.isDirectoryNoFollow(p)) {
+      for (Path c : Fs.list(p)) deleteRecursively(c.toString());
     }
-    Files.delete(p);
+    Fs.delete(p);
   }
 
   /** fs-extra outputFileSync(p, text): create parent folders, write UTF-8 text as is. */
   public static void outputFile(String p, String content) {
     try {
-      Path path = Path.of(p);
-      Path parent = path.toAbsolutePath().getParent();
-      if (parent != null) Files.createDirectories(parent);
-      Files.write(path, content.getBytes(StandardCharsets.UTF_8));
+      Path parent = Path.of(p).toAbsolutePath().getParent();
+      if (parent != null) Fs.createDirectories(parent.toString());
+      Fs.write(p, content.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       throw new java.io.UncheckedIOException(nodeMessage(e), e);
     }

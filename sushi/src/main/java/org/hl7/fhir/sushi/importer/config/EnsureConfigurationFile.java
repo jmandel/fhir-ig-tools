@@ -1,7 +1,7 @@
 package org.hl7.fhir.sushi.importer.config;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+import org.hl7.fhir.sushi.utils.Fs;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/src/import/ensureConfigurationFile.ts (SUSHI 3.21.1)
@@ -18,7 +18,7 @@ public final class EnsureConfigurationFile {
     String configPath = null;
     for (String name : new String[] {"sushi-config.yaml", "sushi-config.yml"}) {
       String p = NodePath.join(root, name);
-      if (Files.exists(Path.of(p))) {
+      if (Fs.exists(p)) {
         configPath = p;
         break;
       }
@@ -30,7 +30,7 @@ public final class EnsureConfigurationFile {
     if (configPath == null) {
       for (String name : new String[] {"config.yaml", "config.yml"}) {
         String p = NodePath.join(root, name);
-        if (Files.exists(Path.of(p))) {
+        if (Fs.exists(p)) {
           FshLogger.logger.error("Use of " + NodePath.basename(p) + " is no longer supported. Please rename "
               + "configuration file to \"sushi-config.yaml\" in order to use this configuration file.");
           break;

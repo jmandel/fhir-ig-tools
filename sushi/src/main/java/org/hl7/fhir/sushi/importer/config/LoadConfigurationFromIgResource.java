@@ -4,19 +4,17 @@ import org.hl7.fhir.sushi.fhirdefs.xml.FhirXmlToJs;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import org.hl7.fhir.sushi.fshtypes.Configuration;
 import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.common.js.JsObject;
 import org.hl7.fhir.common.js.Json;
+import org.hl7.fhir.sushi.utils.Fs;
 import org.hl7.fhir.sushi.utils.FshLogger;
 
 // port of sushi/src/import/loadConfigurationFromIgResource.ts (SUSHI 3.21.1)
@@ -42,9 +40,9 @@ public final class LoadConfigurationFromIgResource {
     // First, look in the ig.ini file for a path to the IG resource
     String igPath = null;
     String igIniPath = NodePath.join(igRoot, "ig.ini");
-    if (Files.exists(Path.of(igIniPath))) {
+    if (Fs.exists(igIniPath)) {
       try {
-        String ig = iniIgValue(Files.readString(Path.of(igIniPath), StandardCharsets.UTF_8));
+        String ig = iniIgValue(Fs.readUtf8Strict(igIniPath));
         if (Js.truthy(ig)) igPath = NodePath.join(igRoot, ig);
       } catch (IOException | RuntimeException e) {
         // ignored, like TS
@@ -54,9 +52,9 @@ public final class LoadConfigurationFromIgResource {
     // otherwise consider all files in the input folder of the ig
     String igInputPath = NodePath.join(igRoot, "input");
     List<String> possibleIgPaths = new ArrayList<>();
-    if (igPath != null && Files.exists(Path.of(igPath))) {
+    if (igPath != null && Fs.exists(igPath)) {
       possibleIgPaths.add(igPath);
-    } else if (Files.exists(Path.of(igInputPath))) {
+    } else if (Fs.exists(igInputPath)) {
       for (String file : readdirSorted(igInputPath)) possibleIgPaths.add(NodePath.join(igInputPath, file));
     }
     // Go through each possible path, and check each xml/json file to see if they are an IG resource
@@ -67,9 +65,9 @@ public final class LoadConfigurationFromIgResource {
       String ext = NodePath.extname(filePath);
       try {
         if (ext.equals(".json")) {
-          fileContent = Json.parseFile(Files.readString(Path.of(filePath), StandardCharsets.UTF_8));
+          fileContent = Json.parseFile(Fs.readUtf8Strict(filePath));
         } else if (ext.equals(".xml")) {
-          fileContent = FhirXmlToJs.xmlToObj(Files.readString(Path.of(filePath), StandardCharsets.UTF_8));
+          fileContent = FhirXmlToJs.xmlToObj(Fs.readUtf8Strict(filePath));
         }
       } catch (IOException e) {
         throw new UncheckedIOException(e);
@@ -152,8 +150,8 @@ public final class LoadConfigurationFromIgResource {
 
   /** fs.readdirSync order (libuv scandir sorts by strcmp on the UTF-8 names). */
   private static List<String> readdirSorted(String dir) {
-    try (Stream<Path> s = Files.list(Path.of(dir))) {
-      List<String> names = new ArrayList<>(s.map(p -> p.getFileName().toString()).toList());
+    try {
+      List<String> names = Fs.listNames(dir);
       names.sort((a, b) -> Arrays.compareUnsigned(a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8)));
       return names;
     } catch (IOException e) {

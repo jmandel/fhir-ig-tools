@@ -1,6 +1,5 @@
 package org.hl7.fhir.sushi.ig;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -12,6 +11,7 @@ import org.hl7.fhir.sushi.fhirdefs.FHIRDefinitions;
 import org.hl7.fhir.sushi.fhirdefs.LoadStatus;
 import org.hl7.fhir.common.js.Js;
 import org.hl7.fhir.common.js.JsObject;
+import org.hl7.fhir.sushi.utils.Fs;
 import org.hl7.fhir.sushi.utils.FshLogger;
 import org.hl7.fhir.sushi.utils.NodePath;
 import org.hl7.fhir.sushi.utils.Processing;
@@ -72,11 +72,10 @@ public final class PredefinedResources {
   }
 
   private static void addRecursiveChildFolders(String folderPath, Set<String> out) {
-    if (!Files.isDirectory(Path.of(folderPath))) return;
+    if (!Fs.isDirectory(folderPath)) return;
     // fs.readdirSync(withFileTypes): libuv scandir order; entry.isDirectory() is the dirent type (no symlink follow)
     for (String name : Processing.readdir(folderPath)) {
-      Path child = Path.of(folderPath, name);
-      if (Files.isDirectory(child, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+      if (Fs.isDirectoryNoFollow(Path.of(folderPath, name).toString())) {
         String childFolder = NodePath.resolve(folderPath, name);
         out.add(childFolder);
         addRecursiveChildFolders(childFolder, out);

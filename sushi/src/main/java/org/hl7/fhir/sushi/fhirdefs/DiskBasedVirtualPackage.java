@@ -2,9 +2,6 @@ package org.hl7.fhir.sushi.fhirdefs;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import org.hl7.fhir.common.js.Json;
+import org.hl7.fhir.sushi.utils.Fs;
 
 // port of fhir-package-loader 2.2.4 src/virtual/DiskBasedVirtualPackage.ts
 /** Resources from local files/folders (SUSHI: predefined resources in input/, test fixtures). */
@@ -82,7 +79,7 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
           spreadSheetCounts.merge(parent, 1, Integer::sum);
           log.accept("debug", "Skipped spreadsheet XML file: " + filePath);
         } else if (XML_NAME.matcher(name).find()) {
-          String xml = Files.readString(Path.of(filePath), StandardCharsets.UTF_8);
+          String xml = Fs.readUtf8Strict(filePath);
           if (EXCEL.matcher(xml).find()) {
             spreadSheetCounts.merge(parent, 1, Integer::sum);
             log.accept("debug", "Skipped spreadsheet XML file: " + filePath);
@@ -138,7 +135,7 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
     if (XML_KEY.matcher(key).find()) {
       String xml;
       try {
-        xml = Files.readString(Path.of(key), StandardCharsets.UTF_8);
+        xml = Fs.readUtf8Strict(key);
       } catch (Exception e) {
         throw new IllegalStateException("Failed to get XML resource at path " + key);
       }
@@ -159,7 +156,7 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
 
   static String readUtf8(String path) throws IOException {
     // Buffer.toString('utf8'): malformed sequences become U+FFFD (as does new String(bytes, UTF_8))
-    return new String(Files.readAllBytes(Path.of(path)), StandardCharsets.UTF_8);
+    return Fs.readUtf8(path);
   }
 
   /** node path.resolve(p): absolute + normalized, no symlink resolution */
@@ -180,22 +177,21 @@ public class DiskBasedVirtualPackage implements VirtualPackage {
   private static List<String> getFilePaths(List<String> paths, boolean recursive) throws IOException {
     Set<String> filePaths = new LinkedHashSet<>();
     for (String p : paths) {
-      Path path = Path.of(p);
       // fs.statSync follows symlinks (and throws when missing: FPL lets that propagate)
-      if (Files.isRegularFile(path)) {
+      if (Fs.isFile(p)) {
         filePaths.add(resolve(p));
-      } else if (Files.isDirectory(path)) {
-        try (Stream<Path> entries = Files.list(path)) {
-          for (Path entry : (Iterable<Path>) entries.sorted()::iterator) {
-            // Dirent.isFile()/isDirectory() describe the entry itself (a symlink is neither)
-            if (Files.isRegularFile(entry, LinkOption.NOFOLLOW_LINKS)) {
-              filePaths.add(resolve(entry.toString()));
-            } else if (recursive && Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
-              filePaths.addAll(getFilePaths(List.of(resolve(entry.toString())), recursive));
-            }
+      } else if (Fs.isDirectory(p)) {
+        List<Path> entries = Fs.list(p);
+        entries.sort(null); // as Files.list(...).sorted() before: Path order
+        for (Path entry : entries) {
+          // Dirent.isFile()/isDirectory() describe the entry itself (a symlink is neither)
+          if (Fs.isRegularFileNoFollow(entry.toString())) {
+            filePaths.add(resolve(entry.toString()));
+          } else if (recursive && Fs.isDirectoryNoFollow(entry.toString())) {
+            filePaths.addAll(getFilePaths(List.of(resolve(entry.toString())), recursive));
           }
         }
-      } else if (!Files.exists(path)) {
+      } else if (!Fs.exists(p)) {
         throw new IOException("ENOENT: no such file or directory, stat '" + p + "'");
       }
     }
