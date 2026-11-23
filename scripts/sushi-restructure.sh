@@ -6,8 +6,8 @@
 # 1. JS value model to common: sushi/.../sushi/js/*.java -> common/.../common/js/, package org.hl7.fhir.common.js;
 #    its tests JsonTest and FrozenTest (and the vectors JsonTest reads) to common/src/test. LodashTest also checks
 #    sushi's utils.ValidUrl, so it stays in sushi as utils.LodashOracleTest.
-# 2. Every reference to org.hl7.fhir.sushi.js in sushi/ and common/ (imports, qualified names, the ts2junit
-#    generator, docs) becomes org.hl7.fhir.common.js.
+# 2. Every reference to org.hl7.fhir.sushi.js in sushi/ and common/ code (imports, qualified names, the ts2junit
+#    generator) becomes org.hl7.fhir.common.js. Markdown is left alone: the docs name the old package on purpose.
 # 3. YAML: delete sushi's vendored copy of the libyaml event layer (sushi/.../sushi/yaml/{ByteString,Event,
 #    LibyamlError,Mark,Parser,Reader,Scanner,Token}.java); the yaml@1.10 composer (Yaml, YamlError) stays in sushi
 #    and uses common's org.hl7.fhir.common.yaml, with the opt-in yaml110 mode (new Parser(bytes, enc, true)).
@@ -43,7 +43,7 @@ rmdir "$S/js" "$ST/js" sushi/src/test/resources/js 2>/dev/null || true
 
 # 2. package rename everywhere
 JSRE='\borg\.hl7\.fhir\.sushi\.js(?!\w)'
-git ls-files sushi common | while IFS= read -r f; do
+git ls-files sushi common | grep -v '\.md$' | while IFS= read -r f; do
   [ -f "$f" ] && grep -qF 'org.hl7.fhir.sushi.js' "$f" && perl -pi -e "s/$JSRE/org.hl7.fhir.common.js/g" "$f" || true
 done
 
@@ -68,7 +68,7 @@ for f in "$S"/yaml/*.java; do
 done
 
 # leftovers check
-if git ls-files sushi common | while IFS= read -r f; do [ -f "$f" ] && perl -ne "print \"\$ARGV:\$.: \$_\" if /$JSRE/" "$f" || true; done | grep .; then
+if git ls-files sushi common | grep -v '\.md$' | while IFS= read -r f; do [ -f "$f" ] && perl -ne "print \"\$ARGV:\$.: \$_\" if /$JSRE/" "$f" || true; done | grep .; then
   echo "references to org.hl7.fhir.sushi.js remain (above)" >&2; exit 1
 fi
 echo "sushi-restructure: done"

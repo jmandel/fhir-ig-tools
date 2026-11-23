@@ -170,7 +170,7 @@ repository gets more commits:
   the same ids and the merge brings only the new ones. Then it runs:
 - `scripts/sushi-restructure.sh` (idempotent): moves `org.hl7.fhir.sushi.js` to `common` as `org.hl7.fhir.common.js`
   (with `JsonTest`, `FrozenTest` and their vectors; `LodashTest`, which also checks `utils.ValidUrl`, becomes
-  `sushi`'s `utils.LodashOracleTest`), rewrites every reference to the old package, deletes sushi's vendored copy of
+  `sushi`'s `utils.LodashOracleTest`), rewrites every reference to the old package in code (not in Markdown, where the docs name it on purpose), deletes sushi's vendored copy of
   the libyaml event layer, and points the yaml@1.10 composer at `common`'s event layer in yaml110 mode. It stops
   with an error if something new needs a hand decision (a new test in the js package, the composer using the event
   layer's internals).
