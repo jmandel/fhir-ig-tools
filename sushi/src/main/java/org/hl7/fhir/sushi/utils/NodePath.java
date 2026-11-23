@@ -7,17 +7,35 @@ import java.util.List;
 /**
  * String-level path arithmetic with Node's exact results (SUSHI prints these paths in messages and uses them as
  * map keys, so java.nio's normalisation, which differs on trailing slashes, "." results and ".." handling, is not
- * used). POSIX only: SUSHI's reference runs are on Linux, where {@code path.sep} is "/". {@link #resolve} uses the
- * process working directory ({@code user.dir}) like {@code process.cwd()}.
+ * used). POSIX semantics: SUSHI's reference runs are on Linux, where {@code path.sep} is "/". {@link #resolve} uses
+ * the process working directory ({@code user.dir}) like {@code process.cwd()}.
+ *
+ * <p>On Windows only, so that Windows paths work at all: backslashes are read as "/" and a drive root ("C:/") counts
+ * as a root like "/" (results use "/" separators, e.g. {@code C:/ig/input/fsh}, which Java's file APIs accept).
+ * Node's own path.win32 would print backslashes (docs/differences.md KD-16). Elsewhere nothing changes.
  */
 public final class NodePath {
   private NodePath() {}
 
   public static final String SEP = "/";
 
+  static boolean WINDOWS = java.io.File.separatorChar == '\\';  // not final: NodePathWindowsTest switches it
+
   /** Process working directory (process.cwd()). */
   public static String cwd() {
-    return System.getProperty("user.dir");
+    return slashes(System.getProperty("user.dir"));
+  }
+
+  /** Windows: backslashes as "/". */
+  static String slashes(String p) {
+    return WINDOWS && p != null ? p.replace('\\', '/') : p;
+  }
+
+  /** Length of the root: 1 for "/", on Windows 3 for a drive root ("C:/"); 0 for a relative path. */
+  static int rootLength(String p) {
+    if (!p.isEmpty() && p.charAt(0) == '/') return 1;
+    if (WINDOWS && p.length() >= 3 && Character.isLetter(p.charAt(0)) && p.charAt(1) == ':' && p.charAt(2) == '/') return 3;
+    return 0;
   }
 
   // Resolves . and .. elements in a path with directory names (node's normalizeString, posix)
@@ -78,20 +96,23 @@ public final class NodePath {
   }
 
   public static boolean isAbsolute(String p) {
-    return !p.isEmpty() && p.charAt(0) == '/';
+    return rootLength(slashes(p)) > 0;
   }
 
   public static String normalize(String path) {
+    path = slashes(path);
     if (path.isEmpty()) return ".";
-    boolean isAbsolute = path.charAt(0) == '/';
+    int root = rootLength(path);
+    boolean isAbsolute = root > 0;
     boolean trailingSeparator = path.charAt(path.length() - 1) == '/';
-    String p = normalizeString(path, !isAbsolute);
+    String p = normalizeString(root > 1 ? path.substring(root) : path, !isAbsolute);
+    String rootText = root > 1 ? path.substring(0, root) : "/";
     if (p.isEmpty()) {
-      if (isAbsolute) return "/";
+      if (isAbsolute) return rootText;
       return trailingSeparator ? "./" : ".";
     }
     if (trailingSeparator) p += "/";
-    return isAbsolute ? "/" + p : p;
+    return isAbsolute ? rootText + p : p;
   }
 
   public static String join(String... args) {
@@ -106,22 +127,28 @@ public final class NodePath {
       }
     }
     if (joined == null) return ".";
-    return normalize(joined.toString());
+    return normalize(joined.toString());   // (normalize reads Windows backslashes)
   }
 
   public static String resolve(String... args) {
     String resolvedPath = "";
     boolean resolvedAbsolute = false;
+    String rootText = "/";
     for (int i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-      String path = i >= 0 ? args[i] : cwd();
+      String path = slashes(i >= 0 ? args[i] : cwd());
       if (path == null) throw new IllegalArgumentException(
           "The \"paths[" + i + "]\" argument must be of type string. Received undefined");
       if (path.isEmpty()) continue;
+      int root = rootLength(path);
+      if (root > 1) {
+        rootText = path.substring(0, root);
+        path = path.substring(root);
+      }
       resolvedPath = path + "/" + resolvedPath;
-      resolvedAbsolute = path.charAt(0) == '/';
+      resolvedAbsolute = root > 0;
     }
     resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute);
-    if (resolvedAbsolute) return "/" + resolvedPath;
+    if (resolvedAbsolute) return rootText + resolvedPath;
     return !resolvedPath.isEmpty() ? resolvedPath : ".";
   }
 
@@ -130,10 +157,12 @@ public final class NodePath {
     from = resolve(from);
     to = resolve(to);
     if (from.equals(to)) return "";
-    int fromStart = 1;
+    int fromStart = rootLength(from);
+    int toStart = rootLength(to);
+    // Windows: paths on different drives have no relative path (node path.win32 returns the target)
+    if (!from.substring(0, fromStart).equalsIgnoreCase(to.substring(0, toStart))) return to;
     int fromEnd = from.length();
     int fromLen = fromEnd - fromStart;
-    int toStart = 1;
     int toLen = to.length() - toStart;
     int length = Math.min(fromLen, toLen);
     int lastCommonSep = -1;
@@ -160,7 +189,13 @@ public final class NodePath {
   }
 
   public static String dirname(String path) {
+    path = slashes(path);
     if (path.isEmpty()) return ".";
+    int root = rootLength(path);
+    if (root > 1) {  // Windows drive root
+      String d = dirname(path.substring(root - 1));
+      return path.substring(0, root - 1) + d;
+    }
     boolean hasRoot = path.charAt(0) == '/';
     int end = -1;
     boolean matchedSlash = true;
@@ -180,6 +215,7 @@ public final class NodePath {
   }
 
   public static String basename(String path) {
+    path = slashes(path);
     int start = 0;
     int end = -1;
     boolean matchedSlash = true;
@@ -200,6 +236,7 @@ public final class NodePath {
 
   /** path.extname. */
   public static String extname(String path) {
+    path = slashes(path);
     int startDot = -1;
     int startPart = 0;
     int end = -1;
