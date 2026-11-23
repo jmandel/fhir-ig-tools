@@ -23,7 +23,8 @@ import org.hl7.fhir.common.js.Js;
  *
  * <p>SafeMode.FREEZE is emulated: resources are deeply frozen ({@link org.hl7.fhir.common.js.Frozen}); mutating one
  * throws, as FPL's frozen objects do. Differences from FPL by design: debug stack traces are Java's; version resolution and download
- * are core's, so FPL's "Attempting to download ... from <url>" line is not printed (core picks the server).
+ * are core's, so FPL's "Attempting to download ... from <url>" lines and its "Failed to download most recent X#current ...
+ * Using most recent cached package instead." warning are not printed (core picks the server and checks current builds).
  */
 public class BasePackageLoader {
   public static final int DEFAULT_RESOURCE_CACHE_SIZE = 200;
@@ -110,30 +111,10 @@ public class BasePackageLoader {
     boolean wildcard = PATCH_WILDCARD.matcher(version).matches();
     boolean current = isCurrentVersion(version);
     boolean wasCached = current || wildcard || packageProvider.isCached(name, version);
-    // FPL: for a current build, the "download most recent" step fails when build.fhir.org lists no such build (or
-    // can't be reached); if a cached build then loads, FPL warns that it used the cached one. core refreshes current
-    // builds itself, so only that failure (the observable part) is derived here.
-    String currentDownloadError = null;
-    if (current && packageProvider.isCached(name, version)) {
-      String branch = version.indexOf('$') != -1 ? version.split("\\$", -1)[1] : null;
-      try {
-        String base = packageProvider.currentBuildBaseUrl(name, branch);
-        if (base != null && base.isEmpty()) currentDownloadError = "Failed to download most recent " + packageLabel + " from current builds";
-      } catch (Exception e) {
-        currentDownloadError = "Failed to download most recent " + packageLabel + " from current builds";
-        if (e.getMessage() != null && CERTIFICATE.matcher(e.getMessage()).find()) currentDownloadError += CERTIFICATE_MESSAGE;
-      }
-    }
     PackageProvider.CachedPackage pkg;
-    // FPL's FHIRRegistryClient logs "Attempting to download X#V from <endpoint>/X/V" for each registry it tries
-    // (packages.fhir.org, then packages2.fhir.org/packages); core downloads with its own server order and logs
-    // nothing. Reproduced: one line when the download succeeds, both when it fails (D8; corpus WHO smart-trust).
-    boolean registryDownload = !wasCached && !current && System.getenv("FPL_REGISTRY") == null;
     try {
       pkg = packageProvider.loadPackage(name, version);
-      if (registryDownload) logAttempting(name, version, 1);
     } catch (Exception e) {
-      if (registryDownload) logAttempting(name, version, 2);
       if (wildcard) {
         // FPL resolves x.y.x against the registry first and that failure propagates
         throw new FplErrors.LatestVersionUnavailableError(name, true);
@@ -178,10 +159,6 @@ public class BasePackageLoader {
           log.accept("debug", "JSON file at path " + resourcePath + " was not FHIR resource");
         }
       }
-    }
-    if (currentDownloadError != null) {
-      // Loading succeeded despite a download error: the stale build is used
-      log.accept("warn", currentDownloadError + ". Using most recent cached package instead.");
     }
     PackageStats stats = packageDB.getPackageStats(name, version);
     log.accept("info", "Loaded " + stats.name() + "#" + stats.version() + " with " + stats.resourceCount()
@@ -331,16 +308,6 @@ public class BasePackageLoader {
       if (resourceCache != null) resourceCache.put(resourcePath, resource);
     }
     return resource;
-  }
-
-  private static final List<String> FPL_REGISTRIES =
-      List.of("https://packages.fhir.org", "https://packages2.fhir.org/packages");
-
-  private void logAttempting(String name, String version, int registries) {
-    for (int r = 0; r < registries; r++) {
-      String url = FPL_REGISTRIES.get(r) + "/" + name + "/" + version;
-      log.accept("info", "Attempting to download " + name + "#" + version + " from " + url);
-    }
   }
 
   public LoadStatus getPackageLoadStatus(String name, String version) {
