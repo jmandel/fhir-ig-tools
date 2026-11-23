@@ -117,10 +117,6 @@ public class BasePackageLoader {
     try {
       pkg = packageProvider.loadPackage(name, version);
     } catch (Exception e) {
-      if (wildcard) {
-        // FPL resolves x.y.x against the registry first and that failure propagates
-        throw new FplErrors.LatestVersionUnavailableError(name, true);
-      }
       String downloadErrorMessage = current
           ? "Failed to download most recent " + packageLabel + " from current builds"
           : "Failed to download " + packageLabel + " from the registry";
