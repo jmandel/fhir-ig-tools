@@ -197,8 +197,8 @@ accessor, `fhir-settings.json`, proxies, offline mode), so it applies to SUSHI t
   `Fs` keeps java.nio's semantics: an empty path is the current folder, and failures raise NIO's exception types
   (`NoSuchFileException`, `AccessDeniedException`, ...). It translates the `FileNotFoundException` of core's streams by
   looking at the file, because `Processing.nodeMessage` turns those types into Node's `ENOENT`/`EACCES` texts.
-- **Network: `ManagedWebAccess.get(List.of("web"), url)`** for the `#latest` registry lookups and build.fhir.org's
-  `qas.json` (`fhirdefs.CorePackageProvider`), and for the npm-registry version check and `sushi init`'s `_build`
+- **Network: `ManagedWebAccess.get(List.of("web"), url)`** for the `#latest` dist-tags lookup on packages.fhir.org
+  (`fhirdefs.CorePackageProvider`, rule R2), and for the npm-registry version check and `sushi init`'s `_build`
   script download (`Processing.webGet`, which keeps axios's `Request failed with status code N`). Package downloads
   go through core's package cache, which already uses ManagedFileAccess/ManagedWebAccess. Timeouts are core's (15 s
   per connect/read, one retry). Before this the two Processing calls used their own `HttpClient` with 5 s connect
@@ -380,13 +380,17 @@ validation errors instead (same logging assertions).
 - End to end (`java -jar`, `scripts/diff-run.sh`): the 6 reference IGs (genomics-reporting, ITI.MHD, ch-term,
   EEHRxF logical-model, ch-ekm, smart-anc; 2,153 files) have byte-identical `fsh-generated/`, identical logs (pun and
   version lines normalised, D7) and equal exit codes.
-- Corpus (`scripts/corpus-diff.sh`, WP-10): **267 / 267 FSH IGs identical** (files, logs, exit codes) against TS SUSHI
-  3.21.1 on Node 22 with the frozen package snapshot. 11 IGs differed on the first pass; root causes fixed on main with
-  regression tests (`regress.CorpusRegressionTest`, `export.RegressSliceTypeDiffTest`): undefined config.version
-  written as null; cleanResource not walking ElementDefinition._original; `#latest` = registry dist-tags.latest
-  (rule R2); FPL's `#current` freshness warning, `Failed to resolve version` and `Attempting to download` messages;
-  a V8 TypeError text.
-- Package resolution (WP-8 probe): every lookup on the reference IGs and corpus picks the same definition as TS;
-  FPL rules R1, R2 ported where core differed (`docs/package-resolution-differences.md`).
+- Corpus (`scripts/corpus-diff.sh`, WP-10): **267 / 267 FSH IGs with identical `fsh-generated/` and exit codes**
+  against TS SUSHI 3.21.1 on Node 22 with the frozen package snapshot; logs identical in 261 / 267. 11 IGs differed on
+  the first pass; root causes fixed on main with regression tests (`regress.CorpusRegressionTest`,
+  `export.RegressSliceTypeDiffTest`): undefined config.version written as null; cleanResource not walking
+  ElementDefinition._original; `#latest` = packages.fhir.org's dist-tags.latest (rule R2); a V8 TypeError text.
+  FPL messages that needed package semantics of their own were then dropped in favour of core's (they changed only
+  the log): the `dev` -> `current` fallback line (hl7-eu imaging-api), the `#current` freshness warning (HL7-cz ps,
+  hl7-eu laboratory, ConsentAboutAI), `Attempting to download` (WHO smart-trust) and `Failed to resolve version for
+  X#latest` (davinci-ecdx, now core's message; still one error). Those 6 IGs were rerun: `fsh-generated/` identical,
+  exit codes equal; the other 260 contain none of these lines in TS's log.
+- Package resolution (WP-8 probe): every lookup on the reference IGs and corpus picks the same definition as TS
+  (in hl7-eu imaging-api the package of 5 of them is labelled `ihe.rad.mado#dev`, TS: `#current`); one SUSHI rule kept on top of core (R2, `latest`), everything else is core's (`docs/package-resolution-differences.md`).
 - Known, accepted differences: `docs/differences.md` (KD-1..KD-15; none changes output on real inputs).
 

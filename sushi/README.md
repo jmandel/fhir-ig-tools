@@ -67,7 +67,8 @@ with no Node/npm at all.
   messages and error recovery are compared on the corpus FSH, SUSHI's fixtures and fuzzed input (D6).
 - **Packages through org.hl7.fhir.core.** FHIR package loading uses core's package cache and registry client
   (`org.hl7.fhir.utilities`, the version the publisher ships), unchanged. SUSHI's own resolution rules
-  (fhir-package-loader) were ported only where measurement showed core choosing differently
+  (fhir-package-loader) are kept only where core would change an IG's output: one rule, `latest` =
+  packages.fhir.org's `dist-tags.latest` (HL7 cds-hooks-library)
   ([`package-resolution-differences.md`](docs/package-resolution-differences.md)).
 - **Dependencies:** at runtime only `common` (this repository), core's utilities and commons-compress (which core's
   package cache needs). No other libraries; npm libraries SUSHI uses (yaml, lodash, html-minifier, sax, ini, ...)
@@ -78,7 +79,7 @@ with no Node/npm at all.
 | Check | Result |
 |---|---|
 | 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **6 / 6 identical**: `fsh-generated/` byte for byte (2,153 files), console log and exit status, using `scripts/diff-run.sh` |
-| Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** (files, log, exit status), `scripts/corpus-diff.sh` |
+| Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** `fsh-generated/` and exit status; console log identical in 261 / 267, the other 6 differ only in package-loading lines (FPL messages the port doesn't reproduce because it follows core's package handling), `scripts/corpus-diff.sh` |
 | Unit tests | **3,717 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
