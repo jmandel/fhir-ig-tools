@@ -1,0 +1,57 @@
+#!/bin/sh
+# Drop-in for `jekyll` as the IG Publisher calls it (`-jekyll <this script>`): `build --destination X`,
+# run with the working directory set to temp/pages.
+#
+# Like the Gradle wrapper, this one file is all you need. A release copy pins a shim version and its
+# SHA-256; on first use it downloads that jekyll.jar into ~/.fhir-ig-jekyll/<version>/, verifies it, and
+# runs it from there afterwards (offline). Which jar runs (first match wins):
+#   $FHIR_IG_JEKYLL_JAR              an explicit jar (offline machines, development)
+#   jekyll.jar next to this script   (release zip), or target/jekyll.jar / build/jekyll.jar (source checkout:
+#                                    ./build.sh / ./build.sh --fast)
+#   the pinned release               cached under ${FHIR_IG_JEKYLL_HOME:-$HOME/.fhir-ig-jekyll}
+# FHIR_IG_JEKYLL_URL overrides the download URL (e.g. a mirror). Java: $JAVA_HOME/bin/java if set,
+# else java on PATH (17+). No sizing flags: the heap may grow to 75% of the machine's or container's
+# memory, and stack depth is handled inside the shim. SHIM_JAVA_OPTS adds JVM options.
+set -e
+VERSION="@SHIM_VERSION@"
+SHA256="@SHIM_SHA256@"
+
+die() { echo "jekyll-shim: $*" >&2; exit 1; }
+sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1"
+  else openssl dgst -sha256 -r "$1"; fi | cut -c1-64
+}
+fetch() {  # fetch <url> <file>
+  if command -v curl >/dev/null 2>&1; then curl -fsSL --retry 3 -o "$2" "$1"
+  elif command -v wget >/dev/null 2>&1; then wget -q -O "$2" "$1"
+  else die "need curl or wget to download $1 (or set FHIR_IG_JEKYLL_JAR)"; fi
+}
+
+HERE=$(cd "$(dirname "$0")" && pwd)
+if [ -n "${FHIR_IG_JEKYLL_JAR:-}" ]; then JAR=$FHIR_IG_JEKYLL_JAR
+elif [ -f "$HERE/jekyll.jar" ]; then JAR=$HERE/jekyll.jar
+elif [ -f "$HERE/target/jekyll.jar" ]; then JAR=$HERE/target/jekyll.jar
+elif [ -f "$HERE/build/jekyll.jar" ]; then JAR=$HERE/build/jekyll.jar
+else
+  case $VERSION in @*) die "no jekyll.jar next to this script and no pinned version; in a source checkout run ./build.sh, or set FHIR_IG_JEKYLL_JAR" ;; esac
+  DIR=${FHIR_IG_JEKYLL_HOME:-$HOME/.fhir-ig-jekyll}/$VERSION
+  JAR=$DIR/jekyll.jar
+  if [ ! -f "$JAR" ]; then
+    URL=${FHIR_IG_JEKYLL_URL:-https://github.com/jmandel/fhir-ig-tools/releases/download/v$VERSION/jekyll.jar}
+    mkdir -p "$DIR"
+    TMP=$DIR/jekyll.jar.$$.part
+    trap 'rm -f "$TMP"' EXIT
+    echo "jekyll-shim: downloading jekyll.jar $VERSION from $URL (first use only)" >&2
+    fetch "$URL" "$TMP" || die "download failed: $URL"
+    got=$(sha256 "$TMP")
+    [ "$got" = "$SHA256" ] || die "checksum mismatch for $URL: expected $SHA256, got $got"
+    mv -f "$TMP" "$JAR"   # atomic: concurrent first runs each verify their own copy
+    trap - EXIT
+  fi
+fi
+JAVA=java
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then JAVA=$JAVA_HOME/bin/java; fi
+command -v "$JAVA" >/dev/null 2>&1 || die "Java 17+ not found; install it or set JAVA_HOME"
+# shellcheck disable=SC2086  # SHIM_JAVA_OPTS is a list of options
+exec "$JAVA" -XX:MaxRAMPercentage=75 ${SHIM_JAVA_OPTS:-} -jar "$JAR" "$@"

@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 722" width="960" height="722" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">sushi.jar: SUSHI 3.21.1, the FSH compiler, in Java</title>
+  <desc id="d">sushi.jar parses FSH with a hand-written lexer and parser (SUSHI's ANTLR grammar is used only in tests, as an oracle), imports it into the FSHTank, exports StructureDefinitions, instances, value sets, code systems and the ImplementationGuide, and writes fsh-generated. sushi-config.yaml is read by a yaml@1.10 composer over common's YAML event layer. FHIR packages come from org.hl7.fhir.core's package cache. Values follow JavaScript semantics through common's JS value model.</desc>
+  <style>
+    .bg{fill:#ffffff;stroke:#d0d7de}
+    .ink{fill:#1f2328}.muted{fill:#59636e}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .card{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.2}
+    .pub{fill:#f6f8fa;stroke:#8c959f;stroke-width:1.5}
+    .tool{fill:#ddf4ff;stroke:#0969da;stroke-width:2}
+    .tool2{fill:#fbefff;stroke:#8250df;stroke-width:2}
+    .shared{fill:#fff8c5;stroke:#9a6700;stroke-width:1.5}
+    .stage{fill:#ffffff;stroke:#54aeff;stroke-width:1.2}
+    .stage2{fill:#ffffff;stroke:#c297ff;stroke-width:1.2}
+    .stage3{fill:#ffffff;stroke:#d4a72c;stroke-width:1.2}
+    .ext{fill:#ffffff;stroke:#8c959f;stroke-width:1.2;stroke-dasharray:5 4}
+    .out{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+    .accent{fill:#0969da}.accent2{fill:#8250df}.accent3{fill:#9a6700}.good{fill:#1a7f37}
+    .wire{stroke:#59636e;stroke-width:2;fill:none}
+    .wire-d{stroke:#8c959f;stroke-width:1.6;fill:none;stroke-dasharray:6 5}
+    .head{fill:#59636e}
+    .chip-g{fill:#dafbe1;stroke:#1a7f37}.chip-a{fill:#fff8c5;stroke:#9a6700}.chip-p{fill:#fbefff;stroke:#8250df}
+    .chip-r{fill:#ffebe9;stroke:#cf222e}.chip-b{fill:#ddf4ff;stroke:#0969da}
+    .t-g{fill:#1a7f37}.t-a{fill:#7d4e00}.t-p{fill:#8250df}.t-r{fill:#a40e26}.t-b{fill:#0550ae}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#0d1117;stroke:#3d444d}
+      .ink{fill:#e6edf3}.muted{fill:#9198a1}
+      .card{fill:#151b23;stroke:#3d444d}
+      .pub{fill:#151b23;stroke:#656c76}
+      .tool{fill:#0c2d4b;stroke:#4493f8}
+      .tool2{fill:#271a3c;stroke:#ab7df8}
+      .shared{fill:#2e2306;stroke:#d29922}
+      .stage{fill:#0d1117;stroke:#1f6feb}
+      .stage2{fill:#0d1117;stroke:#8957e5}
+      .stage3{fill:#0d1117;stroke:#9e6a03}
+      .ext{fill:#0d1117;stroke:#656c76}
+      .out{fill:#0f2e1b;stroke:#3fb950}
+      .accent{fill:#4493f8}.accent2{fill:#ab7df8}.accent3{fill:#d29922}.good{fill:#3fb950}
+      .wire{stroke:#9198a1}.wire-d{stroke:#656c76}.head{fill:#9198a1}
+      .chip-g{fill:#0f2e1b;stroke:#3fb950}.chip-a{fill:#2e2306;stroke:#d29922}.chip-p{fill:#271a3c;stroke:#ab7df8}
+      .chip-r{fill:#3c1618;stroke:#f85149}.chip-b{fill:#0c2d4b;stroke:#4493f8}
+      .t-g{fill:#3fb950}.t-a{fill:#d29922}.t-p{fill:#ab7df8}.t-r{fill:#ff7b72}.t-b{fill:#79c0ff}
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="head"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0.5" y="0.5" width="959" height="721" rx="12"/>
+  <text x="24" y="40" class="ink mono" font-size="22" font-weight="700">sushi.jar</text>
+  <text x="152" y="40" class="muted" font-size="14">SUSHI 3.21.1, the FSH compiler, in Java 21: no Node.js or npm, the same output</text>
+  <rect class="tool" x="169" y="74" width="621" height="146" rx="10"/>
+  <rect class="card" x="24" y="84" width="136" height="126" rx="8"/>
+  <text x="34" y="106" class="ink" font-size="14" font-weight="700">FSH</text>
+  <text x="34" y="128" class="ink mono" font-size="13">input/fsh/</text>
+  <text x="34" y="145" class="ink mono" font-size="13">*.fsh</text>
+  <text x="34" y="168" class="muted" font-size="12">FHIR Shorthand</text>
+  <path class="wire" d="M160,147 L177,147" marker-end="url(#arrow)"/>
+  <rect class="stage" x="179" y="84" width="136" height="126" rx="8"/>
+  <text x="189" y="106" class="accent" font-size="14" font-weight="700">1 · Parse</text>
+  <text x="189" y="128" class="ink mono" font-size="13">FSHLexer</text>
+  <text x="189" y="145" class="ink mono" font-size="13">FSHParser</text>
+  <text x="189" y="168" class="muted" font-size="12">hand-written,</text>
+  <text x="189" y="184" class="muted" font-size="12">ANTLR's recovery</text>
+  <path class="wire" d="M315,147 L332,147" marker-end="url(#arrow)"/>
+  <rect class="stage" x="334" y="84" width="136" height="126" rx="8"/>
+  <text x="344" y="106" class="accent" font-size="14" font-weight="700">2 · Import</text>
+  <text x="344" y="128" class="ink mono" font-size="13">FSHImporter</text>
+  <text x="344" y="145" class="ink mono" font-size="13">FSHTank</text>
+  <text x="344" y="168" class="muted" font-size="12">profiles, rules,</text>
+  <text x="344" y="184" class="muted" font-size="12">instances, ...</text>
+  <path class="wire" d="M470,147 L487,147" marker-end="url(#arrow)"/>
+  <rect class="stage" x="489" y="84" width="136" height="126" rx="8"/>
+  <text x="499" y="106" class="accent" font-size="14" font-weight="700">3 · Export</text>
+  <text x="499" y="128" class="ink mono" font-size="13">FHIRExporter</text>
+  <text x="499" y="151" class="muted" font-size="12">StructureDef. +</text>
+  <text x="499" y="167" class="muted" font-size="12">ElementDef., VS,</text>
+  <text x="499" y="183" class="muted" font-size="12">CS, instances</text>
+  <path class="wire" d="M625,147 L642,147" marker-end="url(#arrow)"/>
+  <rect class="stage" x="644" y="84" width="136" height="126" rx="8"/>
+  <text x="654" y="106" class="accent" font-size="14" font-weight="700">4 · IG</text>
+  <text x="654" y="128" class="ink mono" font-size="13">IGExporter</text>
+  <text x="654" y="151" class="muted" font-size="12">ImplementationGuide</text>
+  <text x="654" y="167" class="muted" font-size="12">resource</text>
+  <path class="wire" d="M780,147 L797,147" marker-end="url(#arrow)"/>
+  <rect class="out" x="799" y="84" width="136" height="126" rx="8"/>
+  <text x="809" y="106" class="ink mono" font-size="14" font-weight="700">fsh-generated/</text>
+  <text x="809" y="128" class="ink mono" font-size="13">resources/</text>
+  <text x="809" y="145" class="ink mono" font-size="13">fsh-index.txt</text>
+  <text x="809" y="168" class="muted" font-size="12">byte-identical</text>
+  <text x="809" y="184" class="muted" font-size="12">to SUSHI's</text>
+
+  <!-- tests, configuration, packages -->
+  <rect class="ext" x="24" y="262" width="276" height="156" rx="10"/>
+  <text x="40" y="288" class="ink" font-size="14" font-weight="700">Tests only</text>
+  <text x="40" y="312" class="muted" font-size="12">ANTLR parser generated from</text>
+  <text x="40" y="329" class="muted" font-size="12">SUSHI's unmodified grammar:</text>
+  <text x="40" y="346" class="muted" font-size="12">the oracle for the hand-written</text>
+  <text x="40" y="363" class="muted" font-size="12">parser (trees, errors, recovery)</text>
+  <text x="40" y="394" class="ink" font-size="12">3,584 / 3,604 Jest tests ported</text>
+  <path class="wire-d" d="M247,262 L247,212"/>
+  <rect class="card" x="316" y="262" width="304" height="156" rx="10"/>
+  <text x="332" y="288" class="ink" font-size="14" font-weight="700">Configuration</text>
+  <text x="332" y="312" class="ink mono" font-size="13">sushi-config.yaml</text>
+  <text x="332" y="332" class="ink mono" font-size="13">→ yaml.Yaml</text>
+  <text x="332" y="352" class="ink mono" font-size="13">→ ImportConfiguration</text>
+  <text x="332" y="376" class="muted" font-size="12">yaml@1.10 composer (YAML 1.2) on</text>
+  <text x="332" y="393" class="muted" font-size="12">common's events; SUSHI's checks</text>
+  <path class="wire" d="M402,262 L402,212" marker-end="url(#arrow)"/>
+  <rect class="card" x="636" y="262" width="300" height="156" rx="10"/>
+  <text x="652" y="288" class="ink" font-size="14" font-weight="700">FHIR packages</text>
+  <text x="652" y="312" class="ink mono" font-size="13">fhirdefs.FHIRDefinitions</text>
+  <text x="652" y="332" class="ink mono" font-size="13">utils.MasterFisher</text>
+  <text x="652" y="358" class="muted" font-size="12">org.hl7.fhir.core package cache</text>
+  <text x="652" y="375" class="muted" font-size="12">(~/.fhir/packages, packages.fhir.org);</text>
+  <text x="652" y="392" class="muted" font-size="12">SUSHI's rules where core differs</text>
+  <path class="wire" d="M700,262 L700,240 L557,240 L557,212" marker-end="url(#arrow)"/>
+
+  <!-- common -->
+  <rect class="shared" x="24" y="440" width="912" height="128" rx="10"/>
+  <text x="40" y="466" class="ink mono" font-size="14" font-weight="700">common</text>
+  <text x="108" y="466" class="muted" font-size="12">zero-dependency, Java 17, shared with jekyll.jar</text>
+  <text x="40" y="496" class="ink mono" font-size="13">org.hl7.fhir.common.js</text>
+  <text x="40" y="518" class="ink" font-size="12">JavaScript values everywhere: JsObject keeps key order,</text>
+  <text x="40" y="535" class="ink" font-size="12">numbers are doubles, Json = JSON.stringify/parse, Lodash</text>
+  <text x="496" y="496" class="ink mono" font-size="13">org.hl7.fhir.common.yaml</text>
+  <text x="496" y="518" class="ink" font-size="12">libyaml 0.2.5 event layer; sushi uses its</text>
+  <text x="496" y="535" class="ink" font-size="12">opt-in yaml110 mode (what yaml@1.10 accepts)</text>
+
+  <!-- fidelity -->
+  <rect class="out" x="24" y="590" width="912" height="108" rx="10"/>
+  <text x="40" y="616" class="ink" font-size="14" font-weight="700">Compared with TypeScript SUSHI 3.21.1 on Node 22</text>
+  <text x="40" y="656" class="good" font-size="26" font-weight="700">4 / 6</text>
+  <text x="40" y="678" class="ink" font-size="13">reference IGs identical</text>
+  <text x="340" y="656" class="good" font-size="26" font-weight="700">259 / 267</text>
+  <text x="340" y="678" class="ink" font-size="13">corpus FSH IGs: fsh-generated identical</text>
+  <text x="640" y="656" class="good" font-size="26" font-weight="700">3,717</text>
+  <text x="640" y="678" class="ink" font-size="13">JUnit tests, all passing</text>
+  <text x="920" y="616" class="muted" font-size="12" text-anchor="end">fsh-generated/ byte for byte · console messages · exit status</text>
+</svg>

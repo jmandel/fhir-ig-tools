@@ -8,7 +8,7 @@ untouched; both daemons can run side by side.
 |---|---|
 | Config | `lima/igbuild.yaml` (self-contained; derived from Lima's `docker-rootful` template) |
 | VM | vmType `vz`, aarch64, 16 CPUs, 96 GiB RAM, 300 GiB disk (sparse), Ubuntu 24.04 |
-| Mount | `~/fhir-ig-jekyll` → same path in the VM, **writable**, virtiofs. Nothing else from `$HOME` is mounted. |
+| Mount | `~/fhir-ig-tools` → same path in the VM, **writable**, virtiofs. Nothing else from `$HOME` is mounted. |
 | Docker socket on host | `~/.lima/igbuild/sock/docker.sock` (Lima `portForwards` of `/var/run/docker.sock`) |
 | Docker context | `igbuild` (not made current; Docker Desktop's `desktop-linux` stays the default) |
 
@@ -16,7 +16,7 @@ untouched; both daemons can run side by side.
 
 ```bash
 # create + start (first time; ~1 min, installs Docker via get.docker.com)
-limactl start --tty=false --name=igbuild ~/fhir-ig-jekyll/lima/igbuild.yaml
+limactl start --tty=false --name=igbuild ~/fhir-ig-tools/lima/igbuild.yaml
 # host-side docker context (once)
 docker context create igbuild --docker "host=unix://$HOME/.lima/igbuild/sock/docker.sock"
 
@@ -33,16 +33,16 @@ edit `igbuild.yaml`, `limactl delete igbuild` and re-create.
 
 ## Image
 
-The image must exist on this daemon too. **Build it on the same base digest as Docker Desktop**:
-`ghcr.io/fhir/ig-publisher-localdev:latest` moved on 2026-11-19 (new `:latest` = Debian trixie,
-Ruby 3.4.13, kramdown 2.6.1), while our reference (D6) is Ruby 3.2.3 / kramdown 2.5.2 / Jekyll 4.4.1.
-So pin the base by digest and tag it `:latest` locally before building:
+The image must exist on this daemon too, built on the base digest `docker/Dockerfile` pins:
+`ghcr.io/fhir/ig-publisher-localdev:latest` as of 2026-11-19 (Debian trixie, Ruby 3.4.13, kramdown 2.6.1); the
+reference until 2026-11-23 was `sha256:39509f41…` (Ruby 3.2.3, kramdown 2.5.2). Pin the base by digest and tag it
+`:latest` locally before building:
 
 ```bash
-D=sha256:39509f4138197f0b93a99ed3ae00e6dce2bbd76df1a2e4e2bd6dec4180dc34b5   # = Docker Desktop's copy
+D=sha256:daa6a3f40ffb80e71f1b3a026498cf60f0a324e188a5cb33676e2a9f871df898   # docker/Dockerfile's BASE
 docker --context igbuild pull ghcr.io/fhir/ig-publisher-localdev@$D
 docker --context igbuild tag  ghcr.io/fhir/ig-publisher-localdev@$D ghcr.io/fhir/ig-publisher-localdev:latest
-docker --context igbuild build --pull=false -t ig-publisher-localdev-ca ~/fhir-ig-jekyll/docker
+docker --context igbuild build --pull=false -t ig-publisher-localdev-ca ~/fhir-ig-tools/docker
 ```
 
 Verified identical to Docker Desktop's image (ruby -v, gem versions, OS). Check with
@@ -56,7 +56,7 @@ current context (Docker Desktop), exactly as before.
 ```bash
 DOCKER_CONTEXT=igbuild scripts/golden-build.sh <repo-name> [6g]
 DOCKER_CONTEXT=igbuild scripts/golden-batch.sh -j 8 -m -Xmx8g -f names.txt
-DOCKER_CONTEXT=igbuild shim/build.sh liquid        # shim/run.sh, shim/oracle/oracle.sh likewise
+DOCKER_CONTEXT=igbuild ./build.sh --fast liquid        # jekyll/run.sh, jekyll/oracle/oracle.sh likewise
 # or: DOCKER_HOST=unix://$HOME/.lima/igbuild/sock/docker.sock ...
 ```
 

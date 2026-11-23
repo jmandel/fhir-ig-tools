@@ -1,0 +1,12 @@
+# A small FSH project for scripts/sushi-e2e.sh: the sushi wrapper vs `java -jar sushi.jar`.
+id: example.fhir-ig-tools.sushi-e2e
+canonical: http://example.org/fhir/sushi-e2e
+name: SushiE2E
+title: SUSHI wrapper end-to-end check
+status: draft
+version: 0.1.0
+fhirVersion: 4.0.1
+copyrightYear: 2026+
+releaseLabel: ci-build
+publisher:
+  name: fhir-ig-tools

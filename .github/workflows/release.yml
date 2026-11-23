@@ -1,12 +1,17 @@
 name: Release
 
-# Push a tag like v0.1.0 to publish a GitHub Release with:
-#   jekyll-shim, jekyll-shim.cmd   self-contained wrappers (Unix, Windows) pinned to this release's
-#                                  version and shim.jar SHA-256: on first use they download that jar
-#                                  into ~/.fhir-ig-jekyll/<version>/, verify it, and run it (like gradlew)
-#   shim.jar                       the shim itself (java -jar shim.jar build --destination <dir>)
-#   fhir-ig-jekyll.zip             offline bundle: shim.jar + both wrappers + docs and licenses
+# Push a tag like v0.2.0 to publish a GitHub Release with:
+#   jekyll-shim, jekyll-shim.cmd   wrappers for the Jekyll stage (Unix, Windows), stamped with this release's version
+#                                  and jekyll.jar's SHA-256: on first use they download that jar into
+#                                  ~/.fhir-ig-jekyll/<version>/, verify it, and run it (like gradlew)
+#   jekyll.jar                     the shim itself (java -jar jekyll.jar build --destination <dir>)
+#   fhir-ig-jekyll.zip             offline bundle: jekyll.jar + both wrappers + docs and licenses
+#   sushi, sushi.cmd               wrappers for SUSHI (Unix, Windows), stamped the same way for sushi.jar
+#                                  (cache ~/.fhir-ig-sushi/<version>/); on the PATH as `sushi`
+#   sushi.jar                      the SUSHI port (java -jar sushi.jar <ig dir>), self-contained
+#   SHA256SUMS                     checksums of all of the above
 # Asset names don't carry the version, so .../releases/latest/download/<asset> always works.
+# The build uses JDK 21 for all modules; every module's class files target Java 17 (--release 17).
 on:
   push:
     tags: ['v*']
@@ -34,9 +39,12 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'   # class files target Java 17; runs on 17+
-      - name: Build
-        run: shim/build.sh
+          java-version: '21'   # every module is compiled with --release 17, so jekyll.jar and sushi.jar run on 17+
+          cache: maven
+      - name: Build (Maven, all modules; jekyll/target/jekyll.jar is the self-contained release jar, common shaded in)
+        # -Dsushi.release: sushi.jar records which release it is (checked by sushi --require-latest)
+        # -Drevision: the Maven version of every module is the release's (pom.xml: ${revision}, 0.x.y-SNAPSHOT locally)
+        run: ./build.sh -B -ntp -Drevision="${TAG#v}" -Dsushi.release="${TAG#v}" package
       - name: Test
         run: |
           git submodule update --init --depth 1 third_party/yaml-test-suite   # YAML suite case data
@@ -46,31 +54,44 @@ jobs:
         run: |
           D=dist/fhir-ig-jekyll
           mkdir -p "$D"
-          scripts/stamp-wrappers.sh "${TAG#v}" shim/build/shim.jar "$D"
-          cp shim/build/shim.jar "$D/"
-          cp README.md LICENSE THIRD_PARTY_NOTICES.md shim/INTEGRATION.md "$D/"
+          scripts/stamp-wrappers.sh "${TAG#v}" jekyll/target/jekyll.jar "$D"
+          cp jekyll/target/jekyll.jar "$D/"
+          cp README.md LICENSE THIRD_PARTY_NOTICES.md jekyll/INTEGRATION.md "$D/"
           scripts/e2e.sh "$D"
           (cd dist && zip -qr fhir-ig-jekyll.zip fhir-ig-jekyll)
-          cp shim/build/shim.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
-          (cd dist && sha256sum shim.jar jekyll-shim jekyll-shim.cmd fhir-ig-jekyll.zip > SHA256SUMS)
+          cp jekyll/target/jekyll.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
+          S=dist/sushi-wrappers
+          scripts/stamp-wrappers.sh --sushi "${TAG#v}" sushi/target/sushi.jar "$S"
+          cp sushi/target/sushi.jar "$S/"
+          scripts/sushi-e2e.sh "$S" sushi/target/sushi.jar   # the stamped wrapper, using the jar next to it
+          cp sushi/target/sushi.jar "$S/sushi" "$S/sushi.cmd" dist/
+          (cd dist && sha256sum jekyll.jar jekyll-shim jekyll-shim.cmd fhir-ig-jekyll.zip sushi.jar sushi sushi.cmd > SHA256SUMS)
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes="Drop-in for the IG Publisher's Jekyll stage. Requires Java 17+.
+          notes="Java replacements for the IG Publisher's Jekyll stage (jekyll.jar, Java 17+) and for SUSHI (sushi.jar, Java 17+).
 
-          Quick start (Linux/macOS): download the one-file wrapper; it fetches and verifies shim.jar on first use.
-              curl -fLO https://github.com/jmandel/fhir-ig-jekyll/releases/download/$TAG/jekyll-shim && chmod +x jekyll-shim
+          Jekyll (Linux/macOS): download the one-file wrapper; it fetches and verifies jekyll.jar on first use.
+              curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/download/$TAG/jekyll-shim && chmod +x jekyll-shim
               java -jar publisher.jar -ig . -jekyll \$PWD/jekyll-shim
-          Windows: download jekyll-shim.cmd and pass its full path as -jekyll.
-          Offline: fhir-ig-jekyll.zip bundles shim.jar with both wrappers.
-          Or run it directly in a Jekyll source folder: java -jar shim.jar build --destination <dir>"
+          Windows: download jekyll-shim.cmd and pass its full path as -jekyll. Offline: fhir-ig-jekyll.zip.
+
+          SUSHI (Linux/macOS): put the sushi wrapper on the PATH; it fetches and verifies sushi.jar on first use.
+              curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/download/$TAG/sushi && chmod +x sushi && mv sushi ~/bin/
+          Windows: put sushi.cmd on the PATH. The publisher then runs it as sushi (unless the IG's fsh.ini pins a
+          sushi-version: then it runs npx fsh-sushi@<version>)."
+          assets=(dist/jekyll-shim dist/jekyll-shim.cmd dist/jekyll.jar dist/fhir-ig-jekyll.zip dist/sushi dist/sushi.cmd dist/sushi.jar dist/SHA256SUMS)
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/shim.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --clobber
+            gh release upload "$TAG" "${assets[@]}" --clobber
           else
-            gh release create "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/shim.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --title "$TAG" --notes "$notes"
+            gh release create "$TAG" "${assets[@]}" --title "$TAG" --notes "$notes"
           fi
-      - name: Verify the published wrapper (downloads shim.jar from this release)
+      - name: Verify the published wrapper (downloads jekyll.jar from this release)
         run: |
           W=$(mktemp -d); cp dist/jekyll-shim "$W/"
           FHIR_IG_JEKYLL_HOME=$(mktemp -d) scripts/e2e.sh "$W"
+      - name: Verify the published sushi wrapper (downloads sushi.jar from this release)
+        run: |
+          W=$(mktemp -d); cp dist/sushi "$W/"
+          FHIR_IG_SUSHI_HOME=$(mktemp -d) scripts/sushi-e2e.sh "$W" sushi/target/sushi.jar

@@ -1,6 +1,6 @@
 # Lima VM "igbuild": big Ubuntu + rootful Docker Engine for parallel FHIR IG Publisher builds.
 # Derived from Lima's docker-rootful template, self-contained so nothing else from $HOME is mounted.
-# Create/start:  limactl start --name=igbuild ~/fhir-ig-jekyll/lima/igbuild.yaml
+# Create/start:  limactl start --name=igbuild ~/fhir-ig-tools/lima/igbuild.yaml
 # See lima/README.md.
 minimumLimaVersion: 2.0.0
 
@@ -15,15 +15,15 @@ disk: 300GiB
 mountType: virtiofs
 mounts:
 # Same absolute path inside the VM, so scripts' $ROOT-derived bind mounts work unchanged.
-- location: ~/fhir-ig-jekyll
-  mountPoint: ~/fhir-ig-jekyll
+- location: ~/fhir-ig-tools
+  mountPoint: ~/fhir-ig-tools
   writable: true
 
 # Optional: trust a TLS-inspecting proxy's roo CA in the guest OS store (cloud-init ca_certs,
 # runs before any provisioning), so apt, curl, get.docker.com and dockerd registry pulls work.
 caCerts:
   files:
-  - ~/fhir-ig-jekyll/docker/extra-ca/proxy-root.pem
+  - ~/fhir-ig-tools/docker/extra-ca/proxy-root.pem
 
 containerd:
   system: false
@@ -40,7 +40,7 @@ provision:
     set -eux -o pipefail
     # belt and braces: make sure the CA is in the OS bundle even if cloud-init skipped it
     if ! grep -q extra-ca /etc/ca-certificates.conf 2>/dev/null && [ ! -e /usr/local/share/ca-certificates/extra-ca.crt ]; then
-      cp ~/fhir-ig-jekyll/docker/extra-ca/proxy-root.pem /usr/local/share/ca-certificates/extra-ca.crt
+      cp ~/fhir-ig-tools/docker/extra-ca/proxy-root.pem /usr/local/share/ca-certificates/extra-ca.crt
       update-ca-certificates
     fi
     command -v docker >/dev/null 2>&1 && exit 0

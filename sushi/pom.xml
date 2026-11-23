@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The Java port of SUSHI 3.21.1, the FSH compiler (docs/MONOREPO.md "Module rules", sushi/PORTING.md). Java 21.
+  Runtime dependencies: fhir-ig-common, and org.hl7.fhir.core's utilities (package cache, registry, NpmPackage) with
+  commons-compress, which core's package cache needs at runtime (PORTING.md D1). ANTLR is test-only: the parser
+  generated from SUSHI's grammar is the oracle for the hand-written FSH parser (D6).
+  `package` writes two jars:
+    target/fhir-ig-sushi-<version>.jar   this module's classes only
+    target/sushi.jar                     the release artifact: self-contained (common, core utilities and their
+                                         libraries shaded in), run as `java -jar sushi.jar <ig dir>` (the same
+                                         options as `sushi`) by the sushi/sushi wrappers
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.hl7.fhir</groupId>
+    <artifactId>fhir-ig-tools-parent</artifactId>
+    <version>${revision}</version>
+  </parent>
+  <artifactId>fhir-ig-sushi</artifactId>
+  <name>fhir-ig-sushi</name>
+  <description>Java port of SUSHI 3.21.1, the FSH compiler used by the FHIR IG Publisher</description>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <sushi.mainClass>org.hl7.fhir.sushi.App</sushi.mainClass>
+    <!-- where target/ goes; -Dsushi.buildDir=... moves it off the checkout -->
+    <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
+    <!-- org.hl7.fhir.core release matching the publisher toolchain (7.0.7-SNAPSHOT) -->
+    <hl7.fhir.core.version>7.0.6</hl7.fhir.core.version>
+    <!-- the fhir-ig-tools release this sushi.jar belongs to (org/hl7/fhir/sushi/release.properties), checked by sushi
+         require-latest; the release workflow sets it from the tag (sushi.release = the tag without v). Default: the pom version,
+         so a local build reports e.g. 0.3.1-SNAPSHOT, which require-latest treats as a development build -->
+    <sushi.release>${project.version}</sushi.release>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.hl7.fhir</groupId>
+      <artifactId>fhir-ig-common</artifactId>
+    </dependency>
+    <!-- Runtime: no third-party libraries except org.hl7.fhir.core modules the IG Publisher ships (PORTING.md D1).
+         org.hl7.fhir.utilities: package cache/registry/NpmPackage, used as is (D1a, WP-8). -->
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.utilities</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
+    <!-- org.hl7.fhir.r4 / r4b / r5: the XML parser and JSON composer of each FHIR version, used only to read
+         predefined resources and a legacy ig.xml given in FHIR XML (fhirdefs.FhirXml; docs/core-divergences.md C6). -->
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r4</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r4b</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>org.hl7.fhir.r5</artifactId>
+      <version>${hl7.fhir.core.version}</version>
+      <exclusions>
+        <!-- used by r5's publishing/signature/diagram code, not by its XmlParser/JsonParser -->
+        <exclusion><groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId></exclusion>
+        <exclusion><groupId>com.nimbusds</groupId><artifactId>nimbus-jose-jwt</artifactId></exclusion>
+        <exclusion><groupId>net.sourceforge.plantuml</groupId><artifactId>plantuml-mit</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <!-- optional in core's poms, but their XmlParsers need it (XmlPullParser, also in their method signatures, so
+           at compile time too); the version core uses. Our code must not import it (build.DependencyRuleTest). -->
+      <groupId>org.codelibs</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <!-- optional in core's pom but needed at runtime by its package cache; the version the publisher ships.
+           runtime scope: our code must not import it (build.DependencyRuleTest). -->
+      <version>1.26.0</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- Test only: the ANTLR parser generated from SUSHI's grammar is the oracle for the hand-written FSH parser. -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${antlr.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <directory>${sushi.buildDir}</directory>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes><exclude>org/hl7/fhir/sushi/release.properties</exclude></excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes><include>org/hl7/fhir/sushi/release.properties</include></includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sushi-rules</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[17,)</version>
+                  <message>sushi needs JDK 17 or newer</message>
+                </requireJavaVersion>
+                <bannedDependencies>
+                  <message>sushi may depend only on fhir-ig-common, org.hl7.fhir.core modules, xpp3 and (runtime) commons-compress; see docs/MONOREPO.md</message>
+                  <!-- direct dependencies only: core's own libraries come with it (DependencyRuleTest keeps our code off them) -->
+                  <searchTransitive>false</searchTransitive>
+                  <excludes>
+                    <exclude>*:*:*:*:compile</exclude>
+                    <exclude>*:*:*:*:runtime</exclude>
+                    <exclude>*:*:*:*:provided</exclude>
+                    <exclude>*:*:*:*:system</exclude>
+                  </excludes>
+                  <includes>
+                    <include>org.hl7.fhir:fhir-ig-common</include>
+                    <include>ca.uhn.hapi.fhir:org.hl7.fhir.*</include>
+                    <include>org.apache.commons:commons-compress:*:jar:runtime</include>
+                    <include>org.codelibs:xpp3</include>
+                  </includes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <!-- Generates the TEST-SCOPE oracle parser from src/test/antlr4 (SUSHI's .g4 files, unmodified). The plugin
+             registers its output as a main source root, so default-compile excludes it and build-helper adds it to
+             the test sources instead. -->
+        <configuration>
+          <sourceDirectory>${project.basedir}/src/test/antlr4</sourceDirectory>
+          <outputDirectory>${project.build.directory}/generated-test-sources/antlr4</outputDirectory>
+          <visitor>true</visitor>
+          <listener>true</listener>
+        </configuration>
+        <executions>
+          <execution>
+            <goals><goal>antlr4</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>17</release>
+          <compilerArgs><arg>-Xlint:all,-serial,-processing</arg></compilerArgs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes><exclude>org/hl7/fhir/sushi/importer/antlr/**</exclude></excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>antlr-oracle-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals><goal>add-test-source</goal></goals>
+            <configuration>
+              <sources><source>${project.build.directory}/generated-test-sources/antlr4</source></sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <trimStackTrace>false</trimStackTrace>
+          <!-- testcase name in the XML reports = the method's @DisplayName (= Jest fullName), which
+               scripts/test-inventory.py (coverage mode) matches against tests/inventory.tsv -->
+          <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+            <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+          </statelessTestsetReporter>
+          <!-- Test data: SUSHI's own test fixtures are vendored (src/test/resources/sushi-ts). Data that cannot be in the
+               repository (the corpus, recorded TS runs) is opt-in: -Dsushi.vmdata=<data root> or the per-test
+               properties; Maven passes -D properties on to the tests (testhelpers.OptInData, sushi/README.md). -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest><mainClass>${sushi.mainClass}</mainClass></manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sushi-jar</id>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <outputFile>${project.build.directory}/sushi.jar</outputFile>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/maven/**</exclude>
+                    <!-- signatures of the original jars do not hold for the merged one -->
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>META-INF/*.EC</exclude>
+                    <!-- the merged jar runs on the class path, not as a JPMS module -->
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${sushi.mainClass}</mainClass>
+                  <!-- some bundled libraries are multi-release jars: keep their versioned classes in effect -->
+                  <manifestEntries><Multi-Release>true</Multi-Release></manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <!-- the bundled libraries' notices: Apache NOTICE files merged into one META-INF/NOTICE (the Apache
+                     License asks for them to be kept), and this repository's license and THIRD_PARTY_NOTICES.md,
+                     which lists every bundled library with its license -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                  <addHeader>false</addHeader>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/fhir-ig-tools/LICENSE</resource>
+                  <file>${project.basedir}/../LICENSE</file>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/fhir-ig-tools/THIRD_PARTY_NOTICES.md</resource>
+                  <file>${project.basedir}/../THIRD_PARTY_NOTICES.md</file>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

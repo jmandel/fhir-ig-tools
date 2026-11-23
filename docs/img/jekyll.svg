@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 820" width="960" height="820" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">jekyll.jar: the IG Publisher's Jekyll stage in Java</title>
+  <desc id="d">jekyll.jar reads temp/pages, renders every page with Java ports of Liquid, kramdown, Rouge and Jekyll's YAML stack (SafeYAML and Psych over common's libyaml event layer), and writes the same output folder as Jekyll. The publisher calls it as a drop-in Jekyll command; an in-process library API exists. Differential suites against the real Ruby gems and a golden corpus of real IGs verify the output.</desc>
+  <style>
+    .bg{fill:#ffffff;stroke:#d0d7de}
+    .ink{fill:#1f2328}.muted{fill:#59636e}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .card{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.2}
+    .pub{fill:#f6f8fa;stroke:#8c959f;stroke-width:1.5}
+    .tool{fill:#ddf4ff;stroke:#0969da;stroke-width:2}
+    .tool2{fill:#fbefff;stroke:#8250df;stroke-width:2}
+    .shared{fill:#fff8c5;stroke:#9a6700;stroke-width:1.5}
+    .stage{fill:#ffffff;stroke:#54aeff;stroke-width:1.2}
+    .stage2{fill:#ffffff;stroke:#c297ff;stroke-width:1.2}
+    .stage3{fill:#ffffff;stroke:#d4a72c;stroke-width:1.2}
+    .ext{fill:#ffffff;stroke:#8c959f;stroke-width:1.2;stroke-dasharray:5 4}
+    .out{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+    .accent{fill:#0969da}.accent2{fill:#8250df}.accent3{fill:#9a6700}.good{fill:#1a7f37}
+    .wire{stroke:#59636e;stroke-width:2;fill:none}
+    .wire-d{stroke:#8c959f;stroke-width:1.6;fill:none;stroke-dasharray:6 5}
+    .head{fill:#59636e}
+    .chip-g{fill:#dafbe1;stroke:#1a7f37}.chip-a{fill:#fff8c5;stroke:#9a6700}.chip-p{fill:#fbefff;stroke:#8250df}
+    .chip-r{fill:#ffebe9;stroke:#cf222e}.chip-b{fill:#ddf4ff;stroke:#0969da}
+    .t-g{fill:#1a7f37}.t-a{fill:#7d4e00}.t-p{fill:#8250df}.t-r{fill:#a40e26}.t-b{fill:#0550ae}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#0d1117;stroke:#3d444d}
+      .ink{fill:#e6edf3}.muted{fill:#9198a1}
+      .card{fill:#151b23;stroke:#3d444d}
+      .pub{fill:#151b23;stroke:#656c76}
+      .tool{fill:#0c2d4b;stroke:#4493f8}
+      .tool2{fill:#271a3c;stroke:#ab7df8}
+      .shared{fill:#2e2306;stroke:#d29922}
+      .stage{fill:#0d1117;stroke:#1f6feb}
+      .stage2{fill:#0d1117;stroke:#8957e5}
+      .stage3{fill:#0d1117;stroke:#9e6a03}
+      .ext{fill:#0d1117;stroke:#656c76}
+      .out{fill:#0f2e1b;stroke:#3fb950}
+      .accent{fill:#4493f8}.accent2{fill:#ab7df8}.accent3{fill:#d29922}.good{fill:#3fb950}
+      .wire{stroke:#9198a1}.wire-d{stroke:#656c76}.head{fill:#9198a1}
+      .chip-g{fill:#0f2e1b;stroke:#3fb950}.chip-a{fill:#2e2306;stroke:#d29922}.chip-p{fill:#271a3c;stroke:#ab7df8}
+      .chip-r{fill:#3c1618;stroke:#f85149}.chip-b{fill:#0c2d4b;stroke:#4493f8}
+      .t-g{fill:#3fb950}.t-a{fill:#d29922}.t-p{fill:#ab7df8}.t-r{fill:#ff7b72}.t-b{fill:#79c0ff}
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="head"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0.5" y="0.5" width="959" height="819" rx="12"/>
+  <text x="24" y="40" class="ink mono" font-size="22" font-weight="700">jekyll.jar</text>
+  <text x="166" y="40" class="muted" font-size="14">the IG Publisher's Jekyll stage in Java: no Ruby, the same output</text>
+
+  <!-- pipeline -->
+  <rect class="pub" x="24" y="76" width="176" height="268" rx="10"/>
+  <text x="40" y="102" class="ink" font-size="15" font-weight="700">IG Publisher</text>
+  <text x="40" y="126" class="muted" font-size="13">writes the site</text>
+  <text x="40" y="144" class="muted" font-size="13">source folder:</text>
+  <text x="40" y="174" class="ink mono" font-size="13">temp/pages/</text>
+  <text x="54" y="194" class="ink mono" font-size="13">*.html *.md</text>
+  <text x="54" y="214" class="ink mono" font-size="13">_includes/</text>
+  <text x="54" y="234" class="ink mono" font-size="13">_data/</text>
+  <text x="54" y="254" class="ink mono" font-size="13">_config.yml</text>
+  <text x="40" y="290" class="muted" font-size="13">12k–260k files</text>
+  <text x="40" y="308" class="muted" font-size="13">per IG</text>
+  <path class="wire" d="M200,210 L232,210" marker-end="url(#arrow)"/>
+  <rect class="tool" x="236" y="76" width="488" height="268" rx="10"/>
+  <text x="254" y="102" class="ink mono" font-size="16" font-weight="700">jekyll.jar</text>
+  <text x="706" y="102" class="muted" font-size="13" text-anchor="end">Java 17+ · JDK only · ~650 KB</text>
+  <rect class="stage" x="254" y="116" width="148" height="92" rx="8"/>
+  <text x="266" y="138" class="accent" font-size="14" font-weight="700">1 · Read</text>
+  <text x="266" y="160" class="ink" font-size="13">parallel walk</text>
+  <text x="266" y="177" class="ink" font-size="13">front matter, _data</text>
+  <text x="266" y="194" class="ink" font-size="13">thread-safe site</text>
+  <path class="wire" d="M402,162 L412,162" marker-end="url(#arrow)"/>
+  <rect class="stage" x="412" y="116" width="148" height="92" rx="8"/>
+  <text x="424" y="138" class="accent" font-size="14" font-weight="700">2 · Render</text>
+  <text x="424" y="160" class="ink" font-size="13">pages in parallel</text>
+  <text x="424" y="177" class="ink" font-size="13">Liquid, markdownify</text>
+  <text x="424" y="194" class="ink" font-size="13">include cache</text>
+  <path class="wire" d="M560,162 L570,162" marker-end="url(#arrow)"/>
+  <rect class="stage" x="570" y="116" width="148" height="92" rx="8"/>
+  <text x="582" y="138" class="accent" font-size="14" font-weight="700">3 · Write</text>
+  <text x="582" y="160" class="ink" font-size="13">rendered pages</text>
+  <text x="582" y="177" class="ink" font-size="13">static files</text>
+  <text x="582" y="194" class="ink" font-size="13">Jekyll's paths</text>
+  <text x="254" y="230" class="muted" font-size="13">file-by-file ports of the gems the autobuilder runs</text>
+  <rect class="stage" x="254" y="242" width="110" height="86" rx="8"/>
+  <text x="262" y="264" class="ink mono" font-size="14" font-weight="700">liquid</text>
+  <text x="262" y="286" class="ink" font-size="12">Liquid 4.0.4</text>
+  <text x="262" y="303" class="ink" font-size="12">warn mode</text>
+  <rect class="stage" x="368" y="242" width="110" height="86" rx="8"/>
+  <text x="376" y="264" class="ink mono" font-size="14" font-weight="700">kramdown</text>
+  <text x="376" y="286" class="ink" font-size="12">kramdown 2.6.1</text>
+  <text x="376" y="303" class="ink" font-size="12">+ GFM 1.1.0</text>
+  <rect class="stage" x="482" y="242" width="110" height="86" rx="8"/>
+  <text x="490" y="264" class="ink mono" font-size="14" font-weight="700">rouge</text>
+  <text x="490" y="286" class="ink" font-size="12">Rouge 4.7.0</text>
+  <text x="490" y="303" class="ink" font-size="12">IG lexers</text>
+  <rect class="stage" x="596" y="242" width="110" height="86" rx="8"/>
+  <text x="604" y="264" class="ink mono" font-size="14" font-weight="700">yaml</text>
+  <text x="604" y="286" class="ink" font-size="12">SafeYAML, Psych</text>
+  <text x="604" y="303" class="ink" font-size="12">libyaml: common</text>
+  <path class="wire" d="M724,210 L756,210" marker-end="url(#arrow)"/>
+  <rect class="out" x="760" y="76" width="176" height="268" rx="10"/>
+  <text x="776" y="102" class="ink mono" font-size="15" font-weight="700">output/</text>
+  <text x="776" y="126" class="muted" font-size="13">the HTML Jekyll</text>
+  <text x="776" y="144" class="muted" font-size="13">writes (DOM, exact)</text>
+  <text x="776" y="182" class="good" font-size="26" font-weight="700">260 / 266</text>
+  <text x="776" y="202" class="ink" font-size="13">real IGs identical</text>
+  <text x="776" y="246" class="good" font-size="26" font-weight="700">3–7×</text>
+  <text x="776" y="266" class="ink" font-size="13">faster than Jekyll</text>
+  <text x="776" y="308" class="good" font-size="22" font-weight="700">50–78%</text>
+  <text x="776" y="328" class="ink" font-size="13">of Jekyll's memory needed</text>
+
+  <!-- integration -->
+  <text x="24" y="386" class="ink" font-size="16" font-weight="700">How the publisher calls it</text>
+  <rect class="card" x="24" y="400" width="296" height="116" rx="10"/>
+  <text x="40" y="426" class="ink" font-size="14" font-weight="700">1 · CLI drop-in</text>
+  <rect class="chip-g" x="204" y="411" width="104" height="22" rx="11"/>
+  <text x="256.0" y="426" class="t-g" font-size="12" font-weight="600" text-anchor="middle">works today</text>
+  <text x="40" y="452" class="ink mono" font-size="13">-jekyll jekyll-shim</text>
+  <text x="40" y="476" class="muted" font-size="13">Jekyll's command line and console</text>
+  <text x="40" y="494" class="muted" font-size="13">output; no publisher change</text>
+  <rect class="card" x="332" y="400" width="296" height="116" rx="10"/>
+  <text x="348" y="426" class="ink" font-size="14" font-weight="700">2 · In-process library</text>
+  <rect class="chip-a" x="532" y="411" width="84" height="22" rx="11"/>
+  <text x="574.0" y="426" class="t-a" font-size="12" font-weight="600" text-anchor="middle">prototype</text>
+  <text x="348" y="452" class="ink mono" font-size="13">Shim.build(src, dest, opts)</text>
+  <text x="348" y="476" class="muted" font-size="13">no subprocess, no second JVM;</text>
+  <text x="348" y="494" class="muted" font-size="13">errors arrive as exceptions</text>
+  <rect class="card" x="640" y="400" width="296" height="116" rx="10"/>
+  <text x="656" y="426" class="ink" font-size="14" font-weight="700">3 · Lazy fragments</text>
+  <rect class="chip-p" x="824" y="411" width="100" height="22" rx="11"/>
+  <text x="874.0" y="426" class="t-p" font-size="12" font-weight="600" text-anchor="middle">not pursued</text>
+  <text x="656" y="452" class="ink mono" font-size="13">Options.includeProvider(..)</text>
+  <text x="656" y="476" class="muted" font-size="13">includes supplied on demand;</text>
+  <text x="656" y="494" class="muted" font-size="13">needs publisher changes</text>
+
+  <!-- verification -->
+  <text x="24" y="558" class="ink" font-size="16" font-weight="700">How we know it matches</text>
+  <rect class="card" x="24" y="572" width="450" height="228" rx="10"/>
+  <text x="40" y="598" class="ink" font-size="14" font-weight="700">Differential suites vs the real Ruby gems</text>
+  <text x="40" y="620" class="muted" font-size="13">each case runs through the gem (in the pinned image) and</text>
+  <text x="40" y="638" class="muted" font-size="13">through the Java port; outputs must be identical</text>
+  <text x="40" y="670" class="accent mono" font-size="13" font-weight="700">Liquid</text>
+  <text x="132" y="670" class="ink" font-size="13">4,167 cases (+150 CRLF)</text>
+  <text x="40" y="694" class="accent mono" font-size="13" font-weight="700">kramdown</text>
+  <text x="132" y="694" class="ink" font-size="13">2,207 real fragments · 4,000 adversarial</text>
+  <text x="40" y="718" class="accent mono" font-size="13" font-weight="700">YAML</text>
+  <text x="132" y="718" class="ink" font-size="13">687 real files · 804 suite · 343k fuzz</text>
+  <text x="40" y="742" class="accent mono" font-size="13" font-weight="700">Rouge</text>
+  <text x="132" y="742" class="ink" font-size="13">2,467 fragments from real IGs</text>
+  <text x="40" y="766" class="accent mono" font-size="13" font-weight="700">Jekyll</text>
+  <text x="132" y="766" class="ink" font-size="13">75 site-behavior cases</text>
+  <rect class="card" x="490" y="572" width="446" height="228" rx="10"/>
+  <text x="506" y="598" class="ink" font-size="14" font-weight="700">Golden corpus</text>
+  <rect class="stage" x="506" y="612" width="128" height="52" rx="8"/>
+  <text x="570" y="634" class="ink" font-size="13" font-weight="600" text-anchor="middle">real IG repos</text>
+  <text x="570" y="653" class="muted" font-size="12" text-anchor="middle">build.fhir.org</text>
+  <path class="wire" d="M634,638 L646,638" marker-end="url(#arrow)"/>
+  <rect class="stage" x="648" y="612" width="128" height="52" rx="8"/>
+  <text x="712" y="634" class="ink" font-size="13" font-weight="600" text-anchor="middle">publisher +</text>
+  <text x="712" y="653" class="muted" font-size="12" text-anchor="middle">Jekyll 4.4.1</text>
+  <path class="wire" d="M776,638 L788,638" marker-end="url(#arrow)"/>
+  <rect class="stage" x="790" y="612" width="128" height="52" rx="8"/>
+  <text x="854" y="634" class="ink" font-size="13" font-weight="600" text-anchor="middle">jekyll.jar on</text>
+  <text x="854" y="653" class="muted" font-size="12" text-anchor="middle">the same input</text>
+  <text x="506" y="708" class="good" font-size="22" font-weight="700">1,024,171 files identical</text>
+  <text x="506" y="734" class="muted" font-size="13">260 of 266 IGs; the other 6 cannot match by construction</text>
+  <text x="506" y="752" class="muted" font-size="13">(build timestamps, case-only file names, one IG where</text>
+  <text x="506" y="770" class="muted" font-size="13">Jekyll itself fails); compared by normalized DOM</text>
+</svg>

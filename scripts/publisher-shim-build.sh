@@ -1,5 +1,5 @@
 #!/bin/bash
-# P3.7: full IG Publisher run with the shim as its Jekyll (`-jekyll shim/jekyll-shim`), then compare
+# P3.7: full IG Publisher run with the shim as its Jekyll (`-jekyll jekyll/jekyll-shim`), then compare
 # the publisher's final output/ against a baseline publisher output built with real Jekyll.
 # usage: scripts/publisher-shim-build.sh <repos-name> [baseline-output-dir on the VM, default $VMDATA/igs/<name>/<ig>/output] [-Xmx, default 6g]
 # Build copy on the VM disk ($VMDATA/igs-shim/<name>); log and diff on the Mac under work/igs-shim/.
@@ -14,7 +14,7 @@ BASE="${2:-$VMDATA/igs/$NAME/$igsub/output}"
 to_vm "$SRC" "$WORK" --exclude .git
 start=$(date +%s)
 docker run --rm -v "$WORK":/home/publisher/ig -v "${FHIR_CACHE:-$VMDATA/fhir-cache}":/home/publisher/.fhir \
-  -v "$ROOT/work/bin":/opt/pub:ro -v "$ROOT/shim":/opt/shim:ro -w "/home/publisher/ig/$igsub" "$IMAGE" \
+  -v "$ROOT/work/bin":/opt/pub:ro -v "$ROOT/jekyll":/opt/shim:ro -w "/home/publisher/ig/$igsub" "$IMAGE" \
   bash -c "java -Xmx$XMX -jar /opt/pub/publisher.jar -ig . -no-network-check -jekyll /opt/shim/jekyll-shim 2>&1 | tail -n 4000" > "$LOG" 2>&1 || true
 end=$(date +%s)
 echo "full_build_seconds=$((end-start))"

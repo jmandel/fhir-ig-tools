@@ -1,23 +1,41 @@
 # Third-party notices
 
-The Java code under `shim/src/main/java` contains ports (translations into Java) of the projects
-below. Their copyright notices and licenses follow. The upstream sources themselves are not
-redistributed here; `third_party/` holds them as optional git submodules for developers.
+The Java code under `jekyll/src/main/java`, `common/src/main/java` and `sushi/src/main/java` contains ports
+(translations into Java) of the projects below. Their copyright notices and licenses follow. The upstream sources
+themselves are not redistributed here, except for the SUSHI files listed in its section; `third_party/` holds the
+Ruby sources as optional git submodules for developers.
 
 | Project | Version | License | Ported into |
 |---|---|---|---|
 | Liquid (Shopify) | 4.0.4 | MIT | `org.hl7.fhir.jekyll.liquid` |
 | Jekyll | 4.4.1 | MIT | `org.hl7.fhir.jekyll.site` |
-| kramdown | 2.5.2 | MIT | `org.hl7.fhir.jekyll.kramdown` |
+| kramdown | 2.6.1 | MIT | `org.hl7.fhir.jekyll.kramdown` |
 | kramdown-parser-gfm | 1.1.0 | MIT | `org.hl7.fhir.jekyll.kramdown` |
 | Rouge (incl. Pygments-derived lexers) | 4.7.0 | MIT; Pygments BSD-2-Clause | `org.hl7.fhir.jekyll.rouge` |
 | SafeYAML | 1.0.5 | MIT | `org.hl7.fhir.jekyll.yaml` |
 | Psych | 5.0.1 | MIT | `org.hl7.fhir.jekyll.yaml` |
-| libyaml | 0.2.5 | MIT | `org.hl7.fhir.jekyll.yaml` |
+| libyaml | 0.2.5 | MIT | `org.hl7.fhir.common.yaml` (event layer), `org.hl7.fhir.jekyll.yaml` |
 | Ruby date | 3.3.3 | BSD-2-Clause (Ruby BSDL) | `org.hl7.fhir.jekyll.yaml` |
 | Ruby (numeric parsing/formatting: object.c, numeric.c, missing/dtoa.c, util.c, string.c, bignum.c, pack.c, time.c) | 3.2.3 | Ruby License / BSD-2-Clause | `org.hl7.fhir.jekyll.yaml` (RubyNumbers, RubyBase64) |
 | Addressable (URI unescape) | 2.9.1 | Apache-2.0 | `org.hl7.fhir.jekyll.site.JekyllStrings` |
-| yaml-test-suite (test data only) | data-2022-01-17 | MIT | `shim/tests/yaml` |
+| yaml-test-suite (test data only) | data-2022-01-17 | MIT | `jekyll/tests/yaml` |
+| SUSHI (FHIR Shorthand compiler) | 3.21.1 | Apache-2.0 | `org.hl7.fhir.sushi`, `org.hl7.fhir.common.js`; grammar and data files, see below |
+| ANTLR 4 (JavaScript runtime 4.13.2; the tool's ATN construction) | 4.13 | BSD-3-Clause | `org.hl7.fhir.sushi.importer.parser` (the hand-written parser reproduces the runtime's prediction, error messages and recovery) |
+| fhir-package-loader | 2.2.4 | Apache-2.0 | `org.hl7.fhir.sushi.fhirdefs` (the rules ported where core resolves differently, and log messages) |
+| sax | 1.6.1 | BlueOak-1.0.0 | `org.hl7.fhir.sushi.xhtml` |
+| html-minifier-terser (the options SUSHI uses) | 5.1.1 | MIT | `org.hl7.fhir.sushi.xhtml` |
+| yaml (eemeli/yaml, the composer and messages) | 1.10.3 | ISC | `org.hl7.fhir.sushi.yaml` |
+| lodash (the functions SUSHI uses) | 4.18.1 | MIT | `org.hl7.fhir.common.js` |
+| ajv (error message texts) | 8.20.0 | MIT | `org.hl7.fhir.sushi.importer.config` |
+| commander (option parsing and help text) | 13.1.0 | MIT | `org.hl7.fhir.sushi.App` |
+| winston, chalk (logging behaviour SUSHI relies on) | 3.19.0, 4.1.2 | MIT | `org.hl7.fhir.sushi.utils.FshLogger` |
+| text-table, title-case, valid-url, junk | 0.2.0, 3.0.3, 1.0.9, 3.1.0 | MIT | `org.hl7.fhir.sushi.utils` |
+| sanitize-filename | 1.6.4 | WTFPL or ISC (used under ISC) | `org.hl7.fhir.sushi.utils` |
+| semver | 7.8.5 | ISC | `org.hl7.fhir.sushi.ig`, `org.hl7.fhir.sushi.utils` |
+
+`sushi.jar` also bundles, unchanged, the libraries listed in
+[Libraries bundled in sushi.jar](#libraries-bundled-in-sushijar) below. `jekyll.jar` bundles nothing but this
+repository's own code.
 
 ---
 
@@ -76,7 +94,7 @@ SOFTWARE.
 
 ---
 
-## kramdown 2.5.2
+## kramdown 2.6.1
 
 ```
 kramdown - fast, pure-Ruby Markdown-superset converter
@@ -773,4 +791,271 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+---
+
+## SUSHI 3.21.1 (Apache License 2.0)
+
+Copyright 2019-2025 Health Level Seven International. SUSHI is licensed under the Apache License, Version 2.0; the
+full text is in the Addressable section above (and in `sushi/src/test/resources/sushi-ts/LICENSE`). Source:
+https://github.com/FHIR/sushi. SUSHI ships no NOTICE file.
+
+Besides the Java port, these files are taken from SUSHI 3.21.1 unchanged (or, for the project template,
+as SUSHI writes it):
+- `sushi/src/test/antlr4/**/*.g4`: SUSHI's ANTLR grammar (FSH, MiniFSH and their lexers). It is used **only in
+  tests**, to generate the oracle parser the hand-written parser is compared with; no ANTLR code or grammar is
+  in the built jar.
+- `sushi/src/test/resources/sushi-ts/test/**`: test fixtures from SUSHI 3.21.1's test tree (IG folders, configs,
+  FHIR definition packages; about 23 MB), used only by the JUnit tests; see its `README.md`.
+- `sushi/src/main/resources/org/hl7/fhir/sushi/fhirdefs/R5DefsForR4/*.json`,
+  `.../importer/config/YAMLschema.json`, `.../utils/init-project/*` (the `sushi init` template).
+
+fhir-package-loader 2.2.4 is also Apache-2.0 (same text).
+
+---
+
+## MIT-licensed npm packages ported in `sushi`
+
+```
+lodash 4.18.1:              Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+                            Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and
+                            Investigative Reporters & Editors <http://underscorejs.org/>
+html-minifier-terser 5.1.1: Copyright (c) 2010-2019 Juriy "kangax" Zaytsev
+ajv 8.20.0:                 Copyright (c) 2015-2021 Evgeny Poberezkin
+commander 13.1.0:           Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
+winston 3.19.0:             Copyright (c) 2010 Charlie Robbins
+chalk 4.1.2, junk 3.1.0:    Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+title-case 3.0.3:           Copyright (c) 2014 Blake Embrey (hello@blakeembrey.com)
+valid-url 1.0.9:            Copyright (c) 2013 Odysseas Tsatalos and oDesk Corporation
+text-table 0.2.0:           released under the MIT license (no copyright line in its LICENSE)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## ISC-licensed npm packages ported in `sushi`
+
+```
+yaml 1.10.3:                Copyright 2018 Eemeli Aro <eemeli@gmail.com>
+semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
+sanitize-filename 1.6.4:    (WTFPL or ISC; used under ISC) Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+```
+
+---
+
+## sax 1.6.1 (Blue Oak Model License 1.0.0)
+
+The parts of sax 1.6.1 ported in `org.hl7.fhir.sushi.xhtml` are licensed under the Blue Oak Model License 1.0.0,
+https://blueoakcouncil.org/license/1.0.0.
+
+---
+
+## ANTLR 4.13 (BSD 3-Clause)
+
+```
+Copyright (c) 2012-2022 The ANTLR Project. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+3. Neither name of copyright holders nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+The ANTLR Java runtime (`org.antlr:antlr4-runtime` 4.13.2, same license) is a test-scope dependency only: it runs
+the oracle parser generated from SUSHI's grammar in the tests and is not part of any built jar.
+
+---
+
+## Libraries bundled in sushi.jar
+
+`sushi/target/sushi.jar` (the `sushi.jar` release asset) contains, unchanged, the runtime dependencies of the `sushi`
+module: org.hl7.fhir.core's `org.hl7.fhir.utilities` and `org.hl7.fhir.r4`/`r4b`/`r5`, xpp3, commons-compress, and
+what they depend on. The list below is
+the module's runtime dependency set as Maven resolves it (`license-maven-plugin add-third-party`), checked against
+the packages present in the jar. Their Apache `NOTICE` files are merged into the jar's `META-INF/NOTICE`; this file
+and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
+
+| Library | Version | License |
+|---|---|---|
+| HL7 FHIR core: org.hl7.fhir.utilities, org.hl7.fhir.r4, org.hl7.fhir.r4b, org.hl7.fhir.r5 (`ca.uhn.hapi.fhir`) | 7.0.6 | Apache-2.0 |
+| XPP3 / MXP1 (`org.codelibs:xpp3`, the XML pull parser core's XML parsers use) | 1.1.4c.0 | MXP1 (`org.xmlpull.mxp1`): Indiana University Extreme! Lab Software License 1.2 (text below; its POM declares "The Apache Software License, Version 1.1"); XMLPULL V1 API (`org.xmlpull.v1`): its sources refer to the LICENSE.txt at http://www.xmlpull.org/, which places the API in the public domain |
+| HAPI FHIR base (`ca.uhn.hapi.fhir:hapi-fhir-base`) | 8.10.0 | Apache-2.0 |
+| Apache Commons Compress, Codec, IO, Lang, Net, Text | 1.26.0, 1.15, 2.15.1, 3.14.0, 3.9.0, 1.10.0 | Apache-2.0 |
+| Jackson annotations, core, databind, datatype-jsr310 | 2.21, 2.21.1, 2.21.1, 2.21.1 | Apache-2.0 (jackson-core includes FastDoubleParser, MIT; its notices are in the jar's `META-INF/FastDoubleParser-*`) |
+| Guava, failureaccess, listenablefuture | 33.2.1-jre, 1.0.2, 9999.0 | Apache-2.0 |
+| error-prone annotations, J2ObjC annotations | 2.26.1, 3.0.0 | Apache-2.0 |
+| FindBugs jsr305 | 3.0.2 | Apache-2.0 (as its POM declares) |
+| OkHttp (okhttp-jvm), Okio (okio, okio-jvm) | 5.3.2, 3.18.2, 3.16.4 | Apache-2.0 |
+| Kotlin stdlib | 2.2.21 | Apache-2.0 |
+| OpenTelemetry API, common, context, instrumentation annotations | 1.60.1, 1.60.1, 1.60.1, 2.33.1 | Apache-2.0 |
+| XML Resolver (xmlresolver, xmlresolver data) | 6.0.23 | Apache-2.0 |
+| JCL 1.2 implemented over SLF4J (`jcl-over-slf4j`) | 2.0.16 | Apache-2.0 |
+| SLF4J API | 2.0.17 | MIT |
+| Checker Qual | 3.42.0 | MIT |
+| Jakarta Annotations API | 2.1.1 | EPL-2.0 or GPL-2.0 with Classpath Exception (used under EPL-2.0); source: https://github.com/jakartaee/common-annotations-api |
+| Saxon-HE | 13.0 | MPL-2.0; source: https://github.com/Saxonica/Saxon-HE (license text: https://www.mozilla.org/MPL/2.0/) |
+| ICU4J | 78.1 | Unicode-3.0 (text below; ICU's full LICENSE, with the notices of the data it includes: https://github.com/unicode-org/icu/blob/release-78.1/LICENSE) |
+
+The Apache License 2.0 text is in the Addressable section above and the MIT text in the SUSHI npm section. The
+EPL-2.0 text is at https://www.eclipse.org/legal/epl-2.0/.
+
+### Indiana University Extreme! Lab Software License 1.2 (XPP3 / MXP1)
+
+This product includes software developed by the Indiana University Extreme! Lab. For further information please
+visit http://www.extreme.indiana.edu/. (From the license header of `org/xmlpull/mxp1/MXParser.java` in
+`org.codelibs:xpp3` 1.1.4c.0.)
+
+```
+Indiana University Extreme! Lab Software License, Version 1.2
+
+Copyright (C) 2003 The Trustees of Indiana University.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+1) All redistributions of source code must retain the above
+   copyright notice, the list of authors in the original source
+   code, this list of conditions and the disclaimer listed in this
+   license;
+
+2) All redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the disclaimer
+   listed in this license in the documentation and/or other
+   materials provided with the distribution;
+
+3) Any documentation included with all redistributions must include
+   the following acknowledgement:
+
+     "This product includes software developed by the Indiana
+     University Extreme! Lab.  For further information please visit
+     http://www.extreme.indiana.edu/"
+
+   Alternatively, this acknowledgment may appear in the software
+   itself, and wherever such third-party acknowledgments normally
+   appear.
+
+4) The name "Indiana University" or "Indiana University
+   Extreme! Lab" shall not be used to endorse or promote
+   products derived from this software without prior written
+   permission from Indiana University.  For written permission,
+   please contact http://www.extreme.indiana.edu/.
+
+5) Products derived from this software may not use "Indiana
+   University" name nor may "Indiana University" appear in their name,
+   without prior written permission of the Indiana University.
+
+Indiana University provides no reassurances that the source code
+provided does not infringe the patent or any other intellectual
+property rights of any other entity.  Indiana University disclaims any
+liability to any recipient for claims brought by any other entity
+based on infringement of intellectual property rights or otherwise.
+
+LICENSEE UNDERSTANDS THAT SOFTWARE IS PROVIDED "AS IS" FOR WHICH
+NO WARRANTIES AS TO CAPABILITIES OR ACCURACY ARE MADE. INDIANA
+UNIVERSITY GIVES NO WARRANTIES AND MAKES NO REPRESENTATION THAT
+SOFTWARE IS FREE OF INFRINGEMENT OF THIRD PARTY PATENT, COPYRIGHT, OR
+OTHER PROPRIETARY RIGHTS.  INDIANA UNIVERSITY MAKES NO WARRANTIES THAT
+SOFTWARE IS FREE FROM "BUGS", "VIRUSES", "TROJAN HORSES", "TRAP
+DOORS", "WORMS", OR OTHER HARMFUL CODE.  LICENSEE ASSUMES THE ENTIRE
+RISK AS TO THE PERFORMANCE OF SOFTWARE AND/OR ASSOCIATED MATERIALS,
+AND TO THE PERFORMANCE AND VALIDITY OF INFORMATION GENERATED USING
+SOFTWARE.
+```
+
+### Unicode License v3 (ICU4J)
+
+```
+UNICODE LICENSE V3
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright © 1991-2026 Unicode, Inc.
+
+NOTICE TO USER: Carefully read the following legal agreement. BY
+DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of data files and any associated documentation (the "Data Files") or
+software and any associated documentation (the "Software") to deal in the
+Data Files or Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, and/or sell
+copies of the Data Files or Software, and to permit persons to whom the
+Data Files or Software are furnished to do so, provided that either (a)
+this copyright and permission notice appear with all copies of the Data
+Files or Software, or (b) this copyright and permission notice appear in
+associated Documentation.
+
+THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+THIRD PARTY RIGHTS.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+FILES OR SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder shall
+not be used in advertising or otherwise to promote the sale, use or other
+dealings in these Data Files or Software without prior written
+authorization of the copyright holder.
 ```

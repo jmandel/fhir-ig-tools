@@ -1,10 +1,10 @@
 # third_party: upstream reference sources (developers only)
 
 These are **optional** git submodules: the exact upstream versions the FHIR autobuilder image runs,
-which the Java code in `shim/` ports. Nothing in the build or at runtime reads them: `shim/build.sh`
+which the Java code in `jekyll/` ports. Nothing in the build or at runtime reads them: `./build.sh`
 compiles without them, and the differential oracle runs the real gems inside the pinned Docker image.
 They are for reading the Ruby beside the Java, and for a few test-case generators
-(`shim/tests/{kramdown,rouge,yaml}/gen_*.py`; the YAML suite cases point into `yaml-test-suite/`).
+(`jekyll/tests/{kramdown,rouge,yaml}/gen_*.py`; the YAML suite cases point into `yaml-test-suite/`).
 
 ```
 git submodule update --init --depth 1     # ~26 MB, shallow

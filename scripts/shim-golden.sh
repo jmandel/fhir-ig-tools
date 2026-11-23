@@ -17,7 +17,7 @@ golden_mounts "$NAME"
 docker run --rm --entrypoint bash -e SHIM_TIMING=1 -v "$ROOT:$ROOT" "${GM[@]}" -w "$G/jekyll-in" "$IMAGE" -c "
   find '$G/shim-out' -mindepth 1 -delete; rm -rf .jekyll-cache
   TIMEFORMAT='shim_elapsed=%R'
-  time java -Xss16m -Xmx${SHIM_XMX:-6g} ${SHIM_JAVA_OPTS:-} -cp '$ROOT/shim/$B/classes' org.hl7.fhir.jekyll.site.Main build --destination '$G/shim-out'
+  time java -Xss16m -Xmx${SHIM_XMX:-6g} ${SHIM_JAVA_OPTS:-} -cp '$ROOT/jekyll/$B/classes' org.hl7.fhir.jekyll.site.Main build --destination '$G/shim-out'
   echo exit=\$?
   python3 -I '$ROOT/scripts/domdiff.py' '$G/jekyll-out' '$G/shim-out' --json '$G/shim-diff.json' --max-report 12 ${DOMDIFF_OPTS:-} > '$G/shim-diff.txt' 2>&1 || true
 " > "$G/shim.log" 2>&1 || echo "shim exited non-zero (see $G/shim.log)"

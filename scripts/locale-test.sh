@@ -6,12 +6,12 @@ for loc in "-Duser.language=ar -Duser.country=EG" "-Duser.language=tr -Duser.cou
   echo "== JVM locale: $loc"
   while read -r b c e; do
     r=$(docker run --rm --entrypoint java -v "$PWD":/w -w /w ig-publisher-localdev-ca $loc -Xss16m \
-        -cp "/w/shim/$b/classes:/w/shim/$b/test-classes" org.hl7.fhir.jekyll.test.DiffRunner "$c" "$e" < /dev/null 2>&1 | tail -1)
+        -cp "/w/jekyll/$b/classes:/w/jekyll/$b/test-classes" org.hl7.fhir.jekyll.test.DiffRunner "$c" "$e" < /dev/null 2>&1 | tail -1)
     echo "  $(basename "$c"): $r"
   done <<'L'
-build-liquid shim/tests/liquid/cases.jsonl shim/tests/liquid/expected.jsonl
-build-liquid shim/tests/liquid/cases-crlf.jsonl shim/tests/liquid/expected-crlf.jsonl
-build-site2 shim/tests/site/jekyll-cases.jsonl shim/tests/site/jekyll-expected.jsonl
-build-yaml shim/tests/site/data-cases.jsonl shim/tests/site/data-expected.jsonl
+build-liquid jekyll/tests/liquid/cases.jsonl jekyll/tests/liquid/expected.jsonl
+build-liquid jekyll/tests/liquid/cases-crlf.jsonl jekyll/tests/liquid/expected-crlf.jsonl
+build-site2 jekyll/tests/site/jekyll-cases.jsonl jekyll/tests/site/jekyll-expected.jsonl
+build-yaml jekyll/tests/site/data-cases.jsonl jekyll/tests/site/data-expected.jsonl
 L
 done

@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+  <title id="t">fhir-ig-tools in the IG Publisher pipeline</title>
+  <desc id="d">An IG build with the FHIR IG Publisher. The publisher runs sushi on input/fsh; sushi.jar, the Java port of SUSHI, replaces SUSHI on Node.js and writes fsh-generated. The publisher loads the IG, validates it and writes temp/pages, then runs the Jekyll command; jekyll.jar, the Java port of Jekyll, replaces Jekyll on Ruby and writes the website to output. Both jars build on the shared common module.</desc>
+  <style>
+    .bg{fill:#ffffff;stroke:#d0d7de}
+    .ink{fill:#1f2328}.muted{fill:#59636e}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .card{fill:#f6f8fa;stroke:#d0d7de;stroke-width:1.2}
+    .pub{fill:#f6f8fa;stroke:#8c959f;stroke-width:1.5}
+    .tool{fill:#ddf4ff;stroke:#0969da;stroke-width:2}
+    .tool2{fill:#fbefff;stroke:#8250df;stroke-width:2}
+    .shared{fill:#fff8c5;stroke:#9a6700;stroke-width:1.5}
+    .stage{fill:#ffffff;stroke:#54aeff;stroke-width:1.2}
+    .stage2{fill:#ffffff;stroke:#c297ff;stroke-width:1.2}
+    .stage3{fill:#ffffff;stroke:#d4a72c;stroke-width:1.2}
+    .ext{fill:#ffffff;stroke:#8c959f;stroke-width:1.2;stroke-dasharray:5 4}
+    .out{fill:#dafbe1;stroke:#1a7f37;stroke-width:1.5}
+    .accent{fill:#0969da}.accent2{fill:#8250df}.accent3{fill:#9a6700}.good{fill:#1a7f37}
+    .wire{stroke:#59636e;stroke-width:2;fill:none}
+    .wire-d{stroke:#8c959f;stroke-width:1.6;fill:none;stroke-dasharray:6 5}
+    .head{fill:#59636e}
+    .chip-g{fill:#dafbe1;stroke:#1a7f37}.chip-a{fill:#fff8c5;stroke:#9a6700}.chip-p{fill:#fbefff;stroke:#8250df}
+    .chip-r{fill:#ffebe9;stroke:#cf222e}.chip-b{fill:#ddf4ff;stroke:#0969da}
+    .t-g{fill:#1a7f37}.t-a{fill:#7d4e00}.t-p{fill:#8250df}.t-r{fill:#a40e26}.t-b{fill:#0550ae}
+    @media (prefers-color-scheme: dark){
+      .bg{fill:#0d1117;stroke:#3d444d}
+      .ink{fill:#e6edf3}.muted{fill:#9198a1}
+      .card{fill:#151b23;stroke:#3d444d}
+      .pub{fill:#151b23;stroke:#656c76}
+      .tool{fill:#0c2d4b;stroke:#4493f8}
+      .tool2{fill:#271a3c;stroke:#ab7df8}
+      .shared{fill:#2e2306;stroke:#d29922}
+      .stage{fill:#0d1117;stroke:#1f6feb}
+      .stage2{fill:#0d1117;stroke:#8957e5}
+      .stage3{fill:#0d1117;stroke:#9e6a03}
+      .ext{fill:#0d1117;stroke:#656c76}
+      .out{fill:#0f2e1b;stroke:#3fb950}
+      .accent{fill:#4493f8}.accent2{fill:#ab7df8}.accent3{fill:#d29922}.good{fill:#3fb950}
+      .wire{stroke:#9198a1}.wire-d{stroke:#656c76}.head{fill:#9198a1}
+      .chip-g{fill:#0f2e1b;stroke:#3fb950}.chip-a{fill:#2e2306;stroke:#d29922}.chip-p{fill:#271a3c;stroke:#ab7df8}
+      .chip-r{fill:#3c1618;stroke:#f85149}.chip-b{fill:#0c2d4b;stroke:#4493f8}
+      .t-g{fill:#3fb950}.t-a{fill:#d29922}.t-p{fill:#ab7df8}.t-r{fill:#ff7b72}.t-b{fill:#79c0ff}
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="head"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0.5" y="0.5" width="959" height="639" rx="12"/>
+  <text x="24" y="40" class="ink" font-size="22" font-weight="700">fhir-ig-tools in the IG Publisher pipeline</text>
+  <text x="24" y="64" class="muted" font-size="14">Two Java ports replace the two stages that need another toolchain. Same output; no Node.js, npm or Ruby.</text>
+
+  <!-- stage 1: FSH -&gt; FHIR JSON -->
+  <rect class="card" x="24" y="92" width="196" height="134" rx="10"/>
+  <text x="40" y="120" class="ink" font-size="15" font-weight="700">IG source</text>
+  <text x="40" y="148" class="ink mono" font-size="13">input/fsh/*.fsh</text>
+  <text x="40" y="166" class="ink mono" font-size="13">sushi-config.yaml</text>
+  <text x="40" y="208" class="muted" font-size="13">FHIR Shorthand</text>
+  <path class="wire" d="M220,159 L262,159" marker-end="url(#arrow)"/>
+  <rect class="tool" x="266" y="84" width="396" height="150" rx="10"/>
+  <text x="286" y="112" class="ink mono" font-size="17" font-weight="700">sushi.jar</text>
+  <text x="642" y="112" class="muted" font-size="13" text-anchor="end">Java 17</text>
+  <text x="286" y="138" class="ink" font-size="13">Java port of SUSHI 3.21.1, the FSH compiler</text>
+  <text x="286" y="158" class="ink" font-size="13">byte-identical fsh-generated/, same messages, exit status</text>
+  <text x="286" y="182" class="muted mono" font-size="13">publisher runs:  sushi &lt;ig&gt; -o &lt;ig&gt;</text>
+  <rect class="chip-r" x="286" y="196" width="218" height="22" rx="11"/>
+  <text x="395.0" y="211" class="t-r" font-size="12" font-weight="600" text-anchor="middle">replaces SUSHI · Node.js, npm</text>
+  <rect class="chip-a" x="514" y="196" width="104" height="22" rx="11"/>
+  <text x="566.0" y="211" class="t-a" font-size="12" font-weight="600" text-anchor="middle">uses common</text>
+  <path class="wire" d="M662,159 L704,159" marker-end="url(#arrow)"/>
+  <rect class="out" x="708" y="92" width="228" height="134" rx="10"/>
+  <text x="724" y="120" class="ink mono" font-size="15" font-weight="700">fsh-generated/</text>
+  <text x="724" y="148" class="ink mono" font-size="13">resources/*.json</text>
+  <text x="724" y="166" class="ink mono" font-size="13">fsh-index.txt</text>
+  <text x="724" y="208" class="muted" font-size="13">FHIR resources (JSON)</text>
+
+  <!-- the publisher (Java) -->
+  <path class="wire" d="M822,226 L822,266" marker-end="url(#arrow)"/>
+  <rect class="pub" x="24" y="270" width="912" height="92" rx="10"/>
+  <text x="44" y="298" class="ink" font-size="17" font-weight="700">IG Publisher</text>
+  <text x="916" y="298" class="muted" font-size="13" text-anchor="end">Java</text>
+  <text x="44" y="324" class="ink" font-size="13">loads the IG with fsh-generated/ and its packages, validates, generates the narrative fragments,</text>
+  <text x="44" y="344" class="ink" font-size="13">and writes the pages for the site generator to temp/pages/</text>
+  <path class="wire" d="M122,362 L122,402" marker-end="url(#arrow)"/>
+
+  <!-- stage 2: pages -&gt; website -->
+  <rect class="card" x="24" y="406" width="196" height="134" rx="10"/>
+  <text x="40" y="434" class="ink mono" font-size="15" font-weight="700">temp/pages/</text>
+  <text x="40" y="462" class="ink mono" font-size="13">*.html *.md</text>
+  <text x="40" y="480" class="ink mono" font-size="13">_includes/ _data/</text>
+  <text x="40" y="522" class="muted" font-size="13">pre-expanded pages</text>
+  <path class="wire" d="M220,473 L262,473" marker-end="url(#arrow)"/>
+  <rect class="tool" x="266" y="398" width="396" height="150" rx="10"/>
+  <text x="286" y="426" class="ink mono" font-size="17" font-weight="700">jekyll.jar</text>
+  <text x="642" y="426" class="muted" font-size="13" text-anchor="end">Java 17+</text>
+  <text x="286" y="452" class="ink" font-size="13">Java port of Jekyll 4.4.1: Liquid, kramdown, Rouge, YAML</text>
+  <text x="286" y="472" class="ink" font-size="13">the same HTML as Jekyll (normalized DOM, exact)</text>
+  <text x="286" y="496" class="muted mono" font-size="13">publisher option:  -jekyll jekyll-shim</text>
+  <rect class="chip-r" x="286" y="510" width="204" height="22" rx="11"/>
+  <text x="388.0" y="525" class="t-r" font-size="12" font-weight="600" text-anchor="middle">replaces Jekyll · Ruby gems</text>
+  <rect class="chip-a" x="500" y="510" width="104" height="22" rx="11"/>
+  <text x="552.0" y="525" class="t-a" font-size="12" font-weight="600" text-anchor="middle">uses common</text>
+  <path class="wire" d="M662,473 L704,473" marker-end="url(#arrow)"/>
+  <rect class="out" x="708" y="406" width="228" height="134" rx="10"/>
+  <text x="724" y="434" class="ink mono" font-size="15" font-weight="700">output/</text>
+  <text x="724" y="462" class="ink mono" font-size="13">*.html</text>
+  <text x="724" y="480" class="ink mono" font-size="13">the IG website</text>
+  <text x="724" y="522" class="muted" font-size="13">with the publisher's QA</text>
+
+  <!-- shared module -->
+  <rect class="shared" x="266" y="572" width="396" height="48" rx="10"/>
+  <text x="286" y="601" class="ink mono" font-size="15" font-weight="700">common</text>
+  <text x="356" y="601" class="ink" font-size="13">shared code: the YAML event layer, the JS value model</text>
+</svg>

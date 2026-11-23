@@ -1,0 +1,6 @@
+{
+  "resourceType": "ImplementationGuide",
+  "url": "http://example.org/ImplementationGuide",
+  "status": "draft",
+  "fhirVersion": ["4.0.1"]
+}
