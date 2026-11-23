@@ -239,15 +239,16 @@ All checks were run from the `multimodule` branch, in the reference image.
 ## Verification of the SUSHI move (2026-11-22)
 
 Branch `monorepo-sushi` (from `multimodule` 29c24084), with the SUSHI port imported from its repository's final
-`main` (258aa8c) by `scripts/sushi-sync.sh`. All checks in the reference image (Temurin 21).
+`main` (12cf612) by `scripts/sushi-sync.sh`. All checks in the reference image (Temurin 21).
 - **Build:** `./build.sh -B -ntp clean package` green. JUnit: `common` 13/13 (event layer 6, incl. the yaml110
-  opt-in; JS value model 7), `sushi` 3,706 run, 0 failures, 30 skipped (also 30 in the port's own repository, checked at 1de1e56).
-  Together that is 3,713, the same count as the port's own repository at 258aa8c. Enforcer rules pass; the
+  opt-in; JS value model 7), `sushi` 3,706 run, 0 failures, 29 skipped. Together that is 3,713 tests and 29 skipped, the same as the
+  port's own repository reports at 12cf612 (`sushi/PORTING.md` §9). Enforcer rules pass; the
   dependency rule test passes.
 - **SUSHI differential:** `sushi/scripts/diff-run.sh` with the new `sushi/target/sushi.jar` on the 6 reference IGs
   (HL7__genomics-reporting, IHE__ITI.MHD, hl7ch__ch-term, EEHRxF__logical-model, ahdis__ch-ekm,
   WorldHealthOrganization__smart-anc): all identical to TypeScript SUSHI 3.21.1, 2,153 files byte for byte, logs
-  identical, exit codes 0/0, the same result as the port's own jar.
+  identical, exit codes 0/0, the same result as the port's own jar. (Run at the 258aa8c sync; the 12cf612 sync
+  changed only a test and PORTING.md, and the rebuilt `sushi.jar` is byte-identical to the one run.)
 - **Shim suites:** `scripts/test-suites.sh` with `SHIM_W_SUITES=1` against the Maven `shim.jar` and against a
   `--fast` build: every suite passes with the same pass and `known` counts as on `multimodule`. Extra checks: real
   `_config`/`_data` 100/100, front matter 310/310, `_data` files 583/587 (the same 4 cases name a golden no longer on
@@ -256,9 +257,9 @@ Branch `monorepo-sushi` (from `multimodule` 29c24084), with the SUSHI port impor
 - **Golden sample:** `scripts/jar-compare.sh` with the `multimodule` `shim.jar` (rebuilt from 29c24084, byte-identical
   to the one verified above) against the new one on IHE__ITI.MHD, FHIR__fhir-tools-ig, HL7__genomics-reporting,
   kitchen-sink and hl7ch__ch-core: all 21,174 output files byte-identical. (Run before the final re-sync, which
-  changed only sushi's tests; the rebuilt `shim.jar` is byte-identical to the one compared.)
+  changed only sushi's tests and docs; the rebuilt `shim.jar` is byte-identical to the one compared.)
 - `scripts/e2e.sh`, `scripts/test-wrapper.sh` and a dry run of the release `Package` step (without `zip`) pass.
 - `actionlint` (1.7.7, with shellcheck): clean on both workflows.
 - Reproducible: a clean rebuild gives the same `shim.jar` and `sushi.jar` bytes.
-- History: the 129 imported commits carry this repository's author identity and no workspace paths; a second
-  `sushi-sync.sh` run on the updated `main` reused the earlier rewritten commits and merged only the new ones.
+- History: the 130 imported commits carry this repository's author identity and no workspace paths; two later
+  `sushi-sync.sh` runs on the updated `main` reused the earlier rewritten commits and merged only the new ones.
