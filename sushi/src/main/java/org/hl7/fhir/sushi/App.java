@@ -57,6 +57,10 @@ public final class App {
   public static void main(String[] args) {
     // core's package layer logs through SLF4J without a provider; keep its "no providers" notice off stderr
     if (System.getProperty("slf4j.internal.verbosity") == null) System.setProperty("slf4j.internal.verbosity", "ERROR");
+    // network access goes through core's ManagedWebAccess (PORTING.md "I/O policy"); as the IG Publisher does, apply
+    // fhir-settings.json (~/.fhir/fhir-settings.json, or -Dfhir.settings.path): prohibitNetworkAccess, servers and
+    // their authentication, SSRF protection
+    org.hl7.fhir.utilities.http.ManagedWebAccess.loadFromFHIRSettings();
     int code = run(args);
     out.flush();
     err.flush();

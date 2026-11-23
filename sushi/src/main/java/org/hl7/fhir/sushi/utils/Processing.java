@@ -36,6 +36,8 @@ import org.hl7.fhir.sushi.importer.config.EnsureConfigurationFile;
 import org.hl7.fhir.sushi.importer.config.ImportConfiguration;
 import org.hl7.fhir.sushi.importer.config.LoadConfigurationFromIgResource;
 import org.hl7.fhir.common.js.Js;
+import org.hl7.fhir.utilities.http.HTTPResult;
+import org.hl7.fhir.utilities.http.ManagedWebAccess;
 import org.hl7.fhir.common.js.JsObject;
 
 // port of sushi/src/utils/Processing.ts (SUSHI 3.21.1) -- WP-8 part: dependency loading
@@ -1027,16 +1029,20 @@ public final class Processing {
     }
 
     @Override public Object registryGet(String url) throws Exception {
-      java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
-          .connectTimeout(java.time.Duration.ofSeconds(5)).followRedirects(java.net.http.HttpClient.Redirect.NORMAL)
-          .build();
-      java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url))
-          .timeout(java.time.Duration.ofSeconds(10)).build();
-      java.net.http.HttpResponse<String> res = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
-      if (res.statusCode() >= 400) throw new IOException("Request failed with status code " + res.statusCode());
-      return org.hl7.fhir.common.js.Json.parse(res.body());
+      return org.hl7.fhir.common.js.Json.parse(webGet(url));
     }
   };
+
+  /**
+   * axios GET of a text body through org.hl7.fhir.core's {@link ManagedWebAccess} (its access policy, fhir-settings.json
+   * servers, proxy, SSRF protection; redirects followed, core's 15 s timeout): the error for an HTTP error status is
+   * axios's "Request failed with status code N".
+   */
+  static String webGet(String url) throws IOException {
+    HTTPResult res = ManagedWebAccess.get(List.of("web"), url);
+    if (res.getCode() >= 400) throw new IOException("Request failed with status code " + res.getCode());
+    return res.getContent() == null ? "" : res.getContentAsString();
+  }
 
   private static final Pattern SEMVERISH = Pattern.compile("^[0-9.]*\\z");
 
@@ -1154,13 +1160,7 @@ public final class Processing {
     }
 
     @Override public String httpGet(String url) throws Exception {
-      java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
-          .followRedirects(java.net.http.HttpClient.Redirect.NORMAL).build();
-      java.net.http.HttpResponse<String> res = client.send(
-          java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).build(),
-          java.net.http.HttpResponse.BodyHandlers.ofString());
-      if (res.statusCode() >= 400) throw new IOException("Request failed with status code " + res.statusCode());
-      return res.body();
+      return webGet(url);
     }
   };
 
