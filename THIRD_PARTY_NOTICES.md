@@ -1,8 +1,9 @@
 # Third-party notices
 
-The Java code under `jekyll/src/main/java` and `common/src/main/java` contains ports (translations into Java) of the projects
-below. Their copyright notices and licenses follow. The upstream sources themselves are not
-redistributed here; `third_party/` holds them as optional git submodules for developers.
+The Java code under `jekyll/src/main/java`, `common/src/main/java` and `sushi/src/main/java` contains ports
+(translations into Java) of the projects below. Their copyright notices and licenses follow. The upstream sources
+themselves are not redistributed here, except for the SUSHI files listed in its section; `third_party/` holds the
+Ruby sources as optional git submodules for developers.
 
 | Project | Version | License | Ported into |
 |---|---|---|---|
@@ -18,6 +19,27 @@ redistributed here; `third_party/` holds them as optional git submodules for dev
 | Ruby (numeric parsing/formatting: object.c, numeric.c, missing/dtoa.c, util.c, string.c, bignum.c, pack.c, time.c) | 3.2.3 | Ruby License / BSD-2-Clause | `org.hl7.fhir.jekyll.yaml` (RubyNumbers, RubyBase64) |
 | Addressable (URI unescape) | 2.9.1 | Apache-2.0 | `org.hl7.fhir.jekyll.site.JekyllStrings` |
 | yaml-test-suite (test data only) | data-2022-01-17 | MIT | `jekyll/tests/yaml` |
+| SUSHI (FHIR Shorthand compiler) | 3.21.1 | Apache-2.0 | `org.hl7.fhir.sushi`, `org.hl7.fhir.common.js`; grammar and data files, see below |
+| ANTLR 4 (JavaScript runtime 4.13.2; the tool's ATN construction) | 4.13 | BSD-3-Clause | `org.hl7.fhir.sushi.importer.parser` (the hand-written parser reproduces the runtime's prediction, error messages and recovery) |
+| fhir-package-loader | 2.2.4 | Apache-2.0 | `org.hl7.fhir.sushi.fhirdefs` (the rules ported where core resolves differently, and log messages) |
+| fhir-tool (XML to JSON conversion) | 5.0.2 | Apache-2.0 (LICENSE file; its package.json says ISC) | `org.hl7.fhir.sushi.fhirdefs.xml` |
+| xml-js | 1.6.11 | MIT | `org.hl7.fhir.sushi.fhirdefs.xml` |
+| sax | 1.2.4 (in fhir-tool) | ISC | `org.hl7.fhir.sushi.fhirdefs.xml` |
+| sax | 1.6.1 | BlueOak-1.0.0 | `org.hl7.fhir.sushi.xhtml` |
+| html-minifier-terser (the options SUSHI uses) | 5.1.1 | MIT | `org.hl7.fhir.sushi.xhtml` |
+| yaml (eemeli/yaml, the composer and messages) | 1.10.3 | ISC | `org.hl7.fhir.sushi.yaml` |
+| lodash (the functions SUSHI uses) | 4.18.1 | MIT | `org.hl7.fhir.common.js` |
+| ajv (error message texts) | 8.20.0 | MIT | `org.hl7.fhir.sushi.importer.config` |
+| commander (option parsing and help text) | 13.1.0 | MIT | `org.hl7.fhir.sushi.App` |
+| winston, chalk (logging behaviour SUSHI relies on) | 3.19.0, 4.1.2 | MIT | `org.hl7.fhir.sushi.utils.FshLogger` |
+| text-table, title-case, valid-url, junk | 0.2.0, 3.0.3, 1.0.9, 3.1.0 | MIT | `org.hl7.fhir.sushi.utils` |
+| sanitize-filename | 1.6.4 | WTFPL or ISC (used under ISC) | `org.hl7.fhir.sushi.utils` |
+| ini, semver | 5.0.0, 7.8.5 | ISC | `org.hl7.fhir.sushi.ig`, `org.hl7.fhir.sushi.utils` |
+
+Building `sushi/target/sushi.jar` also bundles, unchanged, the libraries of org.hl7.fhir.core's
+`org.hl7.fhir.utilities` 7.0.6 (Apache-2.0) and what it depends on (among them Jackson, Guava, OkHttp, Okio,
+Kotlin stdlib, commons-*, OpenTelemetry API, xmlresolver: Apache-2.0; ICU4J: Unicode-3.0; Saxon-HE: MPL-2.0;
+SLF4J, checker-qual: MIT). That jar is not published; publishing it would need those libraries' notices too.
 
 ---
 
@@ -774,3 +796,125 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+---
+
+## SUSHI 3.21.1 (Apache License 2.0)
+
+SUSHI is licensed under the Apache License, Version 2.0; the full text is in the Addressable section above.
+Source: https://github.com/FHIR/sushi.
+
+Besides the Java port, these files are taken from SUSHI 3.21.1 unchanged (or, for the project template,
+as SUSHI writes it):
+- `sushi/src/test/antlr4/**/*.g4`: SUSHI's ANTLR grammar (FSH, MiniFSH and their lexers). It is used **only in
+  tests**, to generate the oracle parser the hand-written parser is compared with; no ANTLR code or grammar is
+  in the built jar.
+- `sushi/src/main/resources/org/hl7/fhir/sushi/fhirdefs/R5DefsForR4/*.json`,
+  `.../importer/config/YAMLschema.json`, `.../utils/init-project/*` (the `sushi init` template).
+
+fhir-package-loader 2.2.4 and fhir-tool 5.0.2 are also Apache-2.0 (same text).
+
+---
+
+## MIT-licensed npm packages ported in `sushi`
+
+```
+lodash 4.18.1:              Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+                            Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and
+                            Investigative Reporters & Editors <http://underscorejs.org/>
+html-minifier-terser 5.1.1: Copyright (c) 2010-2019 Juriy "kangax" Zaytsev
+xml-js 1.6.11:              Copyright (c) 2016-2017 Yousuf Almarzooqi
+ajv 8.20.0:                 Copyright (c) 2015-2021 Evgeny Poberezkin
+commander 13.1.0:           Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
+winston 3.19.0:             Copyright (c) 2010 Charlie Robbins
+chalk 4.1.2, junk 3.1.0:    Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+title-case 3.0.3:           Copyright (c) 2014 Blake Embrey (hello@blakeembrey.com)
+valid-url 1.0.9:            Copyright (c) 2013 Odysseas Tsatalos and oDesk Corporation
+text-table 0.2.0:           released under the MIT license (no copyright line in its LICENSE)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## ISC-licensed npm packages ported in `sushi`
+
+```
+yaml 1.10.3:                Copyright 2018 Eemeli Aro <eemeli@gmail.com>
+sax 1.2.4, ini 5.0.0,
+semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
+sanitize-filename 1.6.4:    (WTFPL or ISC; used under ISC) Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+```
+
+---
+
+## sax 1.6.1 (Blue Oak Model License 1.0.0)
+
+The parts of sax 1.6.1 ported in `org.hl7.fhir.sushi.xhtml` are licensed under the Blue Oak Model License 1.0.0,
+https://blueoakcouncil.org/license/1.0.0.
+
+---
+
+## ANTLR 4.13 (BSD 3-Clause)
+
+```
+Copyright (c) 2012-2022 The ANTLR Project. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+3. Neither name of copyright holders nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+The ANTLR Java runtime (`org.antlr:antlr4-runtime` 4.13.2, same license) is a test-scope dependency only: it runs
+the oracle parser generated from SUSHI's grammar in the tests and is not part of any built jar.
