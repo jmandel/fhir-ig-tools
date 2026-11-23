@@ -46,7 +46,7 @@ docker/ lima/ third_party/ tracker-app/
 | Decision | Choice | Notes |
 |---|---|---|
 | M1 shared package | `org.hl7.fhir.common.*` (YAML: `org.hl7.fhir.common.yaml`) | Matches the siblings `org.hl7.fhir.jekyll` and `org.hl7.fhir.sushi`. Avoids `org.hl7.fhir.igtools`, which is the IG Publisher's own namespace. |
-| M2 Maven coordinates | `org.hl7.fhir:fhir-ig-tools-parent`, `fhir-ig-common`, `fhir-ig-jekyll`, `fhir-ig-sushi`; version `0.2.0-SNAPSHOT` | Nothing is published to a Maven repository yet. The release version still comes from the git tag (`scripts/stamp-wrappers.sh`), not from the POM. |
+| M2 Maven coordinates | `org.hl7.fhir:fhir-ig-tools-parent`, `fhir-ig-common`, `fhir-ig-jekyll`, `fhir-ig-sushi`; version `0.2.0-SNAPSHOT` | Nothing is published to a Maven repository yet (the POMs are ready: "Publishing to Maven Central"). The release version still comes from the git tag (`scripts/stamp-wrappers.sh`), not from the POM. |
 | M3 module directories | `common/`, `jekyll/`, `sushi/` (`sushi/` was developed as the separate `sushi-java` repository) | The jar names are `jekyll.jar` and `sushi.jar`; the wrapper names `jekyll-shim`, `jekyll-shim.cmd`. |
 | M4 repository name | `fhir-ig-tools` (decided) | Names that refer to the Jekyll tool, not the repository: the module artifact `fhir-ig-jekyll`, the offline bundle `fhir-ig-jekyll.zip`, the wrappers' cache `~/.fhir-ig-jekyll/` and their `FHIR_IG_JEKYLL_*` variables. |
 
@@ -208,7 +208,8 @@ version and re-apply the upstream change by hand.
 - **jekyll.jar:** one self-contained jar, `Main-Class` `org.hl7.fhir.jekyll.site.Main`, CLI
   `java -jar jekyll.jar build --destination <dir>`, no dependencies: common's YAML event layer is shaded in (its JS
   value model is left out). The in-process route (the publisher calling `Shim.build`) can use it as one jar; a Maven
-  consumer would use `fhir-ig-jekyll` + `fhir-ig-common`, which are not published to a Maven repository.
+  consumer would use `fhir-ig-jekyll` + `fhir-ig-common`, which are not published to a Maven repository yet
+  ("Publishing to Maven Central" below).
 - **sushi.jar:** one self-contained jar (about 40 MB), `Main-Class` `org.hl7.fhir.sushi.App`, `Multi-Release: true`,
   SUSHI's command line. It bundles `common`, org.hl7.fhir.core's utilities and their libraries; their Apache
   `NOTICE` files are merged into `META-INF/NOTICE`, and `THIRD_PARTY_NOTICES.md` (which lists every bundled library
@@ -217,6 +218,39 @@ version and re-apply the upstream change by hand.
   job runs that `jekyll.jar` on JDK 17 and 21 on Linux, macOS and Windows; the `sushi` job runs that `sushi.jar`
   through the wrapper (`sushi-e2e.sh`, `test-sushi-wrapper.sh`) on Linux, macOS and Windows with JDK 17 and 21; the
   `jdk17` job builds every module and runs all JUnit tests on JDK 17.
+
+## Publishing to Maven Central
+
+The POMs are ready for Central (2026-11-23): every module has name, description, URL, license, developer, SCM and
+issue tracker (inherited from the parent), and the `central` profile attaches `-sources` and `-javadoc` jars, signs
+(maven-gpg-plugin, `bc` signer) and deploys through Sonatype's Central Portal plugin (`central-publishing-maven-plugin`
+0.8.0, server id `central`, `autoPublish` off). Signing is off unless `-Dgpg.skip=false`.
+
+Dry run (what was checked; nothing is uploaded): set a release version, then build the bundle with a placeholder
+`central` server in a settings file:
+
+```sh
+mvn -B versions:set -DnewVersion=0.2.1 -DgenerateBackupPoms=false   # Central takes no -SNAPSHOT releases
+mvn -B -s settings-with-central-server.xml -P central -DskipTests -DskipPublishing deploy
+unzip -l target/central-publishing/central-bundle.zip   # parent pom; common, jekyll, sushi: pom, jar, -sources, -javadoc, checksums
+```
+
+What a real publication still needs (none of it can be done from this repository alone):
+1. **A namespace on Central.** `org.hl7.fhir` belongs to HL7 (the namespace org.hl7.fhir.core publishes under);
+   publishing there needs HL7 to grant this project's Central account that namespace (or publish it from HL7's
+   account). The alternative is a namespace we own (e.g. `io.github.jmandel`, verified through GitHub), which means
+   renaming the groupId in the four POMs (and in the publisher's dependency).
+2. **A signing key:** a GPG key pair for the project, its public key on a keyserver (keys.openpgp.org /
+   keyserver.ubuntu.com), the private key and passphrase as repository secrets (`MAVEN_GPG_KEY`,
+   `MAVEN_GPG_PASSPHRASE`).
+3. **A Central Portal user token** as secrets (`CENTRAL_USERNAME`, `CENTRAL_PASSWORD`), written to `settings.xml`
+   as server `central` (e.g. `actions/setup-java` with `server-id: central`).
+4. **A release-workflow step** after the tests: `mvn versions:set -DnewVersion=${TAG#v}` and
+   `mvn -B -P central -Dgpg.skip=false -DskipTests deploy`, then "Publish" the validated deployment in the portal
+   (or set `autoPublish`).
+5. **Decide what is published:** today all four artifacts (parent, `fhir-ig-common`, `fhir-ig-jekyll`,
+   `fhir-ig-sushi`). The publisher needs `fhir-ig-jekyll` (the thin jar, 0.6 MB) and `fhir-ig-common` (65 KB);
+   `fhir-ig-sushi` could be left out with `-DexcludeArtifacts=fhir-ig-sushi`.
 
 ## Verification of the multi-module move (2026-11-22)
 

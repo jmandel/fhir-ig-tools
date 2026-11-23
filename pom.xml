@@ -21,8 +21,29 @@
   <description>Java replacements for the non-Java stages of the FHIR IG Publisher (Jekyll, SUSHI)</description>
   <url>https://github.com/jmandel/fhir-ig-tools</url>
   <licenses>
-    <license><name>BSD-3-Clause</name><url>https://opensource.org/licenses/BSD-3-Clause</url></license>
+    <license>
+      <name>BSD-3-Clause</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+      <distribution>repo</distribution>
+    </license>
   </licenses>
+  <developers>
+    <developer>
+      <id>jmandel</id>
+      <name>Josh Mandel</name>
+      <url>https://github.com/jmandel</url>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/jmandel/fhir-ig-tools.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jmandel/fhir-ig-tools.git</developerConnection>
+    <url>https://github.com/jmandel/fhir-ig-tools</url>
+    <tag>HEAD</tag>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/jmandel/fhir-ig-tools/issues</url>
+  </issueManagement>
 
   <modules>
     <module>common</module>
@@ -117,6 +138,26 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>3.6.0</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.8.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -138,4 +179,74 @@
       </plugin>
     </plugins>
   </build>
+
+  <!--
+    Maven Central (docs/MONOREPO.md "Publishing to Maven Central"). Not used by the normal build or the release
+    workflow yet. `mvn -P central deploy` attaches -sources and -javadoc jars to every module, signs them (only with
+    -Dgpg.skip=false: maven-gpg-plugin's "bc" signer reads the key from MAVEN_GPG_KEY / MAVEN_GPG_PASSPHRASE) and
+    hands the bundle to Sonatype's Central Portal (server id "central" in settings.xml; autoPublish off, so a
+    deployment waits in the portal for a manual "Publish"). With -DskipPublishing the bundle is only written to
+    target/central-publishing/central-bundle.zip (what CI checks).
+  -->
+  <profiles>
+    <profile>
+      <id>central</id>
+      <properties>
+        <gpg.skip>true</gpg.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals><goal>jar-no-fork</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <doclint>none</doclint>
+              <quiet>true</quiet>
+              <!-- main sources only: sushi's ANTLR test oracle is generated into a source root the plugin would pick up -->
+              <sourcepath>${project.build.sourceDirectory}</sourcepath>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals><goal>jar</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <signer>bc</signer>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals><goal>sign</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>false</autoPublish>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
