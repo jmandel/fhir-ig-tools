@@ -39,6 +39,31 @@ class JsonTest {
     assertEquals("null", Json.stringify(Double.NaN));
   }
 
+  /** The digits worked out without Double.toString (used on JDK 17/18) are V8's, on any JDK */
+  @SuppressWarnings("unchecked")
+  @Test void shortestDigitsMatchV8() throws IOException {
+    for (Object o : (List<Object>) vectors().get("numbers")) {
+      String js = (String) ((List<Object>) o).get(0);
+      double d = Math.abs(Double.parseDouble(js));
+      if (d == 0 || Double.isNaN(d) || Double.isInfinite(d)) continue;
+      java.math.BigDecimal want = new java.math.BigDecimal(js.startsWith("-") ? js.substring(1) : js).stripTrailingZeros();
+      java.math.BigDecimal got = JsNumber.shortestDigits(d);
+      assertEquals(want.unscaledValue() + "e" + -want.scale(), got.unscaledValue() + "e" + -got.scale(), js);
+    }
+    // and on JDK 19+, where Double.toString is the shortest, the same digits for random doubles
+    if (Runtime.version().feature() >= 19) {
+      java.util.Random rnd = new java.util.Random(42);
+      for (int i = 0; i < 200_000; i++) {
+        double d = i % 2 == 0 ? Double.longBitsToDouble(rnd.nextLong() & Long.MAX_VALUE) : rnd.nextDouble() * Math.pow(10, rnd.nextInt(40) - 20);
+        if (d == 0 || Double.isNaN(d) || Double.isInfinite(d)) continue;
+        java.math.BigDecimal want = new java.math.BigDecimal(Double.toString(d)).stripTrailingZeros();
+        java.math.BigDecimal got = JsNumber.shortestDigits(d);
+        if (want.precision() == 2 && got.precision() == 1) continue; // Double.toString's 2-digit floor (5e-324 & co)
+        assertEquals(want, got, "digits of " + Double.toString(d));
+      }
+    }
+  }
+
   @SuppressWarnings("unchecked")
   @Test void stringQuotingMatchesV8() throws IOException {
     for (Object o : (List<Object>) vectors().get("strings")) {
