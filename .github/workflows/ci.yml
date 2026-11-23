@@ -93,6 +93,8 @@ jobs:
         run: SHIM_NO_BUILD=1 scripts/test-suites.sh
       - name: In-process API and IncludeProvider checks
         run: java -cp "jekyll/target/jekyll.jar${{ runner.os == 'Windows' && ';' || ':' }}jekyll/target/test-classes" org.hl7.fhir.jekyll.test.site.ShimApiCheck
+      - name: Normalized-DOM comparison checks (DomDiff, the Java form of scripts/domdiff.py)
+        run: java -cp "jekyll/target/jekyll.jar${{ runner.os == 'Windows' && ';' || ':' }}jekyll/target/test-classes" org.hl7.fhir.jekyll.test.site.DomDiffCheck
       - name: End to end through the wrapper (vs real Jekyll output)
         run: scripts/e2e.sh
       - name: Wrapper bootstrap (download, verify, cache; local server stands in for Releases)
