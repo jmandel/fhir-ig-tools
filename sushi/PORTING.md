@@ -24,10 +24,12 @@ scripts/build.sh -B -q -DskipTests package     # jar: target/sushi.jar (self-con
 SUSHI_BUILD_DIR=$VMDATA/sushi-port/build/<name> scripts/build.sh ...   # target dir elsewhere (the oracle scripts read it there)
 ../build.sh -B -ntp package           # the whole repository: common, jekyll, sushi
 ```
-- `../build.sh` runs Maven locally when a JDK 21 and `mvn` are available, otherwise Maven 3.9.9 in the reference image
+- `../build.sh` runs Maven locally when a JDK 17+ and `mvn` are available, otherwise Maven 3.9.9 in the reference image
   `ig-publisher-localdev-ca` (Temurin 21, node 22 for the oracles) with its local repository on the Docker host's
   disk (docs/MONOREPO.md "Building").
-- Java 21 (`--release 21`). `common`, which sushi uses for the JS value model and the YAML event layer, is Java 17.
+- Java 17 (`--release 17`), the IG Publisher's level, so sushi can run in the publisher's JVM (it was 21 until
+  fhir-ig-tools 0.2.0; the only 21 feature used was pattern matching in `switch`, in the parser). `common`, which sushi
+  uses for the JS value model and the YAML event layer, is Java 17 too.
 - Shared machine: start Maven/node/TS-SUSHI runs with `../work/locks/waitfree.sh timing <cmd>`; kill only your own
   PIDs.
 - SUSHI's test fixtures (the files the ported tests read from TS SUSHI's `test/` tree) are vendored in

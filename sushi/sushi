@@ -10,7 +10,7 @@
 #   sushi.jar next to this script    (release zip), or target/sushi.jar (source checkout: ./build.sh)
 #   the pinned release               cached under ${FHIR_IG_SUSHI_HOME:-$HOME/.fhir-ig-sushi}
 # FHIR_IG_SUSHI_URL overrides the download URL (e.g. a mirror). Java: $JAVA_HOME/bin/java if set, else java on
-# PATH; it must be 21 or newer. SUSHI_JAVA_OPTS adds JVM options.
+# PATH; it must be 17 or newer. SUSHI_JAVA_OPTS adds JVM options.
 set -e
 VERSION="@SUSHI_VERSION@"
 SHA256="@SUSHI_SHA256@"
@@ -50,10 +50,10 @@ else
 fi
 JAVA=java
 if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then JAVA=$JAVA_HOME/bin/java; fi
-command -v "$JAVA" >/dev/null 2>&1 || die "Java 21+ not found; install it or set JAVA_HOME"
-# Java 21+: `java -version` prints e.g. `openjdk version "21.0.5" ...` (or "1.8.0_402" for Java 8)
+command -v "$JAVA" >/dev/null 2>&1 || die "Java 17+ not found; install it or set JAVA_HOME"
+# Java 17+: `java -version` prints e.g. `openjdk version "21.0.5" ...` (or "1.8.0_402" for Java 8)
 jv=$("$JAVA" -version 2>&1 | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -n 1)
 major=${jv%%.*}
-[ -n "$major" ] && [ "$major" -ge 21 ] 2>/dev/null || die "sushi.jar needs Java 21 or newer, but $JAVA is version ${jv:-unknown}; set JAVA_HOME to a JDK 21+"
+[ -n "$major" ] && [ "$major" -ge 17 ] 2>/dev/null || die "sushi.jar needs Java 17 or newer, but $JAVA is version ${jv:-unknown}; set JAVA_HOME to a JDK 17+"
 # shellcheck disable=SC2086  # SUSHI_JAVA_OPTS is a list of options
 exec "$JAVA" ${SUSHI_JAVA_OPTS:-} -jar "$JAR" "$@"

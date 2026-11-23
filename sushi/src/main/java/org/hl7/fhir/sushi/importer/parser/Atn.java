@@ -190,89 +190,88 @@ final class Atn {
 
   /** Builds the sub-network of an element and records its states on the element (for the parser). */
   private Handle build(Grammar.Elem e) {
-    switch (e) {
-      case Grammar.Tok t -> {
-        State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
-        l.add(new Transition(TransitionType.ATOM, r, t.type, null, null, -1));
-        t.state = l;
-        return new Handle(l, r);
-      }
-      case Grammar.TokSet t -> {
-        State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
-        l.add(new Transition(t.invert ? TransitionType.NOT_SET : TransitionType.SET, r, 0, t.set, null, -1));
-        t.state = l;
-        return new Handle(l, r);
-      }
-      case Grammar.Ref ref -> {
-        State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
-        l.add(new Transition(TransitionType.RULE, ruleToStart[ref.ruleIndex], 0, null, r, ref.ruleIndex));
-        ref.state = l;
-        return new Handle(l, r);
-      }
-      case Grammar.Seq q -> {
-        List<Handle> els = new ArrayList<>();
-        for (Grammar.Elem x : q.items) els.add(build(x));
-        return elemList(els);
-      }
-      case Grammar.Block b -> {
-        List<Handle> alts = new ArrayList<>();
-        for (Grammar.Elem x : b.alts) alts.add(build(x));
-        switch (b.kind) {
-          case PLAIN -> {
-            if (alts.size() == 1) return alts.get(0);
-            State start = newState(StateType.BLOCK_START);
-            defineDecision(start);
-            b.decisionState = start;
-            return makeBlock(start, alts);
-          }
-          case OPTIONAL -> {
-            State start = newState(StateType.BLOCK_START);
-            defineDecision(start);
-            Handle h = makeBlock(start, alts);
-            epsilon(start, h.right);
-            b.decisionState = start;
-            return h;
-          }
-          case STAR -> {
-            State blkStart = newState(StateType.STAR_BLOCK_START);
-            if (alts.size() > 1) defineDecision(blkStart);
-            Handle h = makeBlock(blkStart, alts);
-            State entry = newState(StateType.STAR_LOOP_ENTRY);
-            defineDecision(entry);
-            State end = newState(StateType.LOOP_END);
-            State loop = newState(StateType.STAR_LOOP_BACK);
-            entry.loopBackState = loop;
-            end.loopBackState = loop;
-            epsilon(entry, blkStart);
-            epsilon(entry, end);
-            epsilon(h.right, loop);
-            epsilon(loop, entry);
-            b.blockStart = blkStart;
-            b.decisionState = entry;
-            b.loopBack = loop;
-            return new Handle(entry, end);
-          }
-          case PLUS -> {
-            State blkStart = newState(StateType.PLUS_BLOCK_START);
-            if (alts.size() > 1) defineDecision(blkStart);
-            Handle h = makeBlock(blkStart, alts);
-            State loop = newState(StateType.PLUS_LOOP_BACK);
-            defineDecision(loop);
-            State end = newState(StateType.LOOP_END);
-            blkStart.loopBackState = loop;
-            end.loopBackState = loop;
-            epsilon(h.right, loop);
-            epsilon(loop, blkStart);
-            epsilon(loop, end);
-            b.blockStart = blkStart;
-            b.decisionState = loop;
-            b.loopBack = loop;
-            return new Handle(blkStart, end);
-          }
-          default -> throw new IllegalStateException();
+    if (e instanceof Grammar.Tok t) {
+      State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
+      l.add(new Transition(TransitionType.ATOM, r, t.type, null, null, -1));
+      t.state = l;
+      return new Handle(l, r);
+    }
+    if (e instanceof Grammar.TokSet t) {
+      State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
+      l.add(new Transition(t.invert ? TransitionType.NOT_SET : TransitionType.SET, r, 0, t.set, null, -1));
+      t.state = l;
+      return new Handle(l, r);
+    }
+    if (e instanceof Grammar.Ref ref) {
+      State l = newState(StateType.BASIC), r = newState(StateType.BASIC);
+      l.add(new Transition(TransitionType.RULE, ruleToStart[ref.ruleIndex], 0, null, r, ref.ruleIndex));
+      ref.state = l;
+      return new Handle(l, r);
+    }
+    if (e instanceof Grammar.Seq q) {
+      List<Handle> els = new ArrayList<>();
+      for (Grammar.Elem x : q.items) els.add(build(x));
+      return elemList(els);
+    }
+    if (e instanceof Grammar.Block b) {
+      List<Handle> alts = new ArrayList<>();
+      for (Grammar.Elem x : b.alts) alts.add(build(x));
+      switch (b.kind) {
+        case PLAIN -> {
+          if (alts.size() == 1) return alts.get(0);
+          State start = newState(StateType.BLOCK_START);
+          defineDecision(start);
+          b.decisionState = start;
+          return makeBlock(start, alts);
         }
+        case OPTIONAL -> {
+          State start = newState(StateType.BLOCK_START);
+          defineDecision(start);
+          Handle h = makeBlock(start, alts);
+          epsilon(start, h.right);
+          b.decisionState = start;
+          return h;
+        }
+        case STAR -> {
+          State blkStart = newState(StateType.STAR_BLOCK_START);
+          if (alts.size() > 1) defineDecision(blkStart);
+          Handle h = makeBlock(blkStart, alts);
+          State entry = newState(StateType.STAR_LOOP_ENTRY);
+          defineDecision(entry);
+          State end = newState(StateType.LOOP_END);
+          State loop = newState(StateType.STAR_LOOP_BACK);
+          entry.loopBackState = loop;
+          end.loopBackState = loop;
+          epsilon(entry, blkStart);
+          epsilon(entry, end);
+          epsilon(h.right, loop);
+          epsilon(loop, entry);
+          b.blockStart = blkStart;
+          b.decisionState = entry;
+          b.loopBack = loop;
+          return new Handle(entry, end);
+        }
+        case PLUS -> {
+          State blkStart = newState(StateType.PLUS_BLOCK_START);
+          if (alts.size() > 1) defineDecision(blkStart);
+          Handle h = makeBlock(blkStart, alts);
+          State loop = newState(StateType.PLUS_LOOP_BACK);
+          defineDecision(loop);
+          State end = newState(StateType.LOOP_END);
+          blkStart.loopBackState = loop;
+          end.loopBackState = loop;
+          epsilon(h.right, loop);
+          epsilon(loop, blkStart);
+          epsilon(loop, end);
+          b.blockStart = blkStart;
+          b.decisionState = loop;
+          b.loopBack = loop;
+          return new Handle(blkStart, end);
+        }
+        default -> throw new IllegalStateException();
       }
     }
+    throw new IllegalStateException("unknown element " + e);
   }
 
   private Handle makeBlock(State start, List<Handle> alts) {

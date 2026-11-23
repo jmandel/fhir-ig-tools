@@ -19,7 +19,7 @@ IGs, the same exit status on all**; the other 8 IGs read predefined XML resource
 core instead of fhir-tool, and differ only in their ImplementationGuide resource listing
 ([`sushi/docs/core-divergences.md`](sushi/docs/core-divergences.md) C6). Console messages are the same except
 package-loading lines in 6 IGs and XML warnings in 11; 3,730 JUnit tests, including 3,581 of SUSHI's 3,604 Jest
-tests ported 1:1. Java 21.
+tests ported 1:1. Java 17+.
 
 ```sh
 curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/sushi && chmod +x sushi
@@ -55,7 +55,7 @@ own YAML construction sits on, and the JavaScript value model the SUSHI port use
 | `pom.xml`, `build.sh` | the multi-module build ([`docs/MONOREPO.md`](docs/MONOREPO.md)): Maven aggregator and its wrapper script |
 | [`common/`](common/README.md) | zero-dependency code shared by the modules, Java 17: the libyaml event layer (`org.hl7.fhir.common.yaml`) and the JavaScript value model (`org.hl7.fhir.common.js`) |
 | [`jekyll/`](jekyll/README.md) | the shim: Java sources (`org.hl7.fhir.jekyll.{liquid,kramdown,rouge,yaml,site,util}`), tests, the differential oracle, porting notes (`NOTES-*.md`), integration notes, the `jekyll-shim` wrappers; builds `jekyll.jar` |
-| [`sushi/`](sushi/README.md) | the SUSHI port, Java 21 (`org.hl7.fhir.sushi.*`): sources, JUnit tests, the `sushi` wrappers, the ANTLR test oracle (SUSHI's grammar), the differential scripts, [`PORTING.md`](sushi/PORTING.md) (design decisions and conventions) and [`docs/`](sushi/docs) (known differences); builds `sushi.jar` |
+| [`sushi/`](sushi/README.md) | the SUSHI port, Java 17 (`org.hl7.fhir.sushi.*`): sources, JUnit tests, the `sushi` wrappers, the ANTLR test oracle (SUSHI's grammar), the differential scripts, [`PORTING.md`](sushi/PORTING.md) (design decisions and conventions) and [`docs/`](sushi/docs) (known differences); builds `sushi.jar` |
 | `scripts/` | test drivers (`test-suites.sh`, `e2e.sh`, `test-wrapper.sh`, `sushi-e2e.sh`, `test-sushi-wrapper.sh`), corpus sampling, golden builds, the `domdiff.py` comparator, timing / memory / locale tools, `sushi-sync.sh` |
 | `docker/` | the reference image: the autobuilder's localdev image pinned by digest, plus optional extra CAs |
 | `lima/` | Lima VM definition for large corpus runs |
@@ -65,8 +65,8 @@ own YAML construction sits on, and the JavaScript value model the SUSHI port use
 
 ## Building and testing
 
-Building everything needs JDK 21 and Maven 3.6.3+, or Docker (`./build.sh` then runs the same Maven build in the
-reference image). `common` and `jekyll` are compiled for Java 17, so `jekyll.jar` runs on Java 17.
+Building everything needs JDK 17+ and Maven 3.6.3+, or Docker (`./build.sh` then runs the same Maven build in the
+reference image). Every module is compiled for Java 17, so `jekyll.jar` and `sushi.jar` run on Java 17.
 
 ```sh
 ./build.sh                    # all modules and all JUnit tests -> jekyll/target/jekyll.jar, sushi/target/sushi.jar

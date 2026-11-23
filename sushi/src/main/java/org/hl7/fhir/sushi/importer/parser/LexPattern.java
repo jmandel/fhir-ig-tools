@@ -101,33 +101,30 @@ final class LexPattern {
   }
 
   private void build(Rx rx, int from, int to) {
-    switch (rx) {
-      case Chars c -> {
-        int s = newState();
-        epsilon(from, s);
-        pred[s] = c.set();
-        next[s] = to;
+    if (rx instanceof Chars c) {
+      int s = newState();
+      epsilon(from, s);
+      pred[s] = c.set();
+      next[s] = to;
+    } else if (rx instanceof Seq q) {
+      int cur = from;
+      for (int i = 0; i < q.items().size(); i++) {
+        int nxt = i == q.items().size() - 1 ? to : newState();
+        build(q.items().get(i), cur, nxt);
+        cur = nxt;
       }
-      case Seq q -> {
-        int cur = from;
-        for (int i = 0; i < q.items().size(); i++) {
-          int nxt = i == q.items().size() - 1 ? to : newState();
-          build(q.items().get(i), cur, nxt);
-          cur = nxt;
-        }
-        if (q.items().isEmpty()) epsilon(from, to);
-      }
-      case Alt a -> {
-        for (Rx x : a.alts()) build(x, from, to);
-      }
-      case Rep r -> {
-        int in = newState(), out = newState();
-        epsilon(from, in);
-        build(r.body(), in, out);
-        if (r.min() == 0) epsilon(from, to);
-        epsilon(out, to);
-        if (r.max() < 0) epsilon(out, in);
-      }
+      if (q.items().isEmpty()) epsilon(from, to);
+    } else if (rx instanceof Alt a) {
+      for (Rx x : a.alts()) build(x, from, to);
+    } else if (rx instanceof Rep r) {
+      int in = newState(), out = newState();
+      epsilon(from, in);
+      build(r.body(), in, out);
+      if (r.min() == 0) epsilon(from, to);
+      epsilon(out, to);
+      if (r.max() < 0) epsilon(out, in);
+    } else {
+      throw new IllegalStateException("unknown pattern " + rx);
     }
   }
 

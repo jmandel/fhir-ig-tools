@@ -1,11 +1,12 @@
 name: CI
 
-# build: JDK 21 builds every module (common and jekyll with --release 17, sushi with 21) and runs all JUnit tests,
+# build: JDK 21 builds every module (all with --release 17, the IG Publisher's level) and runs all JUnit tests,
 #        SUSHI's (~3.7k) included, then the shim's suites against the jekyll/target/jekyll.jar it built.
 # shim:  runs that same jekyll.jar (the release artifact) on JDK 17 and 21 on Linux, macOS and Windows: the
 #        differential suites, the in-process API check, the wrapper end to end and the wrapper bootstrap.
-# sushi: runs that same sushi.jar through the sushi wrapper on Linux, macOS and Windows (JDK 21): download, checksum,
-#        cache, the Java 21 check, and a small FSH project through the wrapper vs `java -jar sushi.jar`.
+# jdk17: builds every module and runs all JUnit tests on JDK 17 (the publisher's runtime floor).
+# sushi: runs that same sushi.jar through the sushi wrapper on Linux, macOS and Windows (JDK 17 and 21): download,
+#        checksum, cache, the Java 17 check, and a small FSH project through the wrapper vs `java -jar sushi.jar`.
 on:
   push:
     branches: [main]
@@ -28,10 +29,12 @@ jobs:
           cache: maven
       - name: Build (Maven, all modules; JUnit incl. SUSHI's; jekyll/target/jekyll.jar, sushi/target/sushi.jar)
         run: ./build.sh -B -ntp package
-      - name: jekyll.jar class files target Java 17
+      - name: jekyll.jar and sushi.jar class files target Java 17
         run: |
           v=$(unzip -p jekyll/target/jekyll.jar org/hl7/fhir/jekyll/site/Main.class | od -An -j6 -N2 -tu1 | awk '{print $1 * 256 + $2}')
-          echo "class file version $v"; [ "$v" = 61 ]
+          echo "jekyll class file version $v"; [ "$v" = 61 ]
+          v=$(unzip -p sushi/target/sushi.jar org/hl7/fhir/sushi/App.class | od -An -j6 -N2 -tu1 | awk '{print $1 * 256 + $2}')
+          echo "sushi class file version $v"; [ "$v" = 61 ]
       - name: sushi.jar runs self-contained
         run: java -jar sushi/target/sushi.jar --version
       - name: YAML test-suite data + the repo at /w (the YAML file cases hold oracle-container paths)
@@ -95,13 +98,32 @@ jobs:
       - name: Wrapper bootstrap (download, verify, cache; local server stands in for Releases)
         run: scripts/test-wrapper.sh
 
+  jdk17:
+    name: all modules / JDK 17
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build and JUnit on JDK 17 (all modules, SUSHI's tests included)
+        run: ./build.sh -B -ntp package
+      - name: sushi.jar runs on JDK 17
+        run: java -jar sushi/target/sushi.jar --version
+
   sushi:
-    name: sushi wrapper / ${{ matrix.os }} / JDK 21
+    name: sushi wrapper / ${{ matrix.os }} / JDK ${{ matrix.java }}
     needs: build
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        java: ['17', '21']
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -111,7 +133,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ matrix.java }}
       - name: sushi.jar from the JDK 21 build
         uses: actions/download-artifact@v4
         with:
@@ -119,5 +141,5 @@ jobs:
           path: sushi/target
       - name: End to end through the source-checkout wrapper (vs java -jar sushi.jar; downloads FHIR packages)
         run: scripts/sushi-e2e.sh
-      - name: Wrapper bootstrap (download, verify, cache, Java 21 check; local server stands in for Releases)
+      - name: Wrapper bootstrap (download, verify, cache, Java 17 check; local server stands in for Releases)
         run: scripts/test-sushi-wrapper.sh

@@ -25,7 +25,7 @@ jekyll/            the shim
   tests/ oracle/   differential suites and the Ruby oracle
   jekyll-shim, jekyll-shim.cmd               the self-downloading wrappers (stamped at release)
   README.md, INTEGRATION.md, NOTES-*.md
-sushi/             the SUSHI port, Java 21 (sushi-java before the move, see "The SUSHI module")
+sushi/             the SUSHI port, Java 17 (sushi-java before the move, see "The SUSHI module")
   pom.xml          artifact org.hl7.fhir:fhir-ig-sushi; also writes target/sushi.jar (self-contained, shaded)
   src/main/java/org/hl7/fhir/sushi/…         App (CLI), importer (hand-written FSH parser, importer, config),
                                              export, fhirtypes, fshtypes, fhirdefs (packages on org.hl7.fhir.core),
@@ -52,14 +52,14 @@ docker/ lima/ third_party/ tracker-app/
 
 ## Building
 
-You need JDK 21 and Maven 3.6.3+ for the whole build (JDK 17 is enough for the shim alone). Without them,
+You need JDK 17+ and Maven 3.6.3+ for the whole build. Without them,
 `./build.sh` runs the same commands in the reference image, whose JDK is Temurin 21. `common` and `jekyll` are
 compiled with `--release 17` whatever the JDK, so `jekyll.jar` keeps running on Java 17.
 
 ```sh
 ./build.sh                          # = mvn -B -q package: all modules, unit tests, jars
 ./build.sh -B -ntp package          # same, with normal output (what CI runs)
-./build.sh -B -pl jekyll -am package   # one module and what it needs (the shim: works on JDK 17)
+./build.sh -B -pl jekyll -am package   # one module and what it needs (the shim)
 ./build.sh -B -pl sushi -am package    # SUSHI (sushi/scripts/build.sh wraps this; SUSHI_BUILD_DIR moves sushi's target/)
 mvn -B package                      # plain Maven works too
 ./build.sh --fast                   # shim only, plain javac, no Maven: common + jekyll -> jekyll/build/{classes,test-classes,jekyll.jar}
@@ -67,7 +67,7 @@ mvn -B package                      # plain Maven works too
 ```
 
 There is no `--fast` build for `sushi`: it needs Maven for org.hl7.fhir.core and for the ANTLR test oracle.
-On JDK 17 the sushi module fails fast (enforcer `requireJavaVersion` 21) with a hint to use `-pl jekyll -am`.
+Every module is compiled with `--release 17` (the IG Publisher's level); the enforcer requires JDK 17 or newer.
 
 Outputs:
 - Maven: `common/target/classes`, `jekyll/target/classes`, `jekyll/target/test-classes`, the thin module jar
@@ -115,7 +115,7 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 
 ## Module rules
 
-![Modules: jekyll (Java 17) depends only on common and builds jekyll.jar; sushi (Java 21) depends on common and org.hl7.fhir.core's utilities and builds sushi.jar; common (Java 17) depends on nothing; JUnit and ANTLR are test scope only](img/modules.svg)
+![Modules: jekyll (Java 17) depends only on common and builds jekyll.jar; sushi (Java 17) depends on common and org.hl7.fhir.core's utilities and builds sushi.jar; common (Java 17) depends on nothing; JUnit and ANTLR are test scope only](img/modules.svg)
 
 The Maven enforcer plugin checks the dependency rules on every build (`bannedDependencies`).
 
@@ -195,9 +195,9 @@ version and re-apply the upstream change by hand.
 
 ## Releases
 
-- **Build with JDK 21.** CI and the release workflow use JDK 21 for the whole build; `common` and `jekyll` are
-  compiled with `--release 17` (`jekyll.jar`'s class files are version 61, checked in CI), and a CI job runs that
-  same `jekyll.jar` on JDK 17 and 21 on Linux, macOS and Windows.
+- **Build with JDK 21.** CI and the release workflow use JDK 21 for the whole build; every module is compiled with
+  `--release 17` (`jekyll.jar`'s class files are version 61, checked in CI), CI also builds and tests everything on
+  JDK 17, and CI jobs run the same `jekyll.jar` and `sushi.jar` on JDK 17 and 21 on Linux, macOS and Windows.
 - **Release assets:** `jekyll-shim`, `jekyll-shim.cmd` (stamped with the release version and `jekyll.jar`'s
   SHA-256; on first use they download `releases/download/v<version>/jekyll.jar`, verify it and cache it under
   `~/.fhir-ig-jekyll/<version>/`), `jekyll.jar`, `fhir-ig-jekyll.zip` (offline bundle: `jekyll.jar`, both wrappers,
@@ -215,7 +215,8 @@ version and re-apply the upstream change by hand.
   and its license) and the repository license are in `META-INF/fhir-ig-tools/`.
 - **CI:** the `build` job (JDK 21, Linux) builds everything and runs all JUnit tests and the shim suites; the `shim`
   job runs that `jekyll.jar` on JDK 17 and 21 on Linux, macOS and Windows; the `sushi` job runs that `sushi.jar`
-  through the wrapper (`sushi-e2e.sh`, `test-sushi-wrapper.sh`) on Linux, macOS and Windows with JDK 21.
+  through the wrapper (`sushi-e2e.sh`, `test-sushi-wrapper.sh`) on Linux, macOS and Windows with JDK 17 and 21; the
+  `jdk17` job builds every module and runs all JUnit tests on JDK 17.
 
 ## Verification of the multi-module move (2026-11-22)
 

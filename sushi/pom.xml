@@ -24,7 +24,7 @@
   <description>Java port of SUSHI 3.21.1, the FSH compiler used by the FHIR IG Publisher</description>
 
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <sushi.mainClass>org.hl7.fhir.sushi.App</sushi.mainClass>
     <!-- where target/ goes; -Dsushi.buildDir=... moves it off the checkout -->
     <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
@@ -124,8 +124,8 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>[21,)</version>
-                  <message>sushi needs JDK 21. On JDK 17, build only the shim: ./build.sh -B -pl jekyll -am package</message>
+                  <version>[17,)</version>
+                  <message>sushi needs JDK 17 or newer</message>
                 </requireJavaVersion>
                 <bannedDependencies>
                   <message>sushi may depend only on fhir-ig-common, org.hl7.fhir.core modules, xpp3 and (runtime) commons-compress; see docs/MONOREPO.md</message>
@@ -171,7 +171,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <release>21</release>
+          <release>17</release>
           <compilerArgs><arg>-Xlint:all,-serial,-processing</arg></compilerArgs>
         </configuration>
         <executions>

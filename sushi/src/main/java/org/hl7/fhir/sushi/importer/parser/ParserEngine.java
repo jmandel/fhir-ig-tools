@@ -62,18 +62,16 @@ final class ParserEngine implements Recognizer {
 
     /** Like the ANTLR tool: a decision whose alternatives' LL(1) lookahead sets are disjoint is coded as LL(1). */
     private void analyse(Grammar.Elem e) {
-      switch (e) {
-        case Grammar.Seq s -> s.items.forEach(this::analyse);
-        case Grammar.Block b -> {
-          TokenSet[] look = atn.decisionLookahead(b.decisionState);
-          b.ll1 = Atn.disjoint(look) ? look : null;
-          if ((b.kind == Grammar.Kind.STAR || b.kind == Grammar.Kind.PLUS) && b.alts.size() > 1) {
-            TokenSet[] inner = atn.decisionLookahead(b.blockStart);
-            b.innerLl1 = Atn.disjoint(inner) ? inner : null;
-          }
-          b.alts.forEach(this::analyse);
+      if (e instanceof Grammar.Seq s) {
+        s.items.forEach(this::analyse);
+      } else if (e instanceof Grammar.Block b) {
+        TokenSet[] look = atn.decisionLookahead(b.decisionState);
+        b.ll1 = Atn.disjoint(look) ? look : null;
+        if ((b.kind == Grammar.Kind.STAR || b.kind == Grammar.Kind.PLUS) && b.alts.size() > 1) {
+          TokenSet[] inner = atn.decisionLookahead(b.blockStart);
+          b.innerLl1 = Atn.disjoint(inner) ? inner : null;
         }
-        default -> {}
+        b.alts.forEach(this::analyse);
       }
     }
   }
@@ -160,23 +158,21 @@ final class ParserEngine implements Recognizer {
   }
 
   private void exec(Grammar.Elem e) {
-    switch (e) {
-      case Grammar.Tok t -> {
-        state = t.state.number;
-        match(t.type);
-      }
-      case Grammar.TokSet s -> {
-        state = s.state.number;
-        matchSet(s);
-      }
-      case Grammar.Ref r -> {
-        state = r.state.number;
-        rule(r.ruleIndex);
-      }
-      case Grammar.Seq s -> {
-        for (Grammar.Elem x : s.items) exec(x);
-      }
-      case Grammar.Block b -> block(b);
+    if (e instanceof Grammar.Tok t) {
+      state = t.state.number;
+      match(t.type);
+    } else if (e instanceof Grammar.TokSet s) {
+      state = s.state.number;
+      matchSet(s);
+    } else if (e instanceof Grammar.Ref r) {
+      state = r.state.number;
+      rule(r.ruleIndex);
+    } else if (e instanceof Grammar.Seq s) {
+      for (Grammar.Elem x : s.items) exec(x);
+    } else if (e instanceof Grammar.Block b) {
+      block(b);
+    } else {
+      throw new IllegalStateException("unknown element " + e);
     }
   }
 

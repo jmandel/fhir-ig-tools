@@ -5,8 +5,8 @@
 #                                  -> common/target/classes, jekyll/target/{classes,test-classes},
 #                                     jekyll/target/jekyll.jar (the shim's self-contained release jar),
 #                                     sushi/target/sushi.jar (the SUSHI port's self-contained jar)
-#                                  Needs JDK 21 (sushi); common and jekyll are still compiled for Java 17.
-#       e.g. ./build.sh -B -pl jekyll -am package     the shim only (this also works on JDK 17)
+#                                  Needs JDK 17+; every module is compiled for Java 17.
+#       e.g. ./build.sh -B -pl jekyll -am package     the shim only
 #            ./build.sh -B -pl sushi -am package      SUSHI only (sushi/scripts/build.sh wraps this)
 #            ./build.sh -B -o verify                  offline
 #

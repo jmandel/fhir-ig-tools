@@ -102,15 +102,14 @@ final class Grammar {
   }
 
   private void resolve(Elem e) {
-    switch (e) {
-      case Ref r -> {
-        Integer i = ruleIndex.get(r.name);
-        if (i == null) throw new IllegalStateException("undefined rule " + r.name);
-        r.ruleIndex = i;
-      }
-      case Seq s -> s.items.forEach(this::resolve);
-      case Block b -> b.alts.forEach(this::resolve);
-      default -> {}
+    if (e instanceof Ref r) {
+      Integer i = ruleIndex.get(r.name);
+      if (i == null) throw new IllegalStateException("undefined rule " + r.name);
+      r.ruleIndex = i;
+    } else if (e instanceof Seq s) {
+      s.items.forEach(this::resolve);
+    } else if (e instanceof Block b) {
+      b.alts.forEach(this::resolve);
     }
   }
 

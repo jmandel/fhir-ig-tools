@@ -77,16 +77,14 @@ class AtnEquivalenceTest {
   }
 
   private static void walk(Grammar.Elem e, List<Integer> out) {
-    switch (e) {
-      case Grammar.Seq s -> s.items.forEach(x -> walk(x, out));
-      case Grammar.Block b -> {
-        if (b.ll1 == null) out.add(b.decisionState.decision);
-        if (b.alts.size() > 1 && (b.kind == Grammar.Kind.STAR || b.kind == Grammar.Kind.PLUS) && b.innerLl1 == null) {
-          out.add(b.blockStart.decision);
-        }
-        b.alts.forEach(x -> walk(x, out));
+    if (e instanceof Grammar.Seq s) {
+      s.items.forEach(x -> walk(x, out));
+    } else if (e instanceof Grammar.Block b) {
+      if (b.ll1 == null) out.add(b.decisionState.decision);
+      if (b.alts.size() > 1 && (b.kind == Grammar.Kind.STAR || b.kind == Grammar.Kind.PLUS) && b.innerLl1 == null) {
+        out.add(b.blockStart.decision);
       }
-      default -> {}
+      b.alts.forEach(x -> walk(x, out));
     }
   }
 

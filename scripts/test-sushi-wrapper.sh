@@ -44,9 +44,9 @@ grep -q 'checksum mismatch' "$T/bad.log" || { echo "FAIL: no checksum message"; 
 [ ! -e "$T/home/0.0.1-test/sushi.jar" ] || { echo "FAIL: bad jar was cached"; exit 1; }
 ls "$T/home/0.0.1-test" 2>/dev/null | grep -q part && { echo "FAIL: partial download left behind"; exit 1; }
 
-echo "== 4. Java older than 21 is refused with a clear message"
-mkdir -p "$T/jdk17/bin"
-printf '#!/bin/sh\necho '\''openjdk version "17.0.9" 2023-10-17'\'' >&2\n' > "$T/jdk17/bin/java"; chmod +x "$T/jdk17/bin/java"
-if JAVA_HOME="$T/jdk17" "$T/w/sushi" --version > "$T/old.log" 2>&1; then echo "FAIL: Java 17 accepted"; cat "$T/old.log"; exit 1; fi
-grep -q 'needs Java 21 or newer, but .* is version 17.0.9' "$T/old.log" || { echo "FAIL: no Java version message"; cat "$T/old.log"; exit 1; }
+echo "== 4. Java older than 17 is refused with a clear message"
+mkdir -p "$T/jdk11/bin"
+printf '#!/bin/sh\necho '\''openjdk version "11.0.21" 2023-10-17'\'' >&2\n' > "$T/jdk11/bin/java"; chmod +x "$T/jdk11/bin/java"
+if JAVA_HOME="$T/jdk11" "$T/w/sushi" --version > "$T/old.log" 2>&1; then echo "FAIL: Java 11 accepted"; cat "$T/old.log"; exit 1; fi
+grep -q 'needs Java 17 or newer, but .* is version 11.0.21' "$T/old.log" || { echo "FAIL: no Java version message"; cat "$T/old.log"; exit 1; }
 echo "sushi wrapper bootstrap ok"

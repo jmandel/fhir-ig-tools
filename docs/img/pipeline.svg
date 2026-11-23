@@ -60,7 +60,7 @@
   <path class="wire" d="M220,159 L262,159" marker-end="url(#arrow)"/>
   <rect class="tool" x="266" y="84" width="396" height="150" rx="10"/>
   <text x="286" y="112" class="ink mono" font-size="17" font-weight="700">sushi.jar</text>
-  <text x="642" y="112" class="muted" font-size="13" text-anchor="end">Java 21</text>
+  <text x="642" y="112" class="muted" font-size="13" text-anchor="end">Java 17</text>
   <text x="286" y="138" class="ink" font-size="13">Java port of SUSHI 3.21.1, the FSH compiler</text>
   <text x="286" y="158" class="ink" font-size="13">byte-identical fsh-generated/, same messages, exit status</text>
   <text x="286" y="182" class="muted mono" font-size="13">publisher runs:  sushi &lt;ig&gt; -o &lt;ig&gt;</text>

@@ -5,7 +5,7 @@ inputs and FHIR packages it writes byte-identical `fsh-generated/`, prints the s
 with the same status as TypeScript SUSHI 3.21.1, with no Node.js or npm, except where it deliberately follows
 org.hl7.fhir.core instead (package-loading messages, and predefined resources in FHIR XML:
 [`docs/core-divergences.md`](docs/core-divergences.md)). This is the `sushi` module of
-[fhir-ig-tools](../README.md) (Java 21, package `org.hl7.fhir.sushi`); it builds `sushi/target/sushi.jar`.
+[fhir-ig-tools](../README.md) (Java 17, package `org.hl7.fhir.sushi`); it builds `sushi/target/sushi.jar`.
 
 ![sushi.jar: FSH is parsed by a hand-written lexer and parser (SUSHI's ANTLR grammar is a test-only oracle), imported into the FSHTank, exported to StructureDefinitions, instances, value sets, code systems and the ImplementationGuide, and written to fsh-generated; configuration through a yaml@1.10 composer on common's YAML events; packages through org.hl7.fhir.core's package cache; fsh-generated identical to TypeScript SUSHI on 4/6 reference and 259/267 corpus IGs, the rest differing only where predefined FHIR XML is read with core](../docs/img/sushi.svg)
 
@@ -17,7 +17,7 @@ of that release's `sushi.jar`; on first use it downloads the jar into `~/.fhir-i
 and runs offline from then on. It passes every argument through and keeps SUSHI's output and exit status.
 
 ```sh
-# Linux / macOS (Java 21+)
+# Linux / macOS (Java 17+)
 curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/sushi && chmod +x sushi
 mv sushi ~/bin/                       # any folder on the PATH, ahead of an npm-installed sushi
 sushi path/to/ig                      # = SUSHI 3.21.1; or let the publisher run it:
