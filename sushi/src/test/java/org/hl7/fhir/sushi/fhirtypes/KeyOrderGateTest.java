@@ -32,17 +32,17 @@ import org.junit.jupiter.api.Test;
  *       then _x after x" model reproduces SUSHI's order.</li>
  *   <li>Instances: InstanceDefinition.fromJSON then toJSON (resourceType/id/meta first, _x after x).</li>
  * </ul>
- * Input: {@code -Dsushi.wp5.gate.dir} (default /srv/ig/sushi-port/wp5-gate, the extracted reference runs); skipped
- * when absent. Writes a summary to stdout.
+ * Input: {@code -Dsushi.wp5.gate.dir} (or {@code -Dsushi.vmdata}: {@code <root>/sushi-port/wp5-gate}, the extracted
+ * reference runs); opt-in, skipped when not configured. Writes a summary to stdout.
  */
 class KeyOrderGateTest {
-  static final Path GATE = Path.of(System.getProperty("sushi.wp5.gate.dir", "/srv/ig/sushi-port/wp5-gate"));
 
   record Result(String ig, String file, String kind, String firstDiff) {}
 
   @Test
   void referenceOutputRoundTripsByteIdentically() throws IOException {
-    assumeTrue(Files.isDirectory(GATE), "gate dir not available: " + GATE);
+    Path GATE = org.hl7.fhir.sushi.testhelpers.OptInData.require("sushi.wp5.gate.dir", "sushi-port/wp5-gate",
+        "the extracted reference runs of the 6 reference IGs");
     List<Result> failures = new ArrayList<>();
     Map<String, int[]> counts = new TreeMap<>();
     List<Path> igs;

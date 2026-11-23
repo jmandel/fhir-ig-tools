@@ -800,14 +800,17 @@ SOFTWARE.
 
 ## SUSHI 3.21.1 (Apache License 2.0)
 
-SUSHI is licensed under the Apache License, Version 2.0; the full text is in the Addressable section above.
-Source: https://github.com/FHIR/sushi.
+Copyright 2019-2025 Health Level Seven International. SUSHI is licensed under the Apache License, Version 2.0; the
+full text is in the Addressable section above (and in `sushi/src/test/resources/sushi-ts/LICENSE`). Source:
+https://github.com/FHIR/sushi. SUSHI ships no NOTICE file.
 
 Besides the Java port, these files are taken from SUSHI 3.21.1 unchanged (or, for the project template,
 as SUSHI writes it):
 - `sushi/src/test/antlr4/**/*.g4`: SUSHI's ANTLR grammar (FSH, MiniFSH and their lexers). It is used **only in
   tests**, to generate the oracle parser the hand-written parser is compared with; no ANTLR code or grammar is
   in the built jar.
+- `sushi/src/test/resources/sushi-ts/test/**`: test fixtures from SUSHI 3.21.1's test tree (IG folders, configs,
+  FHIR definition packages; about 23 MB), used only by the JUnit tests; see its `README.md`.
 - `sushi/src/main/resources/org/hl7/fhir/sushi/fhirdefs/R5DefsForR4/*.json`,
   `.../importer/config/YAMLschema.json`, `.../utils/init-project/*` (the `sushi init` template).
 

@@ -121,9 +121,11 @@ class AntlrCstAdapterTest {
 
   /** All FSH fixtures of the TS checkout and a corpus IG convert without inconsistencies (skipped when absent). */
   @Test void convertsRealFshFiles() throws IOException {
-    List<Path> roots = Stream.of(System.getProperty("sushi.ts.dir", "") + "/test",
-            "/srv/ig/sushi-spike/src/HL7__genomics-reporting/input/fsh")
-        .map(Paths::get).filter(Files::isDirectory).toList();
+    // SUSHI's test fixtures (vendored) and, opt-in, a corpus IG (-Dsushi.vmdata)
+    Path corpusIg = org.hl7.fhir.sushi.testhelpers.OptInData.dir("sushi.genomics.fsh", "sushi-spike/src/HL7__genomics-reporting/input/fsh");
+    List<Path> roots = Stream.concat(Stream.of(Paths.get(org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.tsDir(), "test")),
+            corpusIg == null ? Stream.<Path>empty() : Stream.of(corpusIg))
+        .filter(Files::isDirectory).toList();
     Assumptions.assumeFalse(roots.isEmpty(), "no FSH sources on this machine");
     int files = 0;
     for (Path root : roots) {

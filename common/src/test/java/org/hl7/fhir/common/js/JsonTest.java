@@ -83,8 +83,11 @@ class JsonTest {
 
   /** parse + outputJson must reproduce every fsh-generated JSON file byte for byte. */
   @Test void roundTripsRealSushiOutput() throws IOException {
-    Path ref = Paths.get("/srv/ig/sushi-port/ref");
-    Assumptions.assumeTrue(Files.isDirectory(ref), "reference outputs not on this machine");
+    // opt-in: TS SUSHI's recorded output for the reference IGs is not in the repository
+    String vm = System.getProperty("sushi.vmdata", "");
+    Assumptions.assumeFalse(vm.isEmpty(), "opt-in: run with -Dsushi.vmdata=<data root> (reference outputs under sushi-port/ref)");
+    Path ref = Paths.get(vm, "sushi-port", "ref");
+    Assumptions.assumeTrue(Files.isDirectory(ref), "opt-in: reference outputs not found at " + ref);
     int files = 0;
     List<String> bad = new ArrayList<>();
     try (Stream<Path> s = Files.walk(ref)) {

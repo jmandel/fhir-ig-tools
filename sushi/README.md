@@ -81,6 +81,27 @@ Every known difference from TypeScript SUSHI (messages on malformed input, debug
 [`docs/differences.md`](docs/differences.md). None changes `fsh-generated/` on real input.
 The comparisons use a frozen FHIR package snapshot, so both implementations see the same packages.
 
+## Tests
+
+The JUnit suite (3,707 tests in this module, plus 7 for the JS value model in `common`) runs in every build and in
+CI with nothing but the repository:
+
+- **In CI (self-contained): 3,668 run and pass, 39 skipped.** That includes **all 3,584 ported Jest tests** that
+  pass in TypeScript SUSHI (`python3 sushi/scripts/test-inventory.py --coverage sushi/tests/inventory.tsv
+  <surefire-reports>`). Their fixtures, the files they read from SUSHI 3.21.1's own test tree, are vendored in
+  `src/test/resources/sushi-ts` (377 files, about 23 MB; Apache-2.0, see its `README.md`).
+- **Skipped as in SUSHI (17):** tests that are `it.skip`/`it.todo` in TypeScript SUSHI, or that spy on a private
+  method; each says so in its skip message.
+- **Opt-in (22):** tests over data that cannot be in the repository: the 267-IG FSH corpus and the JS parser's dumps
+  of it (parser differentials), TypeScript SUSHI's results on the corpus configurations and the reference IGs, the
+  WP-2/WP-7 gates. They are skipped with a message naming the property that enables them:
+  `-Dsushi.vmdata=<data root>` (the build VM's layout: `sushi-wp1/`, `sushi-wp3/`, `sushi-port/...`) enables them
+  all, or per test `-Dwp1.data=`, `-Dsushi.config.oracle.dir=`, `-Dsushi.wp5.gate.dir=`, `-Dsushi.genomics.fsh=`;
+  a few heavy sets also need `-Dwp1.heavy=true`, `-Dwp2.corpus=`, `-Dsushi.wp7gate.ig=`. With `-Dsushi.vmdata` on
+  the build VM, 3,678 run and 29 stay skipped.
+
+`-Dsushi.ts.dir=<a full SUSHI checkout>` runs the tests against another copy of SUSHI's test tree.
+
 ## More
 
 - [`PORTING.md`](PORTING.md): design decisions (dependencies, the JS value model, the hand-written parser with
