@@ -67,7 +67,7 @@ answer differs, which IGs hinge on it); the cost of switching; a verdict. "Corpu
   doubles (`1.50` is written `1.5`). Core's classes serialise in canonical FHIR order and keep decimal text, so every
   CodeSystem/ValueSet/IG resource and most instances would change key order. SUSHI also works on loose JSON across
   R4-R6 (unknown elements, R4 IGs using R5 elements through cross-version handling), which typed models reject or
-  drop. Every corpus IG hinges on it (byte-identical `fsh-generated/`, 267/267).
+  drop. Every corpus IG hinges on it (byte-identical `fsh-generated/` in 259/267, the other 8 differ only by C6).
 - **Cost.** r4 + r4b + r5 model jars (or the r5 element model plus a worker context per FHIR version); every output
   file reordered.
 - **Verdict: keep.**
