@@ -3,7 +3,8 @@
 The `jekyll` module of the multi-module build (`../docs/MONOREPO.md`); the libyaml event layer it builds on
 lives in `../common` (`org.hl7.fhir.common.yaml`).
 
-See `../docs/TRACKER.md` for goals, decisions (D1–D7), and task IDs. This file holds the
+See `../docs/TRACKER.md` for the current plan, and `../docs/archive/TRACKER-shim-v0.1.md` for the decisions (D1–D10)
+and task IDs of the work up to v0.1.0. This file holds the
 **engineering contracts** between modules so they can be built in parallel.
 
 ## Ground rules
@@ -23,7 +24,7 @@ See `../docs/TRACKER.md` for goals, decisions (D1–D7), and task IDs. This file
 ## Build / run / test (Docker; the host has no JDK)
 Commands run from the repo root.
 ```
-./build.sh                                              # Maven, all modules -> jekyll/target/shim.jar (+ classes, test-classes)
+./build.sh                                              # Maven, all modules -> jekyll/target/jekyll.jar (+ classes, test-classes)
 ./build.sh --fast [liquid|kramdown|site|yaml|rouge]     # module build -> jekyll/build-<module>/ ; no arg = everything -> jekyll/build/
 BUILD=build-liquid jekyll/run.sh <main-class> [args]   # runs java in the reference image; cwd=/w=repo root
 jekyll/oracle/oracle.sh <cases.jsonl> <expected.jsonl> # REAL Ruby output for cases (paths must be under the repo root)
@@ -90,5 +91,5 @@ Syntax highlighting: exactly what kramdown+Rouge produce, token spans included, 
 Must be thread-safe for concurrent conversions (no shared mutable state), and fast.
 
 ## Contract: `org.hl7.fhir.jekyll.site` (Jekyll glue + CLI; main agent)
-`java -jar shim.jar build --destination <dir>` run in `temp/pages` (what the publisher invokes via
+`java -jar jekyll.jar build --destination <dir>` run in `temp/pages` (what the publisher invokes via
 `-jekyll`). Prints Jekyll-like progress and `done in N seconds.`

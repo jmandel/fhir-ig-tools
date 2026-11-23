@@ -30,7 +30,7 @@ import org.hl7.fhir.sushi.utils.Puns;
  * texts, default command, combined short flags), console output (utils.FshLogger + the summary box) and exit status
  * (number of errors; the OS keeps the low 8 bits, as with node's process.exit) as TS SUSHI 3.21.1.
  *
- * <p>Deliberate differences (PORTING D7, docs/known-differences.md): the latest-version check is off unless enabled
+ * <p>Deliberate differences (PORTING D7, docs/differences.md): the latest-version check is off unless enabled
  * ({@code -Dsushi.versionCheck=true} / {@code SUSHI_VERSION_CHECK=true}) or {@code --require-latest} is given; it
  * queries the npm registry over HTTPS instead of running {@code npm view}.
  */

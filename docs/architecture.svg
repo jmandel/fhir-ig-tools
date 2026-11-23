@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 808" width="1200" height="808" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
-  <title id="t">fhir-ig-jekyll architecture</title>
-  <desc id="d">The IG Publisher writes temp/pages; shim.jar reads, renders and writes it with Java ports of Liquid, kramdown, Rouge and Jekyll's YAML stack, producing output identical to Jekyll's. Three integration levels, and the oracle and golden-corpus verification.</desc>
+  <title id="t">fhir-ig-tools: Jekyll shim architecture</title>
+  <desc id="d">The IG Publisher writes temp/pages; jekyll.jar reads, renders and writes it with Java ports of Liquid, kramdown, Rouge and Jekyll's YAML stack, producing output identical to Jekyll's. Three integration levels, and the oracle and golden-corpus verification.</desc>
   <style>
     .bg{fill:#ffffff}
     .ink{fill:#1f2328}.muted{fill:#59636e}
@@ -40,7 +40,7 @@
   <rect class="bg" x="0" y="0" width="1200" height="808" rx="12"/>
 
   <!-- title -->
-  <text x="24" y="40" class="ink" font-size="22" font-weight="700">fhir-ig-jekyll</text>
+  <text x="24" y="40" class="ink" font-size="22" font-weight="700">fhir-ig-tools · jekyll</text>
   <text x="190" y="40" class="muted" font-size="14">the IG Publisher's Jekyll stage, ported to Java: no Ruby, same output</text>
 
   <!-- ===== row A: pipeline ===== -->
@@ -64,8 +64,8 @@
 
   <!-- shim -->
   <rect class="shim" x="300" y="72" width="600" height="276" rx="10"/>
-  <text x="320" y="100" class="ink" font-size="16" font-weight="700">shim.jar</text>
-  <text x="880" y="100" class="muted" font-size="12" text-anchor="end">Java 17+ · JDK only · ~575 KB · jekyll build --destination</text>
+  <text x="320" y="100" class="ink" font-size="16" font-weight="700">jekyll.jar</text>
+  <text x="880" y="100" class="muted" font-size="12" text-anchor="end">Java 17+ · JDK only · ~650 KB · jekyll build --destination</text>
 
   <rect class="stage" x="320" y="114" width="176" height="84" rx="8"/>
   <text x="334" y="136" class="accent" font-size="14" font-weight="700">1 · Read</text>
@@ -146,7 +146,7 @@
   <rect class="card" x="414" y="404" width="372" height="104" rx="10"/>
   <text x="432" y="430" class="ink" font-size="14" font-weight="700">2 · In-process library</text>
   <rect class="chip-a" x="694" y="415" width="76" height="22" rx="11"/>
-  <text x="732" y="430" class="t-a" font-size="12" font-weight="600" text-anchor="middle">next</text>
+  <text x="732" y="430" class="t-a" font-size="12" font-weight="600" text-anchor="middle">prototype</text>
   <text x="432" y="456" class="ink mono" font-size="12">Shim.build(temp, out, log)</text>
   <text x="432" y="478" class="muted" font-size="12">no subprocess, no second JVM;</text>
   <text x="432" y="495" class="muted" font-size="12">render errors flow straight into QA</text>
@@ -154,7 +154,7 @@
   <rect class="card" x="804" y="404" width="372" height="104" rx="10"/>
   <text x="822" y="430" class="ink" font-size="14" font-weight="700">3 · In-memory, lazy fragments</text>
   <rect class="chip-p" x="1074" y="415" width="88" height="22" rx="11"/>
-  <text x="1118" y="430" class="t-p" font-size="12" font-weight="600" text-anchor="middle">planned</text>
+  <text x="1118" y="430" class="t-p" font-size="12" font-weight="600" text-anchor="middle">not pursued</text>
   <text x="822" y="456" class="ink mono" font-size="12">include → provider.fragment(name)</text>
   <text x="822" y="478" class="muted" font-size="12">publisher generates a fragment only when</text>
   <text x="822" y="495" class="muted" font-size="12">an include first needs it; no temp/pages</text>

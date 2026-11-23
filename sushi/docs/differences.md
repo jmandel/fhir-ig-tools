@@ -1,7 +1,8 @@
 # Differences from TypeScript SUSHI 3.21.1
 
 Behaviour where the Java port knowingly differs from TS SUSHI 3.21.1. Each entry: scope, evidence, decision.
-Every WP adds its entries when it finishes (WP-1/2/7 pending). Output-affecting differences on real inputs are
+Entries were added as each work package finished; this is the state at the end of the port
+([`../PORTING.md`](../PORTING.md) §9). Output-affecting differences on real inputs are
 bugs, not entries. Classes: **none** = no observable effect; **diag** = messages/diagnostics only; **malformed** =
 only on invalid input; **open** = decision pending.
 

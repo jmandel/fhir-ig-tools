@@ -204,6 +204,8 @@ LOC = nonblank TS lines; tests = Jest tests (`tests/inventory.tsv`, generated fr
 
 ## 5. Work packages
 
+*How the port was organised (historical): all work packages are done; the final status is in §9.*
+
 Each WP: own git worktree/branch; owns its Java packages exclusively; may add (not change) contract types it owns;
 changes to contract packages (`js`, `fshtypes`, `utils.Fishable*`, `utils.FshLogger`, skeleton signatures of other
 WPs) go through the coordinator. Test claim rule: a JUnit test ports a Jest test by using its exact `fullName`
@@ -255,9 +257,11 @@ signatures** (public methods other WPs call), commit to main, then implement.
   (`identical / missing / extra / json-format / json-key-order / json-value (first paths) / text`, plus a log diff
   ignoring the pun/version lines) to `../work/sushi-port/diff/<IG>-<label>.json`. Inputs: the 6-IG reference set at
   `$VMDATA/sushi-spike/runs/*-ref-*` (genomics-reporting, ITI.MHD, ch-term, EEHRxF logical, ch-ekm, smart-anc), then
-  the 267 FSH IGs of the corpus (`work/sushi-spike/fsh-repos.txt`). The Java half runs once `App` works (WP-10).
+  the 267 FSH IGs of the corpus (`work/sushi-spike/fsh-repos.txt`). Results: §9.
 
 ## 6a. Integration (phase 2)
+
+*Historical: how phase 2 was integrated; the port's repository and its request log are no longer used.*
 
 The integrator (phase-1 agent) owns `main` and the contract packages. WPs file `<UTC> | <wp> | merge <branch>@<commit>`
 or `| <wp> | contract: <what/why>` lines in `../progress/sushi-port-requests.log`. Merge rule: the branch rebased on
@@ -292,6 +296,8 @@ The port lives in this repository's `sushi/` module, next to `common` (zero-depe
 - **Jar:** `target/sushi.jar`, shaded (see D1), replaces the old `lib/` class path.
 
 ## 8. Risks for the parallel phase
+
+*Historical: the risks as seen at the start of phase 2; the outcome is in §9.*
 
 1. **ED ↔ SD coupling (WP-4/WP-5)** is the critical path; exporters (WP-6/7) can port tests early but only pass once
    both land. Mitigation: signatures on day 1, small frequent merges to main.

@@ -1,4 +1,4 @@
-# fhir-ig-jekyll
+# fhir-ig-tools
 
 **Java replacements for the two non-Java stages of the [FHIR IG Publisher](https://github.com/HL7/fhir-ig-publisher):
 Jekyll (Ruby) and SUSHI (Node.js). Same output, no Ruby, no Node/npm.**
@@ -8,7 +8,7 @@ The IG Publisher is a Java program, but building an IG also runs two other toolc
 | Stage | What it does | Today | Replacement in this repository | Status |
 |---|---|---|---|---|
 | FSH compilation | turns `input/fsh/*.fsh` into FHIR JSON under `fsh-generated/`, before the publisher loads the IG | **SUSHI** 3.21.1 (TypeScript, Node.js, npm) | **`sushi/`**, a Java port of SUSHI 3.21.1: `java -jar sushi.jar <ig dir>` | built and tested from source; no release yet |
-| Page rendering | renders the narrative pages the publisher writes to `temp/pages` (Liquid, Markdown, syntax highlighting) | **Jekyll** 4.4.1 (Ruby gems) | **`jekyll/`**, "the shim": `-jekyll jekyll-shim` | released ([v0.1.0](https://github.com/jmandel/fhir-ig-jekyll/releases)) |
+| Page rendering | renders the narrative pages the publisher writes to `temp/pages` (Liquid, Markdown, syntax highlighting) | **Jekyll** 4.4.1 (Ruby gems) | **`jekyll/`**, "the shim": `-jekyll jekyll-shim`, `jekyll.jar` | wrapper and jar on [GitHub Releases](https://github.com/jmandel/fhir-ig-tools/releases) |
 
 Both are faithful ports, not look-alikes: each is checked against the original tool, file by file and message by
 message, until the output is identical.
@@ -20,11 +20,11 @@ message, until the output is identical.
 
 ## Quick start
 
-**Jekyll shim** (Java 17+; Windows: use [`jekyll-shim.cmd`](https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/jekyll-shim.cmd)):
+**Jekyll shim** (Java 17+; Windows: use [`jekyll-shim.cmd`](https://github.com/jmandel/fhir-ig-tools/releases/latest/download/jekyll-shim.cmd)):
 
 ```sh
-curl -fLO https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/jekyll-shim && chmod +x jekyll-shim
-java -jar publisher.jar -ig . -jekyll "$PWD/jekyll-shim"    # first run fetches and verifies shim.jar, then works offline
+curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/jekyll-shim && chmod +x jekyll-shim
+java -jar publisher.jar -ig . -jekyll "$PWD/jekyll-shim"    # first run fetches and verifies jekyll.jar, then works offline
 ```
 
 **SUSHI port** (Java 21; build it from source, there is no release asset yet):
@@ -42,7 +42,7 @@ which run `sushi.jar` and TypeScript SUSHI directly.
 
 ## The Jekyll shim
 
-![Architecture: the IG Publisher writes temp/pages; shim.jar reads, renders and writes it using Java ports of Liquid, kramdown, Rouge and Jekyll's YAML stack; output is identical to Jekyll's](docs/architecture.svg)
+![Architecture: the IG Publisher writes temp/pages; jekyll.jar reads, renders and writes it using Java ports of Liquid, kramdown, Rouge and Jekyll's YAML stack; output is identical to Jekyll's](docs/architecture.svg)
 
 ### Why
 
@@ -162,30 +162,30 @@ such as unknown filters being ignored or warn-mode fallbacks, follows Jekyll's.
 ### Use it
 
 Needs Java 17+, which the IG Publisher already requires. Like the Gradle wrapper, one small file is all
-you need: it pins a release, downloads that release's `shim.jar` on first use, checks its SHA-256, caches
+you need: it pins a release, downloads that release's `jekyll.jar` on first use, checks its SHA-256, caches
 it in `~/.fhir-ig-jekyll/<version>/`, and runs offline from then on.
 
 ```sh
 # Linux / macOS
-curl -fLO https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/jekyll-shim && chmod +x jekyll-shim
+curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/jekyll-shim && chmod +x jekyll-shim
 java -jar publisher.jar -ig . -jekyll "$PWD/jekyll-shim"
 ```
 
 On Windows, download
-[`jekyll-shim.cmd`](https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/jekyll-shim.cmd)
+[`jekyll-shim.cmd`](https://github.com/jmandel/fhir-ig-tools/releases/latest/download/jekyll-shim.cmd)
 and pass its full path: `-jekyll C:\path\to\jekyll-shim.cmd`. You can commit the wrapper into an IG
 repository (like `gradlew`) or put it on your `PATH`. To move to a newer version, download the newer wrapper.
 
 - Offline or air-gapped:
-  [`fhir-ig-jekyll.zip`](https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/fhir-ig-jekyll.zip)
-  bundles `shim.jar` with both wrappers, which use the jar next to them. Alternatively, set
-  `FHIR_IG_JEKYLL_JAR=/path/to/shim.jar`.
+  [`fhir-ig-jekyll.zip`](https://github.com/jmandel/fhir-ig-tools/releases/latest/download/fhir-ig-jekyll.zip)
+  bundles `jekyll.jar` with both wrappers, which use the jar next to them. Alternatively, set
+  `FHIR_IG_JEKYLL_JAR=/path/to/jekyll.jar`.
 - Mirrors: `FHIR_IG_JEKYLL_URL` overrides the download URL; `FHIR_IG_JEKYLL_HOME` moves the cache.
 - Just the jar:
-  [`shim.jar`](https://github.com/jmandel/fhir-ig-jekyll/releases/latest/download/shim.jar), run in a
-  Jekyll source folder: `java -jar shim.jar build --destination ../output`.
+  [`jekyll.jar`](https://github.com/jmandel/fhir-ig-tools/releases/latest/download/jekyll.jar), run in a
+  Jekyll source folder: `java -jar jekyll.jar build --destination ../output`.
 
-From source: `./build.sh -B -pl jekyll -am package` (Maven) builds `jekyll/target/shim.jar`. It uses your JDK and
+From source: `./build.sh -B -pl jekyll -am package` (Maven) builds `jekyll/target/jekyll.jar`. It uses your JDK and
 Maven, or the reference Docker image if there is no working JDK or `mvn`; `./build.sh --fast` is a plain-`javac`
 build that needs only a JDK. See [Building and testing](#building-and-testing) and [`docs/MONOREPO.md`](docs/MONOREPO.md).
 
@@ -196,22 +196,23 @@ Knobs (all optional): `SHIM_RENDER_THREADS`, `SHIM_IO_THREADS`, `SHIM_TIMING=1`.
 1. **CLI drop-in:** works today with an unmodified publisher (`-jekyll <cmd>`).
 2. **In-process library:** the API is in the shim today: `org.hl7.fhir.jekyll.Shim.build(source,
    destination, options)`, called from the publisher's `runJekyll`. No subprocess or second JVM, and
-   errors arrive as exceptions for QA. A publisher-side prototype is in progress.
+   errors arrive as exceptions for QA. A publisher-side prototype runs it (see below).
 3. **Lazy fragments:** `Shim.Options.includeProvider(...)` lets the publisher supply `_includes` content
    on demand, so it can generate each narrative fragment only when a page first includes it. 75–86% of
    `_includes` files are never included (UTG: 134k of 166k, 1.25 of 2.06 GB), so this skips most of the
-   fragment generation and `temp/pages` writing. Also being prototyped on the publisher side.
+   fragment generation and `temp/pages` writing. The API is there; the publisher-side prototype showed
+   that using it safely needs publisher changes, so it is not being pursued for now (see below).
 
 Details: [`jekyll/INTEGRATION.md`](jekyll/INTEGRATION.md).
 
 ### Work in progress: in-process publisher integration
 
-The [`publisher-integration`](https://github.com/jmandel/fhir-ig-jekyll/tree/publisher-integration)
+The [`publisher-integration`](https://github.com/jmandel/fhir-ig-tools/tree/publisher-integration)
 branch is an experimental IG Publisher (based on Release v3.0.4) that runs this project's `Shim.build`
 inside the publisher's JVM (`-jekyll-engine shim`; `shim-mem` also keeps the `_includes` fragments in
 memory instead of writing them). On US Core and three other IGs the output matches a default build, and
 US Core's Jekyll stage drops from 16–19 s to 3.1 s. See its
-[`INTEGRATION-DEMO.md`](https://github.com/jmandel/fhir-ig-jekyll/blob/publisher-integration/INTEGRATION-DEMO.md).
+[`INTEGRATION-DEMO.md`](https://github.com/jmandel/fhir-ig-tools/blob/publisher-integration/INTEGRATION-DEMO.md).
 
 We also tried generating fragments only when a page includes them (`shim-lazy`; 75–86% of fragments are
 never included). It is **not being pursued**: deferred renderers read publisher state that changes later
@@ -281,11 +282,11 @@ The comparisons use a frozen FHIR package snapshot, so both implementations see 
 ## Building and testing
 
 Building everything needs JDK 21 and Maven 3.6.3+, or Docker: without a working JDK and `mvn`, `./build.sh` runs
-the same Maven build in the reference image. `common` and `jekyll` are compiled for Java 17, so `shim.jar` still
+the same Maven build in the reference image. `common` and `jekyll` are compiled for Java 17, so `jekyll.jar` still
 runs on Java 17; on JDK 17 you can build the shim alone.
 
 ```sh
-./build.sh                               # all modules, all JUnit tests; jekyll/target/shim.jar, sushi/target/sushi.jar
+./build.sh                               # all modules, all JUnit tests; jekyll/target/jekyll.jar, sushi/target/sushi.jar
 ./build.sh -B -pl jekyll -am package     # the shim only (JDK 17 is enough)
 ./build.sh --fast                        # the shim only, plain javac, no Maven
 sushi/scripts/build.sh -B test -Dtest=JsonWriterTest     # sushi only, one test class
@@ -310,7 +311,7 @@ fixtures) or recorded reference runs skip when those are absent. The differentia
 (`sushi/scripts/diff-run.sh <IG>`, `sushi/scripts/corpus-diff.sh`) need the reference runs and the frozen package
 snapshot of the corpus workspace; see [`sushi/PORTING.md`](sushi/PORTING.md) §6.
 
-CI builds all modules on JDK 21 and runs every JUnit test, then runs the resulting `shim.jar` on JDK 17 and 21 on
+CI builds all modules on JDK 21 and runs every JUnit test, then runs the resulting `jekyll.jar` on JDK 17 and 21 on
 Linux, macOS and Windows: the suites, the in-process API check, the wrapper end to end and
 `scripts/test-wrapper.sh` (wrapper download, verify, cache).
 
