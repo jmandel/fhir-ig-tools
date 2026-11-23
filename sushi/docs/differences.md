@@ -38,8 +38,9 @@ the typed `Configuration` can't hold a raw YAML value of an unexpected type such
 differs), 0 accept/reject mismatches, 0 import differences.
 
 **What was done (owner decision: fix accept/reject, wording where straightforward).** The YAML layer is the libyaml
-0.2.5 event layer vendored from fhir-ig-jekyll plus a yaml@1.10 composer. Accept/reject now matches yaml@1.10 via an
-opt-in `yaml110` switch in the vendored Reader/Scanner/Parser (off for the Jekyll shim): any character accepted, only
+0.2.5 event layer shared with the Jekyll shim (`common`, `org.hl7.fhir.common.yaml`) plus a yaml@1.10 composer.
+Accept/reject now matches yaml@1.10 via an opt-in `yaml110` mode of the event layer's Reader/Scanner/Parser
+(`new Parser(bytes, encoding, true)`; off for the Jekyll shim): any character accepted, only
 CR/LF are line breaks (NEL/LS/PS are content), tabs on blank lines (also inside plain scalars), `%` may start a plain
 value after column 0, a value without a key in a block mapping has an empty key. The composer adds yaml@1.10's
 semantic errors (duplicate keys, unknown aliases, multiple documents incl. content after `...`, comment glued to a

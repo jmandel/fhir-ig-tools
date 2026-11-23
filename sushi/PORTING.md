@@ -1,4 +1,4 @@
-# sushi-java: porting guide and work packages
+# SUSHI port: porting guide and work packages
 
 Java port of **SUSHI 3.21.1** (FHIR/sushi @ 9c1bf5c, v3.21.1+2), intended as SUSHI's permanent Java home.
 Hard requirement: for the same inputs and FHIR packages, **byte-identical `fsh-generated/`**, the **same console
@@ -7,26 +7,30 @@ Design goal (owner): long-term maintainability and no Node/npm — clean, idioma
 line-by-line transliteration — while keeping SUSHI's class/method structure close enough that its ~3,600 Jest tests
 (mostly API-level, ~2,000 assertions on exact log text) port 1:1.
 
+This port lives in the `sushi/` module of this repository (docs/MONOREPO.md); it was developed in its own repository
+(`sushi-java`) and moved in with its history (§7). Paths below are relative to `sushi/`; `../work` is the repository's
+(git-ignored) workspace directory.
+
 Reference material: TS source (read-only copy) `../work/sushi-spike/src-ro/`; full checkout with tests, fixtures and
-node_modules on the VM at `/srv/ig/sushi-spike/sushi`; sizing notes `../work/sushi-spike/README.md`.
+node_modules on the VM at `$VMDATA/sushi-spike/sushi`; sizing notes `../work/sushi-spike/README.md`.
 Nothing goes upstream (no pushes, PRs, issues, contact with the SUSHI team).
 
 ## 1. Build, run, test
 
 ```
-scripts/build.sh                      # mvn -q -B verify in the reference image on the Lima VM (the Mac has no JDK)
-scripts/build.sh -B -q test -Dtest=JsonTest
-scripts/build.sh -B -q -DskipTests package     # jar: $VMDATA/sushi-port/build/<checkout>/sushi-java-0.1.0-SNAPSHOT.jar
-SUSHI_EXCLUDE="src/main/java/org/hl7/fhir/sushi/foo" scripts/build.sh ...  # build a snapshot without someone's half-done package
+scripts/build.sh                      # = ../build.sh -pl sushi -am -B -q verify: common + sushi, all tests, jars
+scripts/build.sh -B -q test -Dtest=JsonWriterTest
+scripts/build.sh -B -q -DskipTests package     # jar: target/sushi.jar (self-contained: java -jar target/sushi.jar <ig>)
+SUSHI_BUILD_DIR=$VMDATA/sushi-port/build/<name> scripts/build.sh ...   # target dir elsewhere (the oracle scripts read it there)
+../build.sh -B -ntp package           # the whole repository: common, jekyll, sushi
 ```
-- Maven 3.9.9 lives at `/srv/ig/sushi-port/tools`, the shared local repo at `/srv/ig/sushi-port/m2`, each checkout's
-  target dir at `/srv/ig/sushi-port/build/<checkout-dir-name>` (D11: heavy output on the VM disk; the checkout is
-  mounted read-only). Use one git worktree per work package (`git worktree add ../sushi-java-wp3 -b wp3`); each gets its
-  own target dir automatically.
-- Java 21 (`--release 21`), image `ig-publisher-localdev-ca` (Temurin 21.0.13, node 22.22.2 for oracles).
+- `../build.sh` runs Maven locally when a JDK 21 and `mvn` are available, otherwise Maven 3.9.9 in the reference image
+  `ig-publisher-localdev-ca` (Temurin 21, node 22 for the oracles) with its local repository on the Docker host's
+  disk (docs/MONOREPO.md "Building").
+- Java 21 (`--release 21`). `common`, which sushi uses for the JS value model and the YAML event layer, is Java 17.
 - Shared machine: start Maven/node/TS-SUSHI runs with `../work/locks/waitfree.sh timing <cmd>`; kill only your own
-  PIDs; ≤ 8 GB on /srv/ig per agent.
-- Tests that need VM data (`/srv/ig/sushi-spike/sushi/test`, `/srv/ig/sushi-port/ref`) skip when it is absent
+  PIDs.
+- Tests that need VM data (`$VMDATA/sushi-spike/sushi/test`, `$VMDATA/sushi-port/ref`) skip when it is absent
   (`-Dsushi.ts.dir=` overrides the TS checkout path).
 
 ## 2. Key design decisions
@@ -45,9 +49,10 @@ Its transitive libraries (jackson, guava, commons-lang3/text/io/codec/net, okhtt
 slf4j, opentelemetry, hapi-fhir-base) ship with the publisher but **must not be imported directly**:
 `build.DependencyRuleTest` fails the build on any main-code import outside the JDK, `org.hl7.fhir.sushi`,
 `org.hl7.fhir.utilities` (and `org.hl7.fhir.r4/r5` only under `importer/config`).
-`java -jar` works with the runtime dependencies copied to `lib/` next to the jar (WP-10's pom: manifest
-`Class-Path lib/...`); `DependencyRuleTest` also pins the pom's non-test dependencies to exactly core utilities +
-commons-compress. In the monorepo this becomes a single shaded jar like shim.jar (deferred to the move).
+`target/sushi.jar` is one self-contained jar (maven-shade: our classes, `common`, core utilities and the libraries it
+brings), so `java -jar sushi.jar <ig dir>` needs nothing else; `DependencyRuleTest` also pins the pom's non-test
+dependencies to exactly `fhir-ig-common`, core utilities and commons-compress, and the pom's enforcer
+`bannedDependencies` rule checks the same on every build.
 Not used from core, deliberately: model classes (R4/R5 `StructureDefinition` etc.), `ProfileUtilities` snapshot
 generation, FHIRPath, validation, core's JSON (`JsonNumber` keeps source text; SUSHI normalises through JS doubles).
 SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapshot itself; reusing those changes output.
@@ -130,7 +135,7 @@ differential comparisons drop the pun line (`scripts/classify-diff.py`). The "la
 package snapshot (`baseline-20261120`) + per-IG overlay.
 
 **Naming decisions (open, for later).** N1 package root `org.hl7.fhir.sushi` (placeholder). N2 artifact
-`sushi-java`. N3 TS `import/` is `importer` (Java keyword); TS names that are Java keywords get a trailing `_`
+`org.hl7.fhir:fhir-ig-sushi`, jar `sushi.jar` (was `sushi-java`; docs/MONOREPO.md M2). N3 TS `import/` is `importer` (Java keyword); TS names that are Java keywords get a trailing `_`
 (`short_`, `_abstract` in Metadata — settle one rule). N4 TS enum `Type` (Fishable) is `FishableType`.
 
 ## 3. Conventions
@@ -249,7 +254,7 @@ signatures** (public methods other WPs call), commit to main, then implement.
   jar on the same source copy and package overlay, then `scripts/classify-diff.py` writes a classified report
   (`identical / missing / extra / json-format / json-key-order / json-value (first paths) / text`, plus a log diff
   ignoring the pun/version lines) to `../work/sushi-port/diff/<IG>-<label>.json`. Inputs: the 6-IG reference set at
-  `/srv/ig/sushi-spike/runs/*-ref-*` (genomics-reporting, ITI.MHD, ch-term, EEHRxF logical, ch-ekm, smart-anc), then
+  `$VMDATA/sushi-spike/runs/*-ref-*` (genomics-reporting, ITI.MHD, ch-term, EEHRxF logical, ch-ekm, smart-anc), then
   the 267 FSH IGs of the corpus (`work/sushi-spike/fsh-repos.txt`). The Java half runs once `App` works (WP-10).
 
 ## 6a. Integration (phase 2)
@@ -266,26 +271,25 @@ was accepted. Accepted contract changes are announced in the `main` commit messa
 area, class, difference, decision; details below the table). Each WP adds its entries when it finishes. `docs/package-resolution-differences.md` (WP-8) lists FPL rules ported because core
 resolved differently. Add entries there, never silently.
 
-## 7. Monorepo move (planned)
+## 7. Monorepo move (done)
 
-SUSHI and the Jekyll shim will live in one repo (fhir-ig-jekyll, multi-module: `common` zero-dep, `jekyll` = the
-shim, `sushi` = this port). This repo is laid out to move as is:
-- All code is under `org.hl7.fhir.sushi`, self-contained; nothing in `src/` refers to `scripts/` or VM paths except
-  tests' skip-if-absent defaults (system properties). `scripts/build.sh` becomes the monorepo's module build.
-- **Belongs in `common`:** the `js` package (JS value model, JSON, Number formatting, lodash helpers — zero-dep, also
-  useful to the shim's JSON handling) and the YAML event layer (below). `utils.FshLogger` stays SUSHI-specific.
+The port lives in this repository's `sushi/` module, next to `common` (zero-dependency shared code) and `jekyll`
+(the Jekyll shim); see docs/MONOREPO.md for the layout and module rules. It was imported with its history by
+`scripts/sushi-sync.sh` (git filter-repo into `sushi/`, then a merge); the mechanical changes are in
+`scripts/sushi-restructure.sh`, which a re-sync runs again:
+- **JS value model in `common`:** `org.hl7.fhir.sushi.js` is now `org.hl7.fhir.common.js` (`Js`, `JsNumber`,
+  `JsObject`, `Json`, `JsonSerializable`, `Lodash`, `Frozen`), compiled with `--release 17` like the rest of
+  `common`. `JsonTest` and `FrozenTest` moved with it; `LodashTest` (it also checks `utils.ValidUrl`) is
+  `utils.LodashOracleTest`. `utils.FshLogger` stays SUSHI-specific.
 - **YAML.** SUSHI uses the `yaml` npm package 1.10 (eemeli/yaml; YAML 1.2 core schema by default — not js-yaml, not
   libyaml): `yes/no/on/off` are strings, timestamps stay strings, `0o` octal, `.inf/.nan`, no `<<` merge, duplicate
-  keys are errors, and its own error messages. The shim's YAML (`fhir-ig-jekyll/shim/.../jekyll/yaml`) splits cleanly:
-  the **event layer** `Reader, Scanner, Token, Parser, Event, Mark, LibyamlError, ByteString` (~2.4k lines, libyaml
-  0.2.5 port) has no Psych/Ruby/liquid dependencies (only comments mention Psych); the **Psych construction layer**
-  (`PsychParser, PsychHandler, Transform, Yaml, YamlMap/YamlList, Ruby*, DateParse, BinaryString, PsychSyntaxError`)
-  stays in `jekyll`. Refactor needed in the shim: move the event layer to `common` (package e.g.
-  `org.hl7.fhir.common.yaml`), make `Parser`/`Event`/`Mark` and the error type public (they are package-private
-  today), keep `PsychSyntaxError` formatting in `jekyll`. SUSHI then adds a yaml@1.10-compatible composer
-  (core-schema scalar resolution, anchors/aliases, duplicate-key and error wording) in `sushi`. Risk: libyaml and
-  eemeli/yaml accept/reject slightly different malformed inputs and word errors differently; valid configs (all 266
-  corpus configs) are unaffected; WP-3 quantifies on a mutation set.
+  keys are errors, and its own error messages. The syntax layer is the libyaml 0.2.5 event layer in `common`
+  (`org.hl7.fhir.common.yaml`: `Parser`, `Event`, `Mark`, `LibyamlError`), shared with the shim. The relaxations
+  where yaml@1.10 accepts input libyaml rejects (WP-3, docs/differences.md) are an opt-in mode of that layer,
+  `new Parser(bytes, encoding, true)`; the shim uses the default, plain libyaml. The yaml@1.10 composer
+  (`yaml.Yaml`, `yaml.YamlError`: core-schema scalar resolution, anchors/aliases, duplicate-key and error wording)
+  stays in `sushi` and uses only `common`'s public API.
+- **Jar:** `target/sushi.jar`, shaded (see D1), replaces the old `lib/` class path.
 
 ## 8. Risks for the parallel phase
 
@@ -297,6 +301,6 @@ shim, `sushi` = this port). This repo is laid out to move as is:
    against TS must run before exporters' differential results mean anything.
 4. **Hidden JS semantics** (key order from assignment order, `Number` formatting in messages, regex, sort
    comparators, `localeCompare`): conventions above; reviewers check them.
-5. **YAML**: shared layer refactor in the shim is outside this repo; WP-3 vendored the event layer (package `yaml`, from
-   fhir-ig-jekyll@dc6cf398) plus a yaml@1.10 composer; switch to `common` at the monorepo move.
+5. **YAML**: the event layer is shared with the shim (`common`); changes to it must keep the shim's YAML suites
+   passing, and SUSHI-only behaviour goes behind the opt-in yaml110 mode.
 6. **Test-port volume** (~3,600 tests, ~80k TS lines) dominates effort; keep tests 1:1 to make it mechanical.

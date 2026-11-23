@@ -25,7 +25,7 @@ import org.hl7.fhir.sushi.utils.Puns;
 
 // port of sushi/src/app.ts (SUSHI 3.21.1)
 /**
- * CLI: {@code java -jar sushi-java.jar [build] [path] [-o out] [-p] [-s] [-r] [-c key:value]... [-l level]},
+ * CLI: {@code java -jar sushi.jar [build] [path] [-o out] [-p] [-s] [-r] [-c key:value]... [-l level]},
  * {@code init [name]}, {@code update-dependencies [path]}, with the same options (commander 13 behaviour: help/error
  * texts, default command, combined short flags), console output (utils.FshLogger + the summary box) and exit status
  * (number of errors; the OS keeps the low 8 bits, as with node's process.exit) as TS SUSHI 3.21.1.
