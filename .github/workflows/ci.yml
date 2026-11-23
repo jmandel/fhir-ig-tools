@@ -4,6 +4,8 @@ name: CI
 #        SUSHI's (~3.7k) included, then the shim's suites against the jekyll/target/jekyll.jar it built.
 # shim:  runs that same jekyll.jar (the release artifact) on JDK 17 and 21 on Linux, macOS and Windows: the
 #        differential suites, the in-process API check, the wrapper end to end and the wrapper bootstrap.
+# sushi: runs that same sushi.jar through the sushi wrapper on Linux, macOS and Windows (JDK 21): download, checksum,
+#        cache, the Java 21 check, and a small FSH project through the wrapper vs `java -jar sushi.jar`.
 on:
   push:
     branches: [main]
@@ -47,6 +49,13 @@ jobs:
             jekyll/target/test-classes
           if-no-files-found: error
           retention-days: 7
+      - name: Keep sushi.jar for the wrapper checks on other platforms
+        uses: actions/upload-artifact@v4
+        with:
+          name: sushi
+          path: sushi/target/sushi.jar
+          if-no-files-found: error
+          retention-days: 7
 
   shim:
     name: jekyll.jar / ${{ matrix.os }} / JDK ${{ matrix.java }}
@@ -85,3 +94,30 @@ jobs:
         run: scripts/e2e.sh
       - name: Wrapper bootstrap (download, verify, cache; local server stands in for Releases)
         run: scripts/test-wrapper.sh
+
+  sushi:
+    name: sushi wrapper / ${{ matrix.os }} / JDK 21
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: sushi.jar from the JDK 21 build
+        uses: actions/download-artifact@v4
+        with:
+          name: sushi
+          path: sushi/target
+      - name: End to end through the source-checkout wrapper (vs java -jar sushi.jar; downloads FHIR packages)
+        run: scripts/sushi-e2e.sh
+      - name: Wrapper bootstrap (download, verify, cache, Java 21 check; local server stands in for Releases)
+        run: scripts/test-sushi-wrapper.sh

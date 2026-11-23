@@ -6,8 +6,9 @@
   generated from SUSHI's grammar is the oracle for the hand-written FSH parser (D6).
   `package` writes two jars:
     target/fhir-ig-sushi-<version>.jar   this module's classes only
-    target/sushi.jar                     self-contained (common, core utilities and their libraries shaded in),
-                                         run as `java -jar sushi.jar <ig dir>`, the same options as `sushi`
+    target/sushi.jar                     the release artifact: self-contained (common, core utilities and their
+                                         libraries shaded in), run as `java -jar sushi.jar <ig dir>` (the same
+                                         options as `sushi`) by the sushi/sushi wrappers
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -210,6 +211,20 @@
                   <manifestEntries><Multi-Release>true</Multi-Release></manifestEntries>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <!-- the bundled libraries' notices: Apache NOTICE files merged into one META-INF/NOTICE (the Apache
+                     License asks for them to be kept), and this repository's license and THIRD_PARTY_NOTICES.md,
+                     which lists every bundled library with its license -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                  <addHeader>false</addHeader>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/fhir-ig-tools/LICENSE</resource>
+                  <file>${project.basedir}/../LICENSE</file>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>META-INF/fhir-ig-tools/THIRD_PARTY_NOTICES.md</resource>
+                  <file>${project.basedir}/../THIRD_PARTY_NOTICES.md</file>
+                </transformer>
               </transformers>
             </configuration>
           </execution>

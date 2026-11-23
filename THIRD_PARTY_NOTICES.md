@@ -36,10 +36,9 @@ Ruby sources as optional git submodules for developers.
 | sanitize-filename | 1.6.4 | WTFPL or ISC (used under ISC) | `org.hl7.fhir.sushi.utils` |
 | ini, semver | 5.0.0, 7.8.5 | ISC | `org.hl7.fhir.sushi.ig`, `org.hl7.fhir.sushi.utils` |
 
-Building `sushi/target/sushi.jar` also bundles, unchanged, the libraries of org.hl7.fhir.core's
-`org.hl7.fhir.utilities` 7.0.6 (Apache-2.0) and what it depends on (among them Jackson, Guava, OkHttp, Okio,
-Kotlin stdlib, commons-*, OpenTelemetry API, xmlresolver: Apache-2.0; ICU4J: Unicode-3.0; Saxon-HE: MPL-2.0;
-SLF4J, checker-qual: MIT). That jar is not published; publishing it would need those libraries' notices too.
+`sushi.jar` also bundles, unchanged, the libraries listed in
+[Libraries bundled in sushi.jar](#libraries-bundled-in-sushijar) below. `jekyll.jar` bundles nothing but this
+repository's own code.
 
 ---
 
@@ -918,3 +917,80 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The ANTLR Java runtime (`org.antlr:antlr4-runtime` 4.13.2, same license) is a test-scope dependency only: it runs
 the oracle parser generated from SUSHI's grammar in the tests and is not part of any built jar.
+
+---
+
+## Libraries bundled in sushi.jar
+
+`sushi/target/sushi.jar` (the `sushi.jar` release asset) contains, unchanged, the runtime dependencies of the `sushi`
+module: org.hl7.fhir.core's `org.hl7.fhir.utilities`, commons-compress, and what they depend on. The list below is
+the module's runtime dependency set as Maven resolves it (`license-maven-plugin add-third-party`), checked against
+the packages present in the jar. Their Apache `NOTICE` files are merged into the jar's `META-INF/NOTICE`; this file
+and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
+
+| Library | Version | License |
+|---|---|---|
+| HL7 FHIR core: org.hl7.fhir.utilities (`ca.uhn.hapi.fhir`) | 7.0.6 | Apache-2.0 |
+| HAPI FHIR base (`ca.uhn.hapi.fhir:hapi-fhir-base`) | 8.10.0 | Apache-2.0 |
+| Apache Commons Compress, Codec, IO, Lang, Net, Text | 1.26.0, 1.15, 2.15.1, 3.14.0, 3.9.0, 1.10.0 | Apache-2.0 |
+| Jackson annotations, core, databind, datatype-jsr310 | 2.21, 2.21.1, 2.21.1, 2.21.1 | Apache-2.0 (jackson-core includes FastDoubleParser, MIT; its notices are in the jar's `META-INF/FastDoubleParser-*`) |
+| Guava, failureaccess, listenablefuture | 33.2.1-jre, 1.0.2, 9999.0 | Apache-2.0 |
+| error-prone annotations, J2ObjC annotations | 2.26.1, 3.0.0 | Apache-2.0 |
+| FindBugs jsr305 | 3.0.2 | Apache-2.0 (as its POM declares) |
+| OkHttp (okhttp-jvm), Okio (okio, okio-jvm) | 5.3.2, 3.18.2, 3.16.4 | Apache-2.0 |
+| Kotlin stdlib | 2.2.21 | Apache-2.0 |
+| OpenTelemetry API, common, context, instrumentation annotations | 1.60.1, 1.60.1, 1.60.1, 2.33.1 | Apache-2.0 |
+| XML Resolver (xmlresolver, xmlresolver data) | 6.0.23 | Apache-2.0 |
+| JCL 1.2 implemented over SLF4J (`jcl-over-slf4j`) | 2.0.16 | Apache-2.0 |
+| SLF4J API | 2.0.16 | MIT |
+| Checker Qual | 3.42.0 | MIT |
+| Jakarta Annotations API | 2.1.1 | EPL-2.0 or GPL-2.0 with Classpath Exception (used under EPL-2.0); source: https://github.com/jakartaee/common-annotations-api |
+| Saxon-HE | 13.0 | MPL-2.0; source: https://github.com/Saxonica/Saxon-HE (license text: https://www.mozilla.org/MPL/2.0/) |
+| ICU4J | 78.1 | Unicode-3.0 (text below; ICU's full LICENSE, with the notices of the data it includes: https://github.com/unicode-org/icu/blob/release-78.1/LICENSE) |
+
+The Apache License 2.0 text is in the Addressable section above and the MIT text in the SUSHI npm section. The
+EPL-2.0 text is at https://www.eclipse.org/legal/epl-2.0/.
+
+### Unicode License v3 (ICU4J)
+
+```
+UNICODE LICENSE V3
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright © 1991-2026 Unicode, Inc.
+
+NOTICE TO USER: Carefully read the following legal agreement. BY
+DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of data files and any associated documentation (the "Data Files") or
+software and any associated documentation (the "Software") to deal in the
+Data Files or Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, and/or sell
+copies of the Data Files or Software, and to permit persons to whom the
+Data Files or Software are furnished to do so, provided that either (a)
+this copyright and permission notice appear with all copies of the Data
+Files or Software, or (b) this copyright and permission notice appear in
+associated Documentation.
+
+THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+THIRD PARTY RIGHTS.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+FILES OR SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder shall
+not be used in advertising or otherwise to promote the sale, use or other
+dealings in these Data Files or Software without prior written
+authorization of the copyright holder.
+```
