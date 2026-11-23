@@ -11,7 +11,7 @@
   </parent>
   <artifactId>fhir-ig-common</artifactId>
   <name>fhir-ig-common</name>
-  <description>Zero-dependency code shared by the fhir-ig-tools modules (libyaml event layer)</description>
+  <description>Zero-dependency code shared by the fhir-ig-tools modules (libyaml event layer, JS value model)</description>
 
   <dependencies>
     <dependency>

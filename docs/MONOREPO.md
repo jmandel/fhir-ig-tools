@@ -1,19 +1,21 @@
 # Multi-module layout
 
-This repository holds Java replacements for the non-Java stages of the FHIR IG Publisher. Today that is
-the Jekyll replacement ("the shim"). A Java port of SUSHI is being built and will move in as a third
-module. They share one Maven build, so shared code (YAML, the JS value model) lives in one place.
+This repository holds Java replacements for the non-Java stages of the FHIR IG Publisher: the Jekyll
+replacement ("the shim", module `jekyll`) and the Java port of SUSHI (module `sushi`). They share one Maven
+build, so shared code (the YAML event layer, the JS value model) lives in one place, module `common`.
 
 ## Layout
 
 ```
 pom.xml            aggregator and parent: module list, Java level, plugin versions, reproducible-jar timestamp
-build.sh           runs the build: Maven (local or in the reference container), or plain javac (--fast)
-common/            zero-dependency shared code
+build.sh           runs the build: Maven (local or in the reference container), or plain javac for the shim (--fast)
+common/            zero-dependency shared code, Java 17
   pom.xml          artifact org.hl7.fhir:fhir-ig-common
   src/main/java/org/hl7/fhir/common/yaml/    libyaml 0.2.5 event layer (Reader, Scanner, Token, Parser, Event,
-                                             Mark, LibyamlError, ByteString)
-  src/test/java/…                            JUnit tests of the public API
+                                             Mark, LibyamlError, ByteString), with an opt-in yaml@1.10 mode
+  src/main/java/org/hl7/fhir/common/js/      the JS value model: Js, JsNumber, JsObject, Json, JsonSerializable,
+                                             Lodash, Frozen (JSON.stringify/parse, Number formatting, lodash)
+  src/test/java/…                            JUnit tests (event layer API, JS value model with node-generated vectors)
 jekyll/            the shim (was shim/ before the move)
   pom.xml          artifact org.hl7.fhir:fhir-ig-jekyll; also writes target/shim.jar, the release jar
   src/main/java/org/hl7/fhir/jekyll/…        Shim, IncludeProvider, ShimException, liquid, kramdown, rouge,
@@ -22,8 +24,16 @@ jekyll/            the shim (was shim/ before the move)
   tests/ oracle/   differential suites and the Ruby oracle
   jekyll-shim, jekyll-shim.cmd               the self-downloading wrappers (stamped at release)
   README.md, INTEGRATION.md, NOTES-*.md
-sushi/             (planned) the SUSHI port, see "Adding the SUSHI module" below
-scripts/ docs/ docker/ lima/ third_party/ tracker-app/   as before
+sushi/             the SUSHI port, Java 21 (sushi-java before the move, see "The SUSHI module")
+  pom.xml          artifact org.hl7.fhir:fhir-ig-sushi; also writes target/sushi.jar (self-contained, shaded)
+  src/main/java/org/hl7/fhir/sushi/…         App (CLI), importer (hand-written FSH parser, importer, config),
+                                             export, fhirtypes, fshtypes, fhirdefs (packages on org.hl7.fhir.core),
+                                             ig, run, utils, xhtml, yaml (the yaml@1.10 composer over common's events)
+  src/test/java/…, src/test/antlr4/          JUnit tests (~3.3k), SUSHI's grammar for the ANTLR test oracle
+  scripts/         build.sh (module build), diff-run.sh / corpus-diff.sh (differential vs TypeScript SUSHI), oracles
+  PORTING.md, README.md, docs/, tests/inventory.tsv
+scripts/           as before, plus sushi-sync.sh and sushi-restructure.sh (importing/re-syncing the SUSHI port)
+docs/ docker/ lima/ third_party/ tracker-app/   as before
 ```
 
 ## Naming decisions (placeholders until the owner decides)
@@ -31,31 +41,42 @@ scripts/ docs/ docker/ lima/ third_party/ tracker-app/   as before
 | Decision | Choice | Notes |
 |---|---|---|
 | M1 shared package | `org.hl7.fhir.common.*` (YAML: `org.hl7.fhir.common.yaml`) | Matches the siblings `org.hl7.fhir.jekyll` and `org.hl7.fhir.sushi`. Avoids `org.hl7.fhir.igtools`, which is the IG Publisher's own namespace. |
-| M2 Maven coordinates | `org.hl7.fhir:fhir-ig-tools-parent`, `fhir-ig-common`, `fhir-ig-jekyll`, later `fhir-ig-sushi`; version `0.2.0-SNAPSHOT` | Nothing is published to a Maven repository yet. The release version still comes from the git tag (`scripts/stamp-wrappers.sh`), not from the POM. |
-| M3 module directories | `common/`, `jekyll/`, `sushi/` (`shim/` was renamed to `jekyll/`) | GitHub does not redirect old `blob/main/shim/...` links, so links to `shim/INTEGRATION.md` and similar paths break once this is pushed. The wrapper, jar and release asset names (`jekyll-shim`, `shim.jar`) are unchanged. |
+| M2 Maven coordinates | `org.hl7.fhir:fhir-ig-tools-parent`, `fhir-ig-common`, `fhir-ig-jekyll`, `fhir-ig-sushi`; version `0.2.0-SNAPSHOT` | Nothing is published to a Maven repository yet. The release version still comes from the git tag (`scripts/stamp-wrappers.sh`), not from the POM. |
+| M3 module directories | `common/`, `jekyll/`, `sushi/` (`shim/` was renamed to `jekyll/`; `sushi/` was the separate `sushi-java` repository) | GitHub does not redirect old `blob/main/shim/...` links, so links to `shim/INTEGRATION.md` and similar paths break once this is pushed. The wrapper, jar and release asset names (`jekyll-shim`, `shim.jar`) are unchanged. |
 
 ## Building
 
-You need JDK 17+ and Maven 3.6.3+. Without them, `./build.sh` runs the same commands in the reference image.
+You need JDK 21 and Maven 3.6.3+ for the whole build (JDK 17 is enough for the shim alone). Without them,
+`./build.sh` runs the same commands in the reference image, whose JDK is Temurin 21. `common` and `jekyll` are
+compiled with `--release 17` whatever the JDK, so `shim.jar` keeps running on Java 17.
 
 ```sh
 ./build.sh                          # = mvn -B -q package: all modules, unit tests, jars
 ./build.sh -B -ntp package          # same, with normal output (what CI runs)
-./build.sh -B -pl jekyll -am package   # one module and what it needs
+./build.sh -B -pl jekyll -am package   # one module and what it needs (the shim: works on JDK 17)
+./build.sh -B -pl sushi -am package    # SUSHI (sushi/scripts/build.sh wraps this; SUSHI_BUILD_DIR moves sushi's target/)
 mvn -B package                      # plain Maven works too
-./build.sh --fast                   # plain javac, no Maven: common + jekyll -> jekyll/build/{classes,test-classes,shim.jar}
+./build.sh --fast                   # shim only, plain javac, no Maven: common + jekyll -> jekyll/build/{classes,test-classes,shim.jar}
 ./build.sh --fast yaml              # one jekyll package (liquid|kramdown|site|yaml|rouge) + util + common -> jekyll/build-yaml/
 ```
+
+There is no `--fast` build for `sushi`: it needs Maven for org.hl7.fhir.core and for the ANTLR test oracle.
+On JDK 17 the sushi module fails fast (enforcer `requireJavaVersion` 21) with a hint to use `-pl jekyll -am`.
 
 Outputs:
 - Maven: `common/target/classes`, `jekyll/target/classes`, `jekyll/target/test-classes`, the thin module jar
   `jekyll/target/fhir-ig-jekyll-<version>.jar`, and **`jekyll/target/shim.jar`**. That last one is self-contained:
-  common is shaded in, and `Main-Class` is `org.hl7.fhir.jekyll.site.Main`.
+  common's YAML event layer is shaded in (its JS value model is left out, the shim doesn't use it), and
+  `Main-Class` is `org.hl7.fhir.jekyll.site.Main`.
+- Maven, sushi: `sushi/target/fhir-ig-sushi-<version>.jar` (module classes only) and **`sushi/target/sushi.jar`**
+  (about 40 MB): `common`, org.hl7.fhir.utilities, commons-compress and the libraries core brings, shaded into one
+  jar with `Main-Class` `org.hl7.fhir.sushi.App` and `Multi-Release: true` (some bundled libraries are multi-release
+  jars). `java -jar sushi.jar <ig dir>` runs like `sushi <ig dir>`.
 - `--fast` puts common's classes into each output dir's `classes/` as well, so `-cp <dir>/classes:<dir>/test-classes`
   is a complete classpath. The per-package builds let parallel workers compile their own package while someone
   else's half-finished code elsewhere doesn't compile. `BUILD_OUT=<dir>` picks another dir under `jekyll/`.
 - The jars are reproducible: the POM sets `project.build.outputTimestamp`, so the same sources built with the
-  same JDK give the same `shim.jar` bytes.
+  same JDK give the same `shim.jar` (and `sushi.jar`) bytes.
 
 `./build.sh` runs locally when `javac` and `jar` actually run (macOS's `/usr/bin/javac` stub without a JDK
 doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it runs in the reference image
@@ -70,7 +91,9 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 
 | What | Command | Notes |
 |---|---|---|
-| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | today only `common` has JUnit tests |
+| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | `common` (event layer API, JS value model) and `sushi` (~3.3k, mostly 1:1 ports of SUSHI's Jest tests; tests that need SUSHI's TypeScript checkout or recorded reference runs skip when absent, `-Dsushi.ts.dir=` points at the checkout) |
+| SUSHI differential, one IG | `sushi/scripts/diff-run.sh <IG> [label]` | TypeScript SUSHI 3.21.1 vs `sushi/target/sushi.jar` on the same source copy and frozen package snapshot: classified file diff, log diff, exit codes. Needs the corpus workspace (`ROOT`, default the repository root, with `work/sushi-spike`) and the reference runs on the VM |
+| SUSHI differential, corpus | `sushi/scripts/corpus-diff.sh [-j N] [list]` | `diff-run.sh` over the 267 FSH IGs |
 | Differential suites vs recorded Ruby output | `scripts/test-suites.sh` | builds with Maven first unless `SHIM_NO_BUILD=1`. Runs against `jekyll/target/shim.jar` + `test-classes`, i.e. the release jar itself. `SHIM_BUILD=jekyll/build[-<module>]` tests a `--fast` build instead. `SHIM_W_SUITES=1` (repo at `/w`) adds the YAML file suites. |
 | In-process API | `java -cp jekyll/target/shim.jar:jekyll/target/test-classes org.hl7.fhir.jekyll.test.site.ShimApiCheck` | |
 | Wrapper end to end | `scripts/e2e.sh` | `jekyll/jekyll-shim` picks up `jekyll/target/shim.jar` (then `jekyll/build/shim.jar`) in a source checkout |
@@ -87,9 +110,9 @@ The Maven enforcer plugin checks the dependency rules on every build (`bannedDep
 
 | Module | Java | May depend on | Must not |
 |---|---|---|---|
-| `common` | 17 (`--release 17`) | nothing (JDK only); test-scope libraries such as JUnit are fine | depend on any other module or library, or carry tool-specific semantics. Put a port's shared lower layer here, not its Ruby/JS-specific behavior. |
+| `common` | 17 (`--release 17`) | nothing (JDK only); test-scope libraries such as JUnit are fine | depend on any other module or library, or carry one tool's semantics by default. Put a port's shared lower layer here; behavior only one tool needs is opt-in (like the event layer's yaml110 mode), never the default. |
 | `jekyll` | 17 | `common` only (plus test scope) | depend on `sushi` or any library: `shim.jar` must stay a self-contained, dependency-free jar that runs on Java 17 |
-| `sushi` (planned) | 21 | `common`, the FHIR core libraries the IG Publisher ships (`ca.uhn.hapi.fhir:org.hl7.fhir.*`, e.g. `org.hl7.fhir.utilities` for the package cache), test-scope libraries (JUnit, the ANTLR oracle) | be depended on by `common` or `jekyll` |
+| `sushi` | 21 | `common`, the FHIR core libraries the IG Publisher ships (`ca.uhn.hapi.fhir:org.hl7.fhir.*`; today `org.hl7.fhir.utilities` for the package cache), commons-compress at runtime (core's package cache needs it), test-scope libraries (JUnit, the ANTLR oracle). Enforcer `bannedDependencies` checks the direct dependencies; `build.DependencyRuleTest` checks that main code imports only the JDK, `org.hl7.fhir.{sushi,common,utilities}` (and r4/r5 model classes in `importer/config`), not the libraries core brings along | be depended on by `common` or `jekyll` |
 
 More rules:
 - Each package lives in exactly one module (`org.hl7.fhir.common.*` in `common`, `org.hl7.fhir.jekyll.*` in `jekyll`,
@@ -118,46 +141,48 @@ for (Event e; (e = p.parse()) != null; ) {
 package-private. The Psych/SafeYAML construction (`PsychParser`, `PsychHandler`, `Transform`, `Yaml`, the `Ruby*`
 value types, `PsychSyntaxError` wording) stays in `jekyll`.
 
-## Adding the SUSHI module
+`new Parser(bytes, encoding, true)` selects the **yaml110 mode**, which SUSHI's yaml@1.10 composer uses: the few
+relaxations where eemeli/yaml 1.10 (YAML 1.2) accepts input libyaml 0.2.5 rejects (any character allowed and only
+CR/LF break lines; tabs on otherwise blank lines and at the end of plain-scalar lines; `%` starting a plain scalar
+after column 0; a block-mapping value without a key). It is off unless asked for; the two-argument constructor,
+which the shim uses, is exactly libyaml. The composer itself (`org.hl7.fhir.sushi.yaml.Yaml`, `YamlError`: YAML 1.2
+core-schema typing, anchors, duplicate keys, yaml@1.10's error wording) stays in `sushi` and uses only this public
+API.
 
-The SUSHI port is developed in `sushi-java/` for now (Maven, Java 21, package `org.hl7.fhir.sushi`; see its
-`PORTING.md` §7). To move it in:
+### The JS value model in `common`
 
-1. **Sources.** Copy `sushi-java/src` to `sushi/src` (`main/java`, `test/java`, `test/antlr4`, test resources),
-   and `PORTING.md`, `README.md` and `tests/` into `sushi/`. Put `sushi-java/scripts/*` under `sushi/scripts/`
-   and fix their `HERE`/root paths. Keep the history if wanted, e.g. with `git subtree add` or
-   `git filter-repo --to-subdirectory-filter sushi` followed by a merge.
-2. **POM.** Turn `sushi-java/pom.xml` into `sushi/pom.xml` with `<parent>` = `org.hl7.fhir:fhir-ig-tools-parent`,
-   `artifactId` `fhir-ig-sushi`, `maven.compiler.release` 21, a dependency on `fhir-ig-common`, and its ANTLR
-   test-oracle and build-helper plugins. Move those plugin versions and the `antlr.version` property into the
-   root `pluginManagement`/`properties`. JUnit's version is already managed there. Add an enforcer
-   `bannedDependencies` rule that allows only `fhir-ig-common`, `ca.uhn.hapi.fhir:org.hl7.fhir.*` and test scope.
-   Add `<module>sushi</module>` to the root `pom.xml`, where a commented placeholder already sits. If SUSHI's
-   heavy test outputs must stay off the shared folder (D11), keep its `sushi.buildDir` property and have the
-   container path of `./build.sh` pass `-Dsushi.buildDir=$VMDATA/...`.
-3. **JS value model to `common`.** Move `org.hl7.fhir.sushi.js` (`Js`, `JsNumber`, `JsObject`, `Json`,
-   `JsonSerializable`, `Lodash`, about 1k lines) to `common/src/main/java/org/hl7/fhir/common/js`. Rename the
-   package to `org.hl7.fhir.common.js` and fix the imports in `sushi`. Move its tests to `common/src/test`. It
-   compiles with `--release 17` today (checked 2026-11-22); keep it that way. `FshLogger` stays in `sushi`.
-4. **YAML on the shared event layer.** SUSHI's config reader needs `yaml@1.10` semantics (YAML 1.2 core schema,
-   duplicate keys are errors, its error wording). Write that composer in `sushi` on top of
-   `org.hl7.fhir.common.yaml.Parser`/`Event`/`LibyamlError`; don't copy the event layer. If the composer needs
-   more from the event layer (another public accessor, say), change `common` and run the jekyll suites in the
-   same commit. libyaml and eemeli/yaml accept and reject slightly different malformed input (PORTING.md §7);
-   that difference goes in the composer, not in `common`.
-5. **CI and release.**
-   - The CI matrix has a JDK 17 leg, which cannot compile `sushi` (Java 21). Either build only the shim
-     there (`./build.sh -B -ntp -pl jekyll -am package`) and add a JDK 21 job that builds all modules, or
-     build with 21 everywhere and keep a 17 job that only *runs* `shim.jar` (suites, e2e, wrapper). The
-     shim's class files are `--release 17` either way.
-   - The release workflow builds with JDK 17. Switch it to `-pl jekyll -am`, or to JDK 21, which still
-     emits Java 17 class files for the shim. A SUSHI release artifact, if any, is a separate decision. The
-     shim's assets don't change.
-   - Add SUSHI's own test entry points (the JUnit suite, its differential `scripts/diff-run.sh`) as CI steps.
-6. **Docs.** Add SUSHI to this file's layout and module table, to the top-level README's layout table, and to
-   `THIRD_PARTY_NOTICES.md` (SUSHI is Apache-2.0).
+`org.hl7.fhir.common.js` is SUSHI's model of JavaScript values (`sushi/PORTING.md` D3/D4): objects are
+insertion-ordered `JsObject` maps, numbers are `Double`, `Json.stringify`/`parse`/`outputJson` behave like
+`JSON.stringify`/`JSON.parse` (ECMAScript number formatting, escaping, key order), `Js`/`Lodash` hold the lodash
+functions SUSHI uses, and `Frozen` gives deeply frozen views. It is zero-dependency and Java 17, so other modules
+can use it; the shim doesn't today.
 
-## What changed for releases
+## The SUSHI module
+
+The SUSHI port was developed in its own repository (`sushi-java`; Maven, Java 21, package `org.hl7.fhir.sushi`)
+and moved in with its history. Two scripts do the mechanical part, so the move can be repeated when the port's
+repository gets more commits:
+
+- `scripts/sushi-sync.sh <sushi-port-repo> [branch]` clones the branch, rewrites it with git filter-repo (every
+  path under `sushi/`; author and committer identities set to this repository's `user.name`/`user.email`;
+  workspace paths in file contents and commit messages replaced), and merges it (the first time with
+  `--allow-unrelated-histories`). filter-repo is deterministic, so a re-sync rewrites the commits imported before to
+  the same ids and the merge brings only the new ones. Then it runs:
+- `scripts/sushi-restructure.sh` (idempotent): moves `org.hl7.fhir.sushi.js` to `common` as `org.hl7.fhir.common.js`
+  (with `JsonTest`, `FrozenTest` and their vectors; `LodashTest`, which also checks `utils.ValidUrl`, becomes
+  `sushi`'s `utils.LodashOracleTest`), rewrites every reference to the old package, deletes sushi's vendored copy of
+  the libyaml event layer, and points the yaml@1.10 composer at `common`'s event layer in yaml110 mode. It stops
+  with an error if something new needs a hand decision (a new test in the js package, the composer using the event
+  layer's internals).
+
+Changes made by hand, as ordinary commits after the import: `sushi/pom.xml` (parent, `fhir-ig-sushi`, enforcer
+rules, the shaded `sushi.jar` instead of the old `lib/` class path), `DependencyRuleTest` (allows `common`, expects
+`fhir-ig-common` among the runtime dependencies), `sushi/scripts` (build through `../build.sh`; `diff-run.sh` runs
+and mounts `sushi/target/sushi.jar`; `ROOT` defaults to the repository root instead of a fixed path), and the docs.
+On a re-sync, a conflict in one of those files means the port's repository changed it too: keep this repository's
+version and re-apply the upstream change by hand.
+
+## What changed for releases (multi-module move)
 
 - **Same artifact.** `shim.jar` is still one self-contained jar: the same `Main-Class`
   (`org.hl7.fhir.jekyll.site.Main`), the same CLI (`java -jar shim.jar build --destination <dir>`), and no
