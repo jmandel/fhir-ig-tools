@@ -64,8 +64,8 @@ generation, FHIRPath, validation, core's JSON (`JsonNumber` keeps source text; S
 SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapshot itself; reusing those changes output.
 npm libraries are replaced by in-tree code: yaml 1.10 (WP-3, on the shared YAML event layer), ajv messages (WP-3),
 html-minifier-terser + sax (WP-9), lodash (`js.Js`), winston/chalk (`utils.FshLogger`), text-table, title-case,
-sanitize-filename, valid-url, junk, semver, ini, commander (WP-10), fhir-package-loader (WP-8). fhir-tool (FHIR XML)
-was ported too (WP-8) and then replaced by core's XML parsers.
+sanitize-filename, valid-url, junk, semver, commander (WP-10), fhir-package-loader (WP-8). fhir-tool (FHIR XML) and
+ini were ported too (WP-8, WP-10) and then replaced by core (its XML parsers, `IniFile`; docs/core-divergences.md C6, C9).
 
 **D1a Package resolution: core as is, measured, patched only where it differs (owner decision).** WP-8 does not
 port fhir-package-loader's precedence rules up front. It uses core's package resolution (which packages/versions load,

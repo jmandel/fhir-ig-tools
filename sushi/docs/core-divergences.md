@@ -24,7 +24,7 @@ answer differs, which IGs hinge on it); the cost of switching; a verdict. "Corpu
 | C6 | predefined FHIR XML to JSON | core now: `fhirdefs.FhirXml` (r4/r4b/r5 parsers); fhir-tool port removed | - | switched (owner); differs from TS |
 | C7 | xhtml minify / well-formedness | `xhtml` (1,947) | `utilities.xhtml.XhtmlParser`/`XhtmlComposer` | keep |
 | C8 | YAML | `common.yaml` + `yaml.Yaml` (~3,150) | none in core | n/a |
-| C9 | ig.ini | `ig.Ini` (204) | `utilities.IniFile` | switch (reading) |
+| C9 | ig.ini | core now: `utilities.IniFile`; the `ini` port removed | - | switched |
 | C10 | semver | `Processing.Semver`, `IgSupport.maxSatisfying` (~100) | `VersionUtilities`, `SemverParser` | keep |
 | C11 | FHIR version table | `utils.FHIRVersionUtils` (69) | `VersionUtilities.isR4Ver/isR5Plus/...` | keep |
 | C12 | primitive value checks | regexes in `ElementDefinition`, `PrimitiveTypes`, `utils.ValidUrl` | `regex` extensions of the primitive SDs; `Utilities.isAbsoluteUrl` | keep |
@@ -391,23 +391,26 @@ fhir-tool's conversion only in representation (comments, decimals, whitespace) o
 - **Core instead.** Nothing: core has no YAML parser (none of its modules depends on one).
 - **Verdict: n/a** (nothing to switch to). The remaining difference from TS (error wording) is T1.
 
-## C9 ig.ini
+## C9 ig.ini (switched to core)
 
-- **What, where.** `ig.Ini` (204 lines): npm `ini` 5.0.0 `parse`/`encode`. `IGExporter.processIgIni` reads the
-  IG's `ig.ini` and checks it (an `[IG]` section, `ig` pointing at SUSHI's IG resource, `template` present,
-  deprecated properties); `generateIgIniString` encodes a 3-line `ig.ini` only for an error message (a `template`
-  in `sushi-config.yaml` without an `ig.ini`).
-- **Core instead.** `org.hl7.fhir.utilities.IniFile` (already on the class path).
-- **Why not core.** The parsers differ: `ini` treats `#` and `;` as comment starts, also after a value
-  (`template = fhir.base.template#current` reads as `fhir.base.template` unless SUSHI escapes the `#` first, which it
-  does for `template`), JSON-parses quoted values, and supports `key[]` arrays; `IniFile` treats only `;` lines as
-  comments (`# ...` lines become properties) and keeps `#` in values. Measured on all 267 corpus `ig.ini` files: the
-  raw key/value maps differ in 234, but the checks SUSHI makes (`[IG]` present, `ig` value, `template` present, the
-  deprecated properties found) are the same in **267/267**. No IG hinges on it.
-- **Cost.** None in dependencies. The error-message `ig.ini` is a fixed `[IG]` / `ig = ...` / `template = ...` text
-  and can be written without an encoder.
-- **Verdict: switch reading to `IniFile`** (measured: no output change on the corpus); write the message text
-  directly. Unmeasured risk: an `ig.ini` with a quoted or array value in one of the checked keys.
+- **Now.** `IGExporter.processIgIni` reads the IG's `ig.ini` with `org.hl7.fhir.utilities.IniFile` (from the file's
+  contents, read through `Processing.readFile`) and checks it as before: an `[IG]` section, `ig` pointing at SUSHI's
+  IG resource, `template` present, deprecated properties. `generateIgIniString` (only shown in an error message: a
+  `template` in `sushi-config.yaml` without an `ig.ini`) writes the fixed `[IG]` / `ig = ...` / `template = ...` text.
+  The port of npm `ini` 5.0.0 (`ig.Ini`, 204 lines) and SUSHI's escaping of `#` in `template` before parsing are gone.
+- **How the parsers differ.** `ini` treats `#` and `;` as comment starts, also after a value
+  (`template = fhir.base.template#current` reads as `fhir.base.template` unless the `#` is escaped, which SUSHI did
+  for `template`), JSON-parses quoted values and supports `key[]` arrays; `IniFile` treats only `;` lines as
+  comments (`# ...` lines become properties), keeps `#` in values, and gives a key without `=` the value `""`
+  (`ini`: `true`). On all 267 corpus `ig.ini` files the raw key/value maps differ in 234, but the checks SUSHI makes
+  (`[IG]` present, `ig` value, `template` present, the deprecated properties found) are the same in **267/267**, so
+  no IG's output or messages change; the 6 reference IGs were rerun after the switch with the same result as before.
+  The ported `IGExporter` ig.ini tests pass unchanged.
+- **Known edge (no corpus IG).** `IniFile` drops the whole file when a property line comes before the first section
+  (it fails on the missing section and clears what it read), so such an `ig.ini` gets "The ig.ini file must contain
+  an [IG] section." where TS finds the section. A quoted value or a `key[]` in one of the checked keys reads
+  differently too.
+- **Verdict: switched.**
 
 ## C10 semver
 
@@ -534,4 +537,4 @@ one; the "non-conformant resource" box is coloured only when colour is on (TTY/`
 `Common.JsTypeError`; 42 malformed-config inputs with a wrongly typed raw YAML value (e.g. `title: 2023`) give the
 same output but the typed `Configuration` cannot hold the raw value; `sushi init` ships its template as the yaml
 library re-serialises it; the deprecated `history` error prints the package-list JSON in importConfiguration's key
-order; `ini` quirks such as a quoted `'5'` becoming its string form.
+order; and (before C9's switch to core) `ini` quirks such as a quoted `'5'` becoming its string form.

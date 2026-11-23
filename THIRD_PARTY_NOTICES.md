@@ -31,7 +31,7 @@ Ruby sources as optional git submodules for developers.
 | winston, chalk (logging behaviour SUSHI relies on) | 3.19.0, 4.1.2 | MIT | `org.hl7.fhir.sushi.utils.FshLogger` |
 | text-table, title-case, valid-url, junk | 0.2.0, 3.0.3, 1.0.9, 3.1.0 | MIT | `org.hl7.fhir.sushi.utils` |
 | sanitize-filename | 1.6.4 | WTFPL or ISC (used under ISC) | `org.hl7.fhir.sushi.utils` |
-| ini, semver | 5.0.0, 7.8.5 | ISC | `org.hl7.fhir.sushi.ig`, `org.hl7.fhir.sushi.utils` |
+| semver | 7.8.5 | ISC | `org.hl7.fhir.sushi.ig`, `org.hl7.fhir.sushi.utils` |
 
 `sushi.jar` also bundles, unchanged, the libraries listed in
 [Libraries bundled in sushi.jar](#libraries-bundled-in-sushijar) below. `jekyll.jar` bundles nothing but this
@@ -855,7 +855,7 @@ SOFTWARE.
 
 ```
 yaml 1.10.3:                Copyright 2018 Eemeli Aro <eemeli@gmail.com>
-ini 5.0.0, semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
+semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
 sanitize-filename 1.6.4:    (WTFPL or ISC; used under ISC) Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -930,7 +930,7 @@ and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
 | Library | Version | License |
 |---|---|---|
 | HL7 FHIR core: org.hl7.fhir.utilities, org.hl7.fhir.r4, org.hl7.fhir.r4b, org.hl7.fhir.r5 (`ca.uhn.hapi.fhir`) | 7.0.6 | Apache-2.0 |
-| XPP3 (`org.codelibs:xpp3`, the XML pull parser) | 1.1.4c.0 | Indiana University Extreme! Lab Software License, an Apache 1.1-style license (its POM declares the Apache Software License 1.1) |
+| XPP3 / MXP1 (`org.codelibs:xpp3`, the XML pull parser core's XML parsers use) | 1.1.4c.0 | MXP1 (`org.xmlpull.mxp1`): Indiana University Extreme! Lab Software License 1.2 (text below; its POM declares "The Apache Software License, Version 1.1"); XMLPULL V1 API (`org.xmlpull.v1`): its sources refer to the LICENSE.txt at http://www.xmlpull.org/, which places the API in the public domain |
 | HAPI FHIR base (`ca.uhn.hapi.fhir:hapi-fhir-base`) | 8.10.0 | Apache-2.0 |
 | Apache Commons Compress, Codec, IO, Lang, Net, Text | 1.26.0, 1.15, 2.15.1, 3.14.0, 3.9.0, 1.10.0 | Apache-2.0 |
 | Jackson annotations, core, databind, datatype-jsr310 | 2.21, 2.21.1, 2.21.1, 2.21.1 | Apache-2.0 (jackson-core includes FastDoubleParser, MIT; its notices are in the jar's `META-INF/FastDoubleParser-*`) |
@@ -950,6 +950,71 @@ and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
 
 The Apache License 2.0 text is in the Addressable section above and the MIT text in the SUSHI npm section. The
 EPL-2.0 text is at https://www.eclipse.org/legal/epl-2.0/.
+
+### Indiana University Extreme! Lab Software License 1.2 (XPP3 / MXP1)
+
+This product includes software developed by the Indiana University Extreme! Lab. For further information please
+visit http://www.extreme.indiana.edu/. (From the license header of `org/xmlpull/mxp1/MXParser.java` in
+`org.codelibs:xpp3` 1.1.4c.0.)
+
+```
+Indiana University Extreme! Lab Software License, Version 1.2
+
+Copyright (C) 2003 The Trustees of Indiana University.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+1) All redistributions of source code must retain the above
+   copyright notice, the list of authors in the original source
+   code, this list of conditions and the disclaimer listed in this
+   license;
+
+2) All redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the disclaimer
+   listed in this license in the documentation and/or other
+   materials provided with the distribution;
+
+3) Any documentation included with all redistributions must include
+   the following acknowledgement:
+
+     "This product includes software developed by the Indiana
+     University Extreme! Lab.  For further information please visit
+     http://www.extreme.indiana.edu/"
+
+   Alternatively, this acknowledgment may appear in the software
+   itself, and wherever such third-party acknowledgments normally
+   appear.
+
+4) The name "Indiana University" or "Indiana University
+   Extreme! Lab" shall not be used to endorse or promote
+   products derived from this software without prior written
+   permission from Indiana University.  For written permission,
+   please contact http://www.extreme.indiana.edu/.
+
+5) Products derived from this software may not use "Indiana
+   University" name nor may "Indiana University" appear in their name,
+   without prior written permission of the Indiana University.
+
+Indiana University provides no reassurances that the source code
+provided does not infringe the patent or any other intellectual
+property rights of any other entity.  Indiana University disclaims any
+liability to any recipient for claims brought by any other entity
+based on infringement of intellectual property rights or otherwise.
+
+LICENSEE UNDERSTANDS THAT SOFTWARE IS PROVIDED "AS IS" FOR WHICH
+NO WARRANTIES AS TO CAPABILITIES OR ACCURACY ARE MADE. INDIANA
+UNIVERSITY GIVES NO WARRANTIES AND MAKES NO REPRESENTATION THAT
+SOFTWARE IS FREE OF INFRINGEMENT OF THIRD PARTY PATENT, COPYRIGHT, OR
+OTHER PROPRIETARY RIGHTS.  INDIANA UNIVERSITY MAKES NO WARRANTIES THAT
+SOFTWARE IS FREE FROM "BUGS", "VIRUSES", "TROJAN HORSES", "TRAP
+DOORS", "WORMS", OR OTHER HARMFUL CODE.  LICENSEE ASSUMES THE ENTIRE
+RISK AS TO THE PERFORMANCE OF SOFTWARE AND/OR ASSOCIATED MATERIALS,
+AND TO THE PERFORMANCE AND VALIDITY OF INFORMATION GENERATED USING
+SOFTWARE.
+```
 
 ### Unicode License v3 (ICU4J)
 

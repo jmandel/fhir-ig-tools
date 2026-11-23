@@ -74,7 +74,7 @@ with no Node/npm at all.
   ([`core-divergences.md`](docs/core-divergences.md) C5). Predefined resources in FHIR XML are read with core's XML
   parsers (C6).
 - **Dependencies:** at runtime only `common` (this repository), core's utilities and commons-compress (which core's
-  package cache needs). No other libraries; npm libraries SUSHI uses (yaml, lodash, html-minifier, sax, ini, ...)
+  package cache needs). No other libraries; npm libraries SUSHI uses (yaml, lodash, html-minifier, sax, semver, ...)
   are replaced by small in-tree ports, each checked against the JavaScript original.
 
 ## Results
