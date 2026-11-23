@@ -3,7 +3,7 @@
 #
 #   ./build.sh [maven args...]     Maven, all modules (common, jekyll, sushi). Default args: -B -q package
 #                                  -> common/target/classes, jekyll/target/{classes,test-classes},
-#                                     jekyll/target/shim.jar (the shim's self-contained release jar),
+#                                     jekyll/target/jekyll.jar (the shim's self-contained release jar),
 #                                     sushi/target/sushi.jar (the SUSHI port's self-contained jar)
 #                                  Needs JDK 21 (sushi); common and jekyll are still compiled for Java 17.
 #       e.g. ./build.sh -B -pl jekyll -am package     the shim only (this also works on JDK 17)
@@ -13,7 +13,7 @@
 #   ./build.sh --fast [module]     the shim only: plain javac, no Maven (quick, and lets parallel workers build
 #                                  one module without tripping over each other's half-finished code); sushi
 #                                  has no --fast build (it needs Maven for the ANTLR oracle and core):
-#       no module : common + all of jekyll  -> jekyll/build/{classes,test-classes,shim.jar}
+#       no module : common + all of jekyll  -> jekyll/build/{classes,test-classes,jekyll.jar}
 #       module    : common + jekyll util + that module (+ what it needs) -> jekyll/build-<module>/{classes,test-classes}
 #                   module = liquid | kramdown | site | yaml | rouge
 #       BUILD_OUT=<dir> puts the output in jekyll/<dir> instead. Each output dir holds common's classes too,
@@ -55,7 +55,7 @@ find $MAIN -name "*.java" 2>/dev/null > $OUT/main-sources.txt
 javac -encoding UTF-8 -Xlint:-options --release 17 -d $OUT/classes @$OUT/main-sources.txt
 find $TEST -name "*.java" 2>/dev/null > $OUT/test-sources.txt || true
 if [ -s $OUT/test-sources.txt ]; then javac -encoding UTF-8 -Xlint:-options --release 17 -cp $OUT/classes -d $OUT/test-classes @$OUT/test-sources.txt; fi
-if [ -z "$MOD" ]; then jar --create --file $OUT/shim.jar --main-class org.hl7.fhir.jekyll.site.Main -C $OUT/classes .; fi
+if [ -z "$MOD" ]; then jar --create --file $OUT/jekyll.jar --main-class org.hl7.fhir.jekyll.site.Main -C $OUT/classes .; fi
 echo "built $OUT"
 '
   if [ -z "$DOCKER" ] && have_jdk; then

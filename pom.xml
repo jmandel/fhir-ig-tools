@@ -2,11 +2,11 @@
 <!--
   Multi-module build (docs/MONOREPO.md):
     common  zero-dependency code shared by the modules (the libyaml event layer, org.hl7.fhir.common.*)
-    jekyll  the Jekyll replacement (org.hl7.fhir.jekyll.*); depends only on common; target/shim.jar is the
+    jekyll  the Jekyll replacement (org.hl7.fhir.jekyll.*); depends only on common; target/jekyll.jar is the
             self-contained release artifact (common shaded in)
     sushi   the SUSHI port (org.hl7.fhir.sushi.*); Java 21; may depend on common and org.hl7.fhir.core;
             target/sushi.jar is its self-contained jar
-  Build with JDK 21 (common and jekyll are still compiled with release 17, so shim.jar runs on Java 17):
+  Build with JDK 21 (common and jekyll are still compiled with release 17, so jekyll.jar runs on Java 17):
   ./build.sh (Maven locally if available, else in the reference container), or plain `mvn -B package`.
   With JDK 17, build the shim only: ./build.sh -B -pl jekyll -am package
 -->
@@ -20,7 +20,7 @@
   <packaging>pom</packaging>
   <name>fhir-ig-tools</name>
   <description>Java replacements for the non-Java stages of the FHIR IG Publisher (Jekyll, SUSHI)</description>
-  <url>https://github.com/jmandel/fhir-ig-jekyll</url>
+  <url>https://github.com/jmandel/fhir-ig-tools</url>
   <licenses>
     <license><name>BSD-3-Clause</name><url>https://opensource.org/licenses/BSD-3-Clause</url></license>
   </licenses>
@@ -36,7 +36,7 @@
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- reproducible jars: same sources + same JDK = same shim.jar bytes -->
+    <!-- reproducible jars: same sources + same JDK = same jekyll.jar bytes -->
     <project.build.outputTimestamp>2026-11-22T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
     <!-- sushi's test oracle (ANTLR parser from SUSHI's grammar); the IG Publisher ships the same runtime version -->

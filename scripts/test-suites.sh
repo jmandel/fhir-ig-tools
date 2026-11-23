@@ -10,11 +10,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 [ -n "${SHIM_NO_BUILD:-}" ] || ./build.sh >/dev/null || exit 1
 SEP=":"; case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) SEP=";";; esac
-# Default: the Maven build, run against the release jar itself (jekyll/target/shim.jar: jekyll + common).
+# Default: the Maven build, run against the release jar itself (jekyll/target/jekyll.jar: jekyll + common).
 # SHIM_BUILD=<dir>: a plain-javac build dir instead (./build.sh --fast [module] -> jekyll/build[-<module>]),
 # whose classes/ holds common's classes too.
 if [ -n "${SHIM_BUILD:-}" ]; then CP="$SHIM_BUILD/classes${SEP}$SHIM_BUILD/test-classes"
-else CP="jekyll/target/shim.jar${SEP}jekyll/target/test-classes"; fi
+else CP="jekyll/target/jekyll.jar${SEP}jekyll/target/test-classes"; fi
 suites=(
   "jekyll/tests/smoke-cases.jsonl jekyll/tests/smoke-expected.jsonl"
   "jekyll/tests/liquid/cases.jsonl jekyll/tests/liquid/expected.jsonl"

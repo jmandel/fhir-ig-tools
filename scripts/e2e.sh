@@ -2,7 +2,7 @@
 # End-to-end check of a wrapper as the IG Publisher calls it: `<wrapper> build --destination <dir>` in
 # the source folder. Renders jekyll/tests/e2e/site and compares with the real-Jekyll output recorded in
 # jekyll/tests/e2e/expected (scripts/domdiff.py, exact).
-# usage: scripts/e2e.sh [dir-containing-jekyll-shim]   (default: jekyll/, i.e. jekyll/target/shim.jar)
+# usage: scripts/e2e.sh [dir-containing-jekyll-shim]   (default: jekyll/, i.e. jekyll/target/jekyll.jar)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="$(cd "${1:-$ROOT/jekyll}" && pwd)"

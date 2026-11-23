@@ -2,12 +2,12 @@ name: Release
 
 # Push a tag like v0.1.0 to publish a GitHub Release with:
 #   jekyll-shim, jekyll-shim.cmd   self-contained wrappers (Unix, Windows) pinned to this release's
-#                                  version and shim.jar SHA-256: on first use they download that jar
+#                                  version and jekyll.jar SHA-256: on first use they download that jar
 #                                  into ~/.fhir-ig-jekyll/<version>/, verify it, and run it (like gradlew)
-#   shim.jar                       the shim itself (java -jar shim.jar build --destination <dir>)
-#   fhir-ig-jekyll.zip             offline bundle: shim.jar + both wrappers + docs and licenses
+#   jekyll.jar                       the shim itself (java -jar jekyll.jar build --destination <dir>)
+#   fhir-ig-jekyll.zip             offline bundle: jekyll.jar + both wrappers + docs and licenses
 # Asset names don't carry the version, so .../releases/latest/download/<asset> always works.
-# The build uses JDK 21 for all modules; shim.jar's class files still target Java 17 (--release 17).
+# The build uses JDK 21 for all modules; jekyll.jar's class files still target Java 17 (--release 17).
 # sushi/target/sushi.jar (the SUSHI port) is built and tested too, but is NOT published: whether to ship it is the
 # owner's decision. The disabled "Publish sushi.jar" step at the end shows how it would be added.
 on:
@@ -37,9 +37,9 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'   # sushi needs 21; common and jekyll are compiled with --release 17, so shim.jar runs on 17+
+          java-version: '21'   # sushi needs 21; common and jekyll are compiled with --release 17, so jekyll.jar runs on 17+
           cache: maven
-      - name: Build (Maven, all modules; jekyll/target/shim.jar is the self-contained release jar, common shaded in)
+      - name: Build (Maven, all modules; jekyll/target/jekyll.jar is the self-contained release jar, common shaded in)
         run: ./build.sh -B -ntp package
       - name: Test
         run: |
@@ -50,31 +50,31 @@ jobs:
         run: |
           D=dist/fhir-ig-jekyll
           mkdir -p "$D"
-          scripts/stamp-wrappers.sh "${TAG#v}" jekyll/target/shim.jar "$D"
-          cp jekyll/target/shim.jar "$D/"
+          scripts/stamp-wrappers.sh "${TAG#v}" jekyll/target/jekyll.jar "$D"
+          cp jekyll/target/jekyll.jar "$D/"
           cp README.md LICENSE THIRD_PARTY_NOTICES.md jekyll/INTEGRATION.md "$D/"
           scripts/e2e.sh "$D"
           (cd dist && zip -qr fhir-ig-jekyll.zip fhir-ig-jekyll)
-          cp jekyll/target/shim.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
-          (cd dist && sha256sum shim.jar jekyll-shim jekyll-shim.cmd fhir-ig-jekyll.zip > SHA256SUMS)
+          cp jekyll/target/jekyll.jar "$D/jekyll-shim" "$D/jekyll-shim.cmd" dist/
+          (cd dist && sha256sum jekyll.jar jekyll-shim jekyll-shim.cmd fhir-ig-jekyll.zip > SHA256SUMS)
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           notes="Drop-in for the IG Publisher's Jekyll stage. Requires Java 17+.
 
-          Quick start (Linux/macOS): download the one-file wrapper; it fetches and verifies shim.jar on first use.
-              curl -fLO https://github.com/jmandel/fhir-ig-jekyll/releases/download/$TAG/jekyll-shim && chmod +x jekyll-shim
+          Quick start (Linux/macOS): download the one-file wrapper; it fetches and verifies jekyll.jar on first use.
+              curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/download/$TAG/jekyll-shim && chmod +x jekyll-shim
               java -jar publisher.jar -ig . -jekyll \$PWD/jekyll-shim
           Windows: download jekyll-shim.cmd and pass its full path as -jekyll.
-          Offline: fhir-ig-jekyll.zip bundles shim.jar with both wrappers.
-          Or run it directly in a Jekyll source folder: java -jar shim.jar build --destination <dir>"
+          Offline: fhir-ig-jekyll.zip bundles jekyll.jar with both wrappers.
+          Or run it directly in a Jekyll source folder: java -jar jekyll.jar build --destination <dir>"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/shim.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --clobber
+            gh release upload "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/jekyll.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --clobber
           else
-            gh release create "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/shim.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --title "$TAG" --notes "$notes"
+            gh release create "$TAG" dist/jekyll-shim dist/jekyll-shim.cmd dist/jekyll.jar dist/fhir-ig-jekyll.zip dist/SHA256SUMS --title "$TAG" --notes "$notes"
           fi
-      - name: Verify the published wrapper (downloads shim.jar from this release)
+      - name: Verify the published wrapper (downloads jekyll.jar from this release)
         run: |
           W=$(mktemp -d); cp dist/jekyll-shim "$W/"
           FHIR_IG_JEKYLL_HOME=$(mktemp -d) scripts/e2e.sh "$W"

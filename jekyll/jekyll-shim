@@ -3,10 +3,10 @@
 # run with the working directory set to temp/pages.
 #
 # Like the Gradle wrapper, this one file is all you need. A release copy pins a shim version and its
-# SHA-256; on first use it downloads that shim.jar into ~/.fhir-ig-jekyll/<version>/, verifies it, and
+# SHA-256; on first use it downloads that jekyll.jar into ~/.fhir-ig-jekyll/<version>/, verifies it, and
 # runs it from there afterwards (offline). Which jar runs (first match wins):
 #   $FHIR_IG_JEKYLL_JAR              an explicit jar (offline machines, development)
-#   shim.jar next to this script     (release zip), or target/shim.jar / build/shim.jar (source checkout:
+#   jekyll.jar next to this script   (release zip), or target/jekyll.jar / build/jekyll.jar (source checkout:
 #                                    ./build.sh / ./build.sh --fast)
 #   the pinned release               cached under ${FHIR_IG_JEKYLL_HOME:-$HOME/.fhir-ig-jekyll}
 # FHIR_IG_JEKYLL_URL overrides the download URL (e.g. a mirror). Java: $JAVA_HOME/bin/java if set,
@@ -30,19 +30,19 @@ fetch() {  # fetch <url> <file>
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 if [ -n "${FHIR_IG_JEKYLL_JAR:-}" ]; then JAR=$FHIR_IG_JEKYLL_JAR
-elif [ -f "$HERE/shim.jar" ]; then JAR=$HERE/shim.jar
-elif [ -f "$HERE/target/shim.jar" ]; then JAR=$HERE/target/shim.jar
-elif [ -f "$HERE/build/shim.jar" ]; then JAR=$HERE/build/shim.jar
+elif [ -f "$HERE/jekyll.jar" ]; then JAR=$HERE/jekyll.jar
+elif [ -f "$HERE/target/jekyll.jar" ]; then JAR=$HERE/target/jekyll.jar
+elif [ -f "$HERE/build/jekyll.jar" ]; then JAR=$HERE/build/jekyll.jar
 else
-  case $VERSION in @*) die "no shim.jar next to this script and no pinned version; in a source checkout run ./build.sh, or set FHIR_IG_JEKYLL_JAR" ;; esac
+  case $VERSION in @*) die "no jekyll.jar next to this script and no pinned version; in a source checkout run ./build.sh, or set FHIR_IG_JEKYLL_JAR" ;; esac
   DIR=${FHIR_IG_JEKYLL_HOME:-$HOME/.fhir-ig-jekyll}/$VERSION
-  JAR=$DIR/shim.jar
+  JAR=$DIR/jekyll.jar
   if [ ! -f "$JAR" ]; then
-    URL=${FHIR_IG_JEKYLL_URL:-https://github.com/jmandel/fhir-ig-jekyll/releases/download/v$VERSION/shim.jar}
+    URL=${FHIR_IG_JEKYLL_URL:-https://github.com/jmandel/fhir-ig-tools/releases/download/v$VERSION/jekyll.jar}
     mkdir -p "$DIR"
-    TMP=$DIR/shim.jar.$$.part
+    TMP=$DIR/jekyll.jar.$$.part
     trap 'rm -f "$TMP"' EXIT
-    echo "jekyll-shim: downloading fhir-ig-jekyll $VERSION from $URL (first use only)" >&2
+    echo "jekyll-shim: downloading jekyll.jar $VERSION from $URL (first use only)" >&2
     fetch "$URL" "$TMP" || die "download failed: $URL"
     got=$(sha256 "$TMP")
     [ "$got" = "$SHA256" ] || die "checksum mismatch for $URL: expected $SHA256, got $got"

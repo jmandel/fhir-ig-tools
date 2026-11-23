@@ -1,8 +1,8 @@
 name: CI
 
 # build: JDK 21 builds every module (common and jekyll with --release 17, sushi with 21) and runs all JUnit tests,
-#        SUSHI's (~3.7k) included, then the shim's suites against the jekyll/target/shim.jar it built.
-# shim:  runs that same shim.jar (the release artifact) on JDK 17 and 21 on Linux, macOS and Windows: the
+#        SUSHI's (~3.7k) included, then the shim's suites against the jekyll/target/jekyll.jar it built.
+# shim:  runs that same jekyll.jar (the release artifact) on JDK 17 and 21 on Linux, macOS and Windows: the
 #        differential suites, the in-process API check, the wrapper end to end and the wrapper bootstrap.
 on:
   push:
@@ -24,11 +24,11 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Build (Maven, all modules; JUnit incl. SUSHI's; jekyll/target/shim.jar, sushi/target/sushi.jar)
+      - name: Build (Maven, all modules; JUnit incl. SUSHI's; jekyll/target/jekyll.jar, sushi/target/sushi.jar)
         run: ./build.sh -B -ntp package
-      - name: shim.jar class files target Java 17
+      - name: jekyll.jar class files target Java 17
         run: |
-          v=$(unzip -p jekyll/target/shim.jar org/hl7/fhir/jekyll/site/Main.class | od -An -j6 -N2 -tu1 | awk '{print $1 * 256 + $2}')
+          v=$(unzip -p jekyll/target/jekyll.jar org/hl7/fhir/jekyll/site/Main.class | od -An -j6 -N2 -tu1 | awk '{print $1 * 256 + $2}')
           echo "class file version $v"; [ "$v" = 61 ]
       - name: sushi.jar runs self-contained
         run: java -jar sushi/target/sushi.jar --version
@@ -38,18 +38,18 @@ jobs:
           sudo ln -s "$GITHUB_WORKSPACE" /w
       - name: Differential suites (vs recorded Ruby output)
         run: SHIM_NO_BUILD=1 SHIM_W_SUITES=1 scripts/test-suites.sh
-      - name: Keep shim.jar and the shim's test classes for the other JDKs and platforms
+      - name: Keep jekyll.jar and the shim's test classes for the other JDKs and platforms
         uses: actions/upload-artifact@v4
         with:
           name: shim
           path: |
-            jekyll/target/shim.jar
+            jekyll/target/jekyll.jar
             jekyll/target/test-classes
           if-no-files-found: error
           retention-days: 7
 
   shim:
-    name: shim.jar / ${{ matrix.os }} / JDK ${{ matrix.java }}
+    name: jekyll.jar / ${{ matrix.os }} / JDK ${{ matrix.java }}
     needs: build
     strategy:
       fail-fast: false
@@ -66,7 +66,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
-      - name: shim.jar and test classes from the JDK 21 build
+      - name: jekyll.jar and test classes from the JDK 21 build
         uses: actions/download-artifact@v4
         with:
           name: shim
@@ -80,7 +80,7 @@ jobs:
       - name: Differential suites (vs recorded Ruby output)
         run: SHIM_NO_BUILD=1 scripts/test-suites.sh
       - name: In-process API and IncludeProvider checks
-        run: java -cp "jekyll/target/shim.jar${{ runner.os == 'Windows' && ';' || ':' }}jekyll/target/test-classes" org.hl7.fhir.jekyll.test.site.ShimApiCheck
+        run: java -cp "jekyll/target/jekyll.jar${{ runner.os == 'Windows' && ';' || ':' }}jekyll/target/test-classes" org.hl7.fhir.jekyll.test.site.ShimApiCheck
       - name: End to end through the wrapper (vs real Jekyll output)
         run: scripts/e2e.sh
       - name: Wrapper bootstrap (download, verify, cache; local server stands in for Releases)
