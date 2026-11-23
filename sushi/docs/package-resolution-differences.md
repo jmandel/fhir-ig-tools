@@ -106,6 +106,39 @@ different; 1 FPL rule ported (R1); 2 message-only differences observed (D7, D8).
   registry fails, loading `X#latest` fails with FPL's `Failed to resolve version for X#latest` (corpus case
   HL7__davinci-ecdx). Tests: `regress.CorpusRegressionTest` (network test opt-in: `-Dsushi.network.tests=true`).
 
+### X2 — `hl7.fhir.r4.core#4.0.1` downloaded into an empty cache (core differs; observed; not changed)
+
+- Found by the empty-cache check of the I/O-policy work (no `~/.fhir` at all, network on, IHE ITI.MHD, TS and Java
+  run back to back): `fsh-generated/` identical (125 files), exit codes 0/0, and one log line differs:
+  `Loaded hl7.fhir.r4.core#4.0.1 with 4581 resources` (TS) vs `... with 4578 resources` (Java). The jar from before
+  that work gives the same result. Every other package of the run has the same count in both.
+- Cause: the two package servers serve **different tarballs** for the same `hl7.fhir.r4.core#4.0.1`, and the
+  implementations ask them in opposite order (D8):
+  - FPL (TS) asks packages.fhir.org first: the original 2019 tarball (12.8 MB, SHA-256 `ebd7731df7d3…`, 5,046
+    entries);
+  - core asks its `PackageServer.PRIMARY_SERVER`, packages2.fhir.org, first: a later re-packaging (4.5 MB, SHA-256
+    `b090bf929e1f…`, 4,742 entries; the same file as `https://hl7.org/fhir/R4/hl7.fhir.r4.core.tgz`).
+  - The re-packaged tarball lacks 3 resources, `StructureDefinition-structuredefinition-json-type.json`,
+    `-xml-type.json` and `-rdf-type.json` (the draft R4 extensions
+    `http://hl7.org/fhir/StructureDefinition/structuredefinition-{json,xml,rdf}-type`, context
+    `ElementDefinition.type.code`), and the non-resource folders `package/openapi` (156 files) and `package/other`
+    (307 files, mostly PNGs). It is not an extraction or counting difference: core indexes every resource of the
+    tarball it downloaded, FPL every resource of its own.
+  - The port prints FPL's `Attempting to download hl7.fhir.r4.core#4.0.1 from https://packages.fhir.org/...` (D8)
+    even though core fetched the package from packages2.fhir.org.
+- Effect on output: the log line on a cold cache. `fsh-generated/` changes only for an IG that uses one of the 3
+  extensions (by name, id or URL): TS finds it, Java does not and reports the unresolved reference. None of the 267
+  corpus FSH IGs does (searched their FSH, `sushi-config.yaml`, and JSON/XML inputs), and SUSHI's own code doesn't
+  refer to them. A cache that the IG Publisher (core) filled has the packages2 tarball, so TS SUSHI sees 4578 resources
+  there too. The frozen snapshot that the differential runs use holds FPL's tarball, so both report 4581.
+- Possible fix (not applied: it changes which tarball goes into the user's cache, which needs an owner decision under
+  D1a): give `CorePackageProvider` FPL's server order. Core 7.0.6 has no builder setter for it, but
+  `FilesystemPackageCacheManager.Builder.getDefaultServers()` is protected and overridable, so
+  `new Builder() { protected List<PackageServer> getDefaultServers() { return List.of(PackageServer.secondaryServer(),
+  PackageServer.primaryServer()); } }.withCacheFolder(...)` would ask packages.fhir.org first, as FPL does. Servers
+  configured in fhir-settings.json would still come first. That would also make the `Attempting to download ... from
+  packages.fhir.org` line true.
+
 ## Known design-level differences (core as is; kept)
 
 These follow from using core as is; D7 and D8 occurred (log lines only, no lookup differs), the others did not. Each is listed so a probe hit can be
