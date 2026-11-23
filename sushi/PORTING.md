@@ -175,6 +175,47 @@ package snapshot (`baseline-20261120`) + per-IG overlay.
 - **Output files.** Write through one helper (WP-10, `utils.Processing`) that writes UTF-8, `\n` line endings, exactly
   the bytes TS writes; JSON via `Json.outputJson`.
 
+### I/O policy (owner requirement)
+
+All file access goes through org.hl7.fhir.core's `ManagedFileAccess` and all network access through its
+`ManagedWebAccess`. That is how the IG Publisher and core control I/O (access policy and allowed paths, a host-provided
+accessor, `fhir-settings.json`, proxies, offline mode), so it applies to SUSHI too.
+
+- **Files: `utils.Fs`, the one adapter.** Contents are read and written with `ManagedFileAccess.inStream/outStream`,
+  folders are listed with `ManagedFileAccess.listFiles`, and metadata (`exists`, `isDirectory`, `isFile`) comes from
+  the `File` that `ManagedFileAccess.file()` returns. ManagedFileAccess has no operation for the following, so `Fs`
+  does them on the `File` (or its `Path`) that ManagedFileAccess returned, never on a path SUSHI built itself:
+  - lstat (`Files.isDirectory/isRegularFile(..., NOFOLLOW_LINKS)`): Node's `Dirent.isDirectory()`/`isFile()`
+    describe a symlink itself (DiskBasedVirtualPackage, the `path-resource` `/*` folder walk, emptyDir);
+  - `Files.createDirectories` (fs-extra `ensureDirSync`, `outputFileSync`'s parent folders, the package cache folder
+    when missing): it keeps NIO's exceptions and their messages, where `File.mkdirs()` only returns false;
+  - `Files.delete` (fs-extra `emptyDirSync`, `sushi init`);
+  - `Files.setPosixFilePermissions` (`sushi init` makes `_build.sh` executable).
+
+  `Fs` keeps java.nio's semantics: an empty path is the current folder, and failures raise NIO's exception types
+  (`NoSuchFileException`, `AccessDeniedException`, ...). It translates the `FileNotFoundException` of core's streams by
+  looking at the file, because `Processing.nodeMessage` turns those types into Node's `ENOENT`/`EACCES` texts.
+- **Network: `ManagedWebAccess.get(List.of("web"), url)`** for the `#latest` registry lookups and build.fhir.org's
+  `qas.json` (`fhirdefs.CorePackageProvider`), and for the npm-registry version check and `sushi init`'s `_build`
+  script download (`Processing.webGet`, which keeps axios's `Request failed with status code N`). Package downloads
+  go through core's package cache, which already uses ManagedFileAccess/ManagedWebAccess. Timeouts are core's (15 s
+  per connect/read, one retry). Before this the two Processing calls used their own `HttpClient` with 5 s connect
+  and 10 s request timeouts. Both run only for the off-by-default version check (D7) and `sushi init`.
+- **Settings.** `App.main` calls `ManagedWebAccess.loadFromFHIRSettings()`, as the publisher does:
+  `~/.fhir/fhir-settings.json` (or `-Dfhir.settings.path=`) applies, including `prohibitNetworkAccess`, configured
+  package servers and their authentication, and SSRF protection. Tests, which call `App.run`, don't load it.
+- **Not file access, allowed:** classpath resources (`Class.getResourceAsStream`: R5-for-R4 definitions, the config
+  schema, fhir-tool's type data, the `init` templates) and `App.out/err`, UTF-8 `PrintStream`s on the stdout/stderr
+  file descriptors.
+- **Enforced** by `build.ManagedIoRuleTest`: it reads the constant pool of every compiled main class and fails on any
+  direct use of `java.io` file streams/readers/writers, `RandomAccessFile`, non-path `java.io.File` members,
+  `java.nio.file.Files`/`FileSystems`/`FileChannel`, `Path.toFile`, `URL.openStream/openConnection`,
+  `URLConnection`, `java.net.http`, sockets and `ZipFile`/`JarFile` outside `utils.Fs`. It also fails on
+  `ManagedFileAccess.inStream/outStream(File)`, which skip the policy check. The allow-list has one entry,
+  `FileOutputStream(FileDescriptor)` for stdout/stderr. A fixture class checks that the scanner finds each kind of use.
+  `utils.FsTest` checks Fs's semantics and that core's file and web policies take effect (PROHIBITED → core's
+  messages).
+
 ## 4. Module map (TS → Java)
 
 LOC = nonblank TS lines; tests = Jest tests (`tests/inventory.tsv`, generated from the spike's full Jest run:

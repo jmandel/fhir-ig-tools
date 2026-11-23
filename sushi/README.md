@@ -35,6 +35,13 @@ folder on the `PATH` (the publisher runs `cmd /C sushi ...`).
 - Offline machines: put `sushi.jar` next to the wrapper, or set `FHIR_IG_SUSHI_JAR=/path/to/sushi.jar`.
   `FHIR_IG_SUSHI_URL` overrides the download URL, `FHIR_IG_SUSHI_HOME` moves the cache, `SUSHI_JAVA_OPTS` adds JVM
   options. Without the wrapper: `java -jar sushi.jar path/to/ig`.
+- Files and network go through org.hl7.fhir.core's `ManagedFileAccess` and `ManagedWebAccess`, as in the IG
+  Publisher ([`PORTING.md`](PORTING.md) "I/O policy"). So `~/.fhir/fhir-settings.json` applies (another file:
+  `SUSHI_JAVA_OPTS=-Dfhir.settings.path=...`): package servers and their credentials, and
+  `"prohibitNetworkAccess": true` to build offline from the package cache. Offline, `#latest` dependencies that
+  need the registry then fail at once instead of after network timeouts. A proxy is set with the standard JVM
+  properties (`-Dhttps.proxyHost=... -Dhttps.proxyPort=...`; `-Dhttp.proxyUser/-Dhttp.proxyPassword` for an
+  authenticating proxy) in `SUSHI_JAVA_OPTS`.
 
 From source (in the repository root): `sushi/scripts/build.sh -B -q -DskipTests package` builds
 `sushi/target/sushi.jar`; `sushi/sushi` in a source checkout runs that jar.
