@@ -15,7 +15,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.hl7.fhir</groupId>
   <artifactId>fhir-ig-tools-parent</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>fhir-ig-tools</name>
   <description>Java replacements for the non-Java stages of the FHIR IG Publisher (Jekyll, SUSHI)</description>
@@ -52,6 +52,10 @@
   </modules>
 
   <properties>
+    <!-- The project version (CI-friendly, https://maven.apache.org/maven-ci-friendly.html): local builds are the next
+         development version; the release workflow builds with -Drevision=<tag without v>, so the jars and the POMs it
+         produces (installed/deployed POMs are flattened: ${revision} resolved) carry the release version. -->
+    <revision>0.3.1-SNAPSHOT</revision>
     <!-- every module targets Java 17 (the IG Publisher's level, so both tools can run in its JVM) -->
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -158,9 +162,35 @@
           <artifactId>central-publishing-maven-plugin</artifactId>
           <version>0.8.0</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.6.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
+      <!-- resolve ${revision} in the POMs that are installed and deployed (consumers can't resolve it) -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <configuration>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+          <updatePomFile>true</updatePomFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals><goal>flatten</goal></goals>
+          </execution>
+          <execution>
+            <id>flatten-clean</id>
+            <phase>clean</phase>
+            <goals><goal>clean</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>

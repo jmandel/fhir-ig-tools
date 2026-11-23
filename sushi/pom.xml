@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.hl7.fhir</groupId>
     <artifactId>fhir-ig-tools-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>fhir-ig-sushi</artifactId>
   <name>fhir-ig-sushi</name>
@@ -32,7 +32,7 @@
     <hl7.fhir.core.version>7.0.6</hl7.fhir.core.version>
     <!-- the fhir-ig-tools release this sushi.jar belongs to (org/hl7/fhir/sushi/release.properties), checked by sushi
          require-latest; the release workflow sets it from the tag (sushi.release = the tag without v). Default: the pom version,
-         so a local build reports e.g. 0.2.0-SNAPSHOT, which require-latest treats as a development build -->
+         so a local build reports e.g. 0.3.1-SNAPSHOT, which require-latest treats as a development build -->
     <sushi.release>${project.version}</sushi.release>
   </properties>
 

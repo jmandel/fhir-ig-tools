@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.hl7.fhir</groupId>
     <artifactId>fhir-ig-tools-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>fhir-ig-common</artifactId>
   <name>fhir-ig-common</name>

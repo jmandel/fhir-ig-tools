@@ -59,6 +59,17 @@ jobs:
           path: sushi/target/sushi.jar
           if-no-files-found: error
           retention-days: 7
+      - name: Release versioning (-Drevision, as the release workflow builds) gives versioned jars and resolved POMs
+        run: |
+          ./build.sh -B -q -ntp -Drevision=0.0.1 -DskipTests -Dmaven.repo.local="$RUNNER_TEMP/m2-rev" install
+          for m in common jekyll sushi; do ls "$m/target/fhir-ig-$m-0.0.1.jar"; done
+          R="$RUNNER_TEMP/m2-rev/org/hl7/fhir"
+          for a in fhir-ig-tools-parent fhir-ig-common fhir-ig-jekyll fhir-ig-sushi; do
+            p="$R/$a/0.0.1/$a-0.0.1.pom"; ls "$p"
+            if grep -q '${revision}' "$p"; then echo "unresolved \${revision} in $p"; exit 1; fi
+          done
+          ./build.sh -B -q -ntp -DskipTests package   # and the default build is the -SNAPSHOT again
+          ls common/target/fhir-ig-common-*-SNAPSHOT.jar
 
   shim:
     name: jekyll.jar / ${{ matrix.os }} / JDK ${{ matrix.java }}

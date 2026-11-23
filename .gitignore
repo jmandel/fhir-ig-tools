@@ -16,3 +16,4 @@ repos/
 templates/
 work/
 .DS_Store
+.flattened-pom.xml

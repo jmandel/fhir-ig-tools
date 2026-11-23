@@ -43,7 +43,8 @@ jobs:
           cache: maven
       - name: Build (Maven, all modules; jekyll/target/jekyll.jar is the self-contained release jar, common shaded in)
         # -Dsushi.release: sushi.jar records which release it is (checked by sushi --require-latest)
-        run: ./build.sh -B -ntp -Dsushi.release="${TAG#v}" package
+        # -Drevision: the Maven version of every module is the release's (pom.xml: ${revision}, 0.x.y-SNAPSHOT locally)
+        run: ./build.sh -B -ntp -Drevision="${TAG#v}" -Dsushi.release="${TAG#v}" package
       - name: Test
         run: |
           git submodule update --init --depth 1 third_party/yaml-test-suite   # YAML suite case data
