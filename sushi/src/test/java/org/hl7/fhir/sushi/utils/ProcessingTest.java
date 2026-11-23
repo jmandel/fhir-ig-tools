@@ -1708,6 +1708,35 @@ class ProcessingTest {
           "Observation-secret-observation.json"), jsonContents);
     }
 
+    /**
+     * Not in TS's suite (its CI runs on Linux): on Windows TS's path.relative is path.win32's, so the FSH file of a
+     * resource in a subfolder prints as secrets\\SecretThings.fsh in both index files (core-divergences.md T6).
+     */
+    @Test
+    @DisplayName("Processing #writeFSHIndex() uses Windows separators on Windows, as path.win32 does")
+    void usesWindowsSeparatorsOnWindows() {
+      boolean saved = NodePath.WINDOWS;
+      NodePath.WINDOWS = true;
+      try {
+        writeFSHIndex(tempIGPubRoot, outPackage, fshRoot, new ArrayList<>());
+      } finally {
+        NodePath.WINDOWS = saved;
+      }
+      String textContents = fs.readFileSync(path.join(tempIGPubRoot, "fsh-generated", "fsh-index.txt"), "utf-8");
+      assertContainsText("Instance   secrets\\SecretThings.fsh", textContents);
+      assertContainsText("Profile    SomeThings.fsh", textContents);
+      Object jsonContents = fs.readJsonSync(path.join(tempIGPubRoot, "fsh-generated", "data", "fsh-index.json"));
+      assertContainsEqual(obj("fshFile", "secrets\\SecretThings.fsh", "fshName", "SecretObservation",
+          "fshType", "Instance", "startLine", 2.0, "endLine", 39.0, "outputFile",
+          "Observation-secret-observation.json"), jsonContents);
+      String jsonText = fs.readFileSync(path.join(tempIGPubRoot, "fsh-generated", "data", "fsh-index.json"), "utf-8");
+      assertContainsText("\"fshFile\": \"secrets\\\\SecretThings.fsh\"", jsonText);
+      // and back on POSIX
+      writeFSHIndex(tempIGPubRoot, outPackage, fshRoot, new ArrayList<>());
+      assertContainsText("secrets/SecretThings.fsh",
+          fs.readFileSync(path.join(tempIGPubRoot, "fsh-generated", "fsh-index.txt"), "utf-8"));
+    }
+
     @Test
     @DisplayName("Processing #writeFSHIndex() should sort the list of resources by output file name")
     void shouldSortTheListOfResourcesByOutputFileName() {
@@ -2176,6 +2205,106 @@ class ProcessingTest {
       // Loosely match message since it differs slightly between npm 6 and npm 8
       assertTrue(java.util.regex.Pattern.compile("Unable to determine the latest version of sushi: Cannot read .*'dist-tags'.*")
           .matcher(loggerSpy.getLastMessage("warn")).find());
+    }
+  }
+
+  /** Not in TS: --require-latest checks fhir-ig-tools releases (core-divergences.md T3); the fetch is stubbed. */
+  @Nested
+  @DisplayName("#checkLatestPortRelease()")
+  class CheckLatestPortRelease {
+    Processing.ReleaseSource original;
+    final java.util.ArrayDeque<java.util.concurrent.Callable<Object>> answers = new java.util.ArrayDeque<>();
+    final List<String> urls = new ArrayList<>();
+
+    @BeforeEach
+    void beforeEach() {
+      original = Processing.releaseSource;
+      Processing.releaseSource = url -> {
+        urls.add(url);
+        return answers.poll().call();
+      };
+    }
+
+    @AfterEach
+    void afterEach() {
+      Processing.releaseSource = original;
+    }
+
+    Object release(String tag, String... assets) {
+      StringBuilder a = new StringBuilder();
+      for (String n : assets) a.append(a.length() == 0 ? "" : ",").append("{\"name\":\"").append(n).append("\"}");
+      return JsAssert.json("{\"tag_name\":\"" + tag + "\",\"assets\":[" + a + "]}");
+    }
+
+    @Test
+    void asksGitHubForTheLatestRelease() {
+      answers.add(() -> release("v0.2.0", "jekyll.jar", "sushi.jar"));
+      assertTrue(Processing.checkLatestPortRelease("0.2.0").ok());
+      assertEquals(List.of("https://api.github.com/repos/jmandel/fhir-ig-tools/releases/latest"), urls);
+    }
+
+    @Test
+    void theLatestReleasePasses() {
+      answers.add(() -> release("v0.2.0", "sushi.jar"));
+      Processing.PortReleaseCheck c = Processing.checkLatestPortRelease("0.2.0");
+      assertEquals(new Processing.PortReleaseCheck(true, "0.2.0", "0.2.0", null), c);
+    }
+
+    @Test
+    void anOlderReleaseFails() {
+      answers.add(() -> release("v0.3.0", "sushi.jar"));
+      Processing.PortReleaseCheck c = Processing.checkLatestPortRelease("0.2.0");
+      assertFalse(c.ok());
+      assertEquals("Current SUSHI version (SUSHI 3.21.1 (Java port, fhir-ig-tools release 0.2.0)) is not the latest"
+          + " version: the latest fhir-ig-tools release is 0.3.0. Upgrade to the latest release"
+          + " (https://github.com/jmandel/fhir-ig-tools/releases/latest: sushi.jar, or the sushi wrapper, which pins its"
+          + " version) or run SUSHI again without the --require-latest flag.", c.message());
+    }
+
+    @Test
+    void aNewerThanLatestReleasePasses() {
+      answers.add(() -> release("v0.2.0", "sushi.jar"));
+      assertTrue(Processing.checkLatestPortRelease("0.2.1").ok());
+    }
+
+    @Test
+    void aDevelopmentBuildFails() {
+      answers.add(() -> release("v0.2.0", "sushi.jar"));
+      Processing.PortReleaseCheck c = Processing.checkLatestPortRelease("0.3.0-SNAPSHOT");
+      assertFalse(c.ok());
+      assertContainsText("this sushi.jar is a development build, not a release; the latest fhir-ig-tools release is"
+          + " 0.2.0.", c.message());
+      answers.add(() -> release("v0.2.0", "sushi.jar"));
+      assertFalse(Processing.checkLatestPortRelease("unknown").ok());
+    }
+
+    @Test
+    void aLatestReleaseWithoutSushiDoesNotCount() {
+      answers.add(() -> release("v0.1.0", "jekyll.jar", "jekyll-shim"));
+      assertTrue(Processing.checkLatestPortRelease("0.0.9").ok());
+    }
+
+    @Test
+    void anUnreachableServerFailsAsTSDoesWhenNpmIsUnreachable() {
+      answers.add(() -> {
+        throw new java.io.IOException("Request failed with status code 403");
+      });
+      Processing.PortReleaseCheck c = Processing.checkLatestPortRelease("0.2.0");
+      assertFalse(c.ok());
+      assertNull(c.latest());
+      assertContainsText("could not be checked: the latest fhir-ig-tools release is undetermined"
+          + " (https://api.github.com/repos/jmandel/fhir-ig-tools/releases/latest: Request failed with status code 403).",
+          c.message());
+      answers.add(() -> JsAssert.json("{\"message\":\"Not Found\"}"));
+      assertContainsText("the answer has no tag_name", Processing.checkLatestPortRelease("0.2.0").message());
+    }
+
+    @Test
+    void theBuildRecordsItsRelease() {
+      // target/classes holds the filtered release.properties: the pom version unless -Dsushi.release was given
+      String r = Processing.getPortRelease();
+      assertFalse(r.isBlank());
+      assertFalse(r.startsWith("${"), r);
     }
   }
 

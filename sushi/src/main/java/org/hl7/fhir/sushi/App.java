@@ -31,8 +31,9 @@ import org.hl7.fhir.sushi.utils.Puns;
  * (number of errors; the OS keeps the low 8 bits, as with node's process.exit) as TS SUSHI 3.21.1.
  *
  * <p>Deliberate differences (PORTING D7, docs/core-divergences.md T3): the latest-version check is off unless enabled
- * ({@code -Dsushi.versionCheck=true} / {@code SUSHI_VERSION_CHECK=true}) or {@code --require-latest} is given; it
- * queries the npm registry over HTTPS instead of running {@code npm view}.
+ * ({@code -Dsushi.versionCheck=true} / {@code SUSHI_VERSION_CHECK=true}); it queries the npm registry over HTTPS
+ * instead of running {@code npm view}. {@code --require-latest} checks that this sushi.jar is from the latest
+ * fhir-ig-tools release (GitHub), not that npm has no newer fsh-sushi.
  */
 public final class App {
   private App() {}
@@ -430,15 +431,18 @@ public final class App {
     logger.info("  " + NodePath.resolve(input == null || input.isEmpty() ? "." : input));
 
     // The version check hits the network, so only wait on it where the result is needed
-    boolean checkVersion = program.requireLatest || Processing.versionCheckEnabled();
+    boolean checkVersion = Processing.versionCheckEnabled();
     Processing.SushiVersions sushiVersions = null;
     if (program.requireLatest) {
-      sushiVersions = Processing.checkSushiVersion(true);
-      if (sushiVersions.latest() == null || !sushiVersions.latest().equals(sushiVersions.current())) {
-        logger.error("Current SUSHI version (" + sushiVersions.current() + ") is not the latest version. Upgrade to "
-            + "the latest version (" + (sushiVersions.latest() != null ? sushiVersions.latest() : "undetermined")
-            + ") or run SUSHI again without the --require-latest flag.");
+      // The port's releases are fhir-ig-tools releases, not npm's fsh-sushi (core-divergences.md T3)
+      Processing.PortReleaseCheck release = Processing.checkLatestPortRelease();
+      if (!release.ok()) {
+        logger.error(release.message());
         throw new Exit(1);
+      }
+      if (!checkVersion) {
+        // the latest port release: no version block in the summary, as TS when it runs the latest release
+        sushiVersions = Processing.checkSushiVersion(false);
       }
     }
 

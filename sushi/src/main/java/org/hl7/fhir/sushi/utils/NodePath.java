@@ -26,6 +26,14 @@ public final class NodePath {
     return slashes(System.getProperty("user.dir"));
   }
 
+  /**
+   * A path as Node's platform path module prints it: on Windows (path.win32) with "\\" separators, elsewhere
+   * unchanged. Used where the printed path reaches fsh-generated/ (fsh-index.txt/json; docs/core-divergences.md T6).
+   */
+  public static String platformSeparators(String p) {
+    return WINDOWS && p != null ? p.replace('/', '\\') : p;
+  }
+
   /** Windows: backslashes as "/". */
   static String slashes(String p) {
     return WINDOWS && p != null ? p.replace('\\', '/') : p;

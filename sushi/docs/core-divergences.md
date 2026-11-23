@@ -172,7 +172,7 @@ hits it: `fsh-generated/` identical and exit codes equal; only these log lines d
 - `x.x` and two-part `x.y` versions resolve the core way (FPL errors / fails): no corpus config uses either.
 - A package's resources are core's `.index.json` list (FPL scans `package/*.json`): every `Loaded X with N
   resources` line matched TS on all 267 corpus IGs.
-- Server order (X2): core downloads from packages2.fhir.org first, and its `hl7.fhir.r4.core#4.0.1` tarball has 4,578
+- Server order (X2; owner decision 2026-11-23: follow core, no rule and no IG hinges on it): core downloads from packages2.fhir.org first, and its `hl7.fhir.r4.core#4.0.1` tarball has 4,578
   resources (no `structuredefinition-{json,xml,rdf}-type` extensions, no `package/openapi` and `package/other`
   folders) vs 4,581 in packages.fhir.org's original 2019 tarball, which FPL asks first. Only on a cold cache, a
   log-line count difference; no corpus IG refers to the 3 extensions; a cache the IG Publisher filled already has the
@@ -502,7 +502,7 @@ SUSHI evaluates no FHIRPath: invariant expressions and extension contexts are wr
 
 ## Other differences from TypeScript SUSHI 3.21.1
 
-None of these changes `fsh-generated/` on the corpus.
+None of these changes `fsh-generated/`, on the corpus or (since T6's index-path fix) on Windows.
 
 - **T1 Malformed `sushi-config.yaml`: YAML error wording.** All 266 corpus configurations import identically. On
   1,035 malformed or unusual configurations (`MutationConfigTest`): the same accept/reject decision, configuration
@@ -514,12 +514,30 @@ None of these changes `fsh-generated/` on the corpus.
 - **T2 JS TypeError crash paths.** Where TS crashes with a JS TypeError on unexpected input, the port reproduces it at
   the sites the differential found, with V8's text (corpus WHO smart-trust: `Cannot read properties of undefined
   (reading 'sdType')`); elsewhere Java fails with its own message.
-- **T3 Latest-SUSHI-version check off by default** (PORTING.md D7). Without the check the summary box has no version
-  block, as in TS when the running release is the latest. `-Dsushi.versionCheck=true` / `SUSHI_VERSION_CHECK=true`
-  enables it; `--require-latest` always checks. The port runs no `npm view`: its first source fails (`Unable to
-  determine the latest version of sushi: npm is not used by the Java port of SUSHI`, info) and the npm registry
-  (https://registry.npmjs.org/fsh-sushi) is asked, with TS's messages. Like TS 3.21.1, `--require-latest` fails once
-  the registry lists a newer fsh-sushi.
+- **T3 Latest-SUSHI-version check off by default; `--require-latest` checks the port's releases** (PORTING.md D7).
+  Without the check the summary box has no version block, as in TS when the running release is the latest.
+  `-Dsushi.versionCheck=true` / `SUSHI_VERSION_CHECK=true` enables it, with TS's source and messages: the port runs
+  no `npm view`, so its first source fails (`Unable to determine the latest version of sushi: npm is not used by the
+  Java port of SUSHI`, info) and the npm registry (https://registry.npmjs.org/fsh-sushi) is asked.
+  `--require-latest` (which the IG Publisher passes on the ci-build) does not ask npm: TS SUSHI fails once npm lists a
+  newer `fsh-sushi`, which for the port would mean every autobuilder build fails on the day TS SUSHI releases. The
+  port's releases are fhir-ig-tools releases (each has a `sushi.jar` porting one SUSHI version), so it checks that
+  this `sushi.jar` is from the latest one: `GET https://api.github.com/repos/jmandel/fhir-ig-tools/releases/latest`
+  through `ManagedWebAccess` (`-Dsushi.releasesUrl=` overrides it), comparing its `tag_name` (without `v`) with the
+  release the jar was built as (`org/hl7/fhir/sushi/release.properties`, `-Dsushi.release=` from the tag in
+  `release.yml`; else the pom version). Outcomes (`Processing.checkLatestPortRelease`, `App`):
+  - this release or newer: passes; the summary has no version block.
+  - an older release: `Current SUSHI version (SUSHI 3.21.1 (Java port, fhir-ig-tools release 0.2.0)) is not the
+    latest version: the latest fhir-ig-tools release is 0.3.0. Upgrade to the latest release
+    (https://github.com/jmandel/fhir-ig-tools/releases/latest: sushi.jar, or the sushi wrapper, which pins its
+    version) or run SUSHI again without the --require-latest flag.`, exit 1.
+  - a development build (`-SNAPSHOT`, or no recorded release): the same error, `this sushi.jar is a development build,
+    not a release;`.
+  - the latest release cannot be determined (no network, GitHub's rate limit, no `tag_name`): `... could not be
+    checked: the latest fhir-ig-tools release is undetermined (<url>: <reason>).`, exit 1, as TS fails when npm
+    can't tell it the latest version.
+  - the latest release has no `sushi.jar` asset (v0.1.0 was Jekyll only): not counted as newer; passes.
+  Tests: `ProcessingTest$CheckLatestPortRelease` (8), `AppRequireLatestTest` (3), fetch stubbed.
 - **T4 `sushi update-dependencies`.** TS re-serialises the whole `sushi-config.yaml` with the yaml library (its
   prompt warns about formatting); the port edits only the version scalars of the top-level `dependencies` block and
   keeps every other byte. Same resulting configuration.
@@ -527,8 +545,10 @@ None of these changes `fsh-generated/` on the corpus.
   ICU root collation (punctuation, digits, letters in CLDR order; case and accents secondary/tertiary). Identical on
   every reference and corpus IG.
 - **T6 Paths on Windows.** `utils.NodePath` is Node's `path.posix`; on Windows it also reads backslashes and drive
-  roots, so Windows paths work, but paths SUSHI prints (messages, `fsh-index.txt`/`fsh-index.json`) use `/` where TS
-  on Windows (`path.win32`) prints `\`. `fsh-generated/resources` is unaffected; Linux and macOS unchanged.
+  roots, so Windows paths work. The FSH file paths in `fsh-generated/fsh-index.txt` and `fsh-generated/data/fsh-index.json`
+  use `\` on Windows, as TS's `path.relative` (`path.win32`) prints them (`NodePath.platformSeparators`; test
+  `ProcessingTest$WriteFSHIndex.usesWindowsSeparatorsOnWindows`), so `fsh-generated/` is the same as TS's on Windows
+  too. Paths in console messages still use `/` where TS on Windows prints `\` (log only). Linux and macOS unchanged.
 
 Minor (no observable output effect, or diagnostics only): `ElementDefinition.clone()` re-fetches the cached
 StructureDefinition instead of deep-copying it; MasterFisher de-duplication treats a missing key like an undefined

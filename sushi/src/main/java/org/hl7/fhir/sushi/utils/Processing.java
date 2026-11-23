@@ -871,7 +871,8 @@ public final class Processing {
     fileNames.sort(null); // JS default sort: UTF-16 code unit order
     for (String fileName : fileNames) {
       Package.FshMapEntry fshInfo = outPackage.fshMap.get(fileName);
-      String relativeInput = NodePath.relative(inputDir, fshInfo.sourceInfo().file);
+      // TS: path.relative, i.e. path.win32 on Windows: backslash separators in fsh-index.txt/json (T6)
+      String relativeInput = NodePath.platformSeparators(NodePath.relative(inputDir, fshInfo.sourceInfo().file));
       int startLine = fshInfo.sourceInfo().location.startLine;
       int endLine = fshInfo.sourceInfo().location.endLine;
       textIndex.add(List.of(fileName, fshInfo.fshName(), fshInfo.fshType(), relativeInput,
@@ -1103,6 +1104,97 @@ public final class Processing {
     String current = getLocalSushiVersion();
     if (!enabled) return new SushiVersions(current, current);
     return new SushiVersions(getLatestSushiVersion(), current);
+  }
+
+  // ------------------------------------------------------------------------- --require-latest (port releases)
+
+  /** The fhir-ig-tools release this sushi.jar belongs to (release.properties, set by the build); never null. */
+  public static String getPortRelease() {
+    try (java.io.InputStream in = Processing.class.getResourceAsStream("/org/hl7/fhir/sushi/release.properties")) {
+      if (in != null) {
+        java.util.Properties p = new java.util.Properties();
+        p.load(in);
+        String r = p.getProperty("release");
+        if (r != null && !r.isBlank() && !r.startsWith("${")) return r.trim();
+      }
+    } catch (IOException e) {
+      // fall through
+    }
+    return "unknown";
+  }
+
+  /** Where --require-latest asks for the latest release (GitHub's API; -Dsushi.releasesUrl overrides it). */
+  public static String portReleasesUrl() {
+    return System.getProperty("sushi.releasesUrl", "https://api.github.com/repos/jmandel/fhir-ig-tools/releases/latest");
+  }
+
+  /** Fetches the latest-release JSON (a GitHub release object). Tests substitute it. */
+  public interface ReleaseSource {
+    Object latestRelease(String url) throws Exception;
+  }
+
+  public static ReleaseSource releaseSource = url -> org.hl7.fhir.common.js.Json.parse(webGet(url));
+
+  /**
+   * The outcome of {@link #checkLatestPortRelease}: ok, or the error message to log (then exit 1).
+   * current: this jar's release; latest: the latest release's version (null if undetermined).
+   */
+  public record PortReleaseCheck(boolean ok, String current, String latest, String message) {}
+
+  /**
+   * {@code --require-latest} in the Java port. TS SUSHI checks npm's fsh-sushi; the port's releases are fhir-ig-tools
+   * releases (each has sushi.jar, a port of one SUSHI version), so it checks that this sushi.jar is from the latest
+   * fhir-ig-tools release (docs/core-divergences.md T3). Like TS, it fails when the latest version can't be
+   * determined. A latest release without a sushi.jar asset (v0.1.0 was Jekyll only) doesn't count as newer.
+   */
+  public static PortReleaseCheck checkLatestPortRelease() {
+    return checkLatestPortRelease(getPortRelease());
+  }
+
+  static PortReleaseCheck checkLatestPortRelease(String current) {
+    String url = portReleasesUrl();
+    String what = "SUSHI " + SUSHI_VERSION + " (Java port, fhir-ig-tools release " + current + ")";
+    String latest = null;
+    boolean latestHasSushi = false;
+    String failure = null;
+    try {
+      Object data = releaseSource.latestRelease(url);
+      if (data instanceof Map<?, ?> m && m.get("tag_name") instanceof String tag && !tag.isBlank()) {
+        latest = tag.startsWith("v") ? tag.substring(1) : tag;
+        if (m.get("assets") instanceof List<?> assets) {
+          for (Object a : assets) {
+            if (a instanceof Map<?, ?> am && "sushi.jar".equals(am.get("name"))) latestHasSushi = true;
+          }
+        }
+      } else {
+        failure = "the answer has no tag_name";
+      }
+    } catch (Exception e) {
+      failure = nodeMessage(e);
+      FshLogger.logger.debug(stack(e));
+    }
+    String fix = " Upgrade to the latest release (https://github.com/jmandel/fhir-ig-tools/releases/latest: sushi.jar,"
+        + " or the sushi wrapper, which pins its version) or run SUSHI again without the --require-latest flag.";
+    if (latest == null) {
+      return new PortReleaseCheck(false, current, null, "Current SUSHI version (" + what + ") could not be checked:"
+          + " the latest fhir-ig-tools release is undetermined (" + url + ": " + failure + ")." + fix);
+    }
+    if (!latestHasSushi) {
+      return new PortReleaseCheck(true, current, latest, null);
+    }
+    int cmp;
+    try {
+      cmp = Semver.compareLoose(current, latest);
+    } catch (IllegalArgumentException e) {
+      cmp = -1; // "unknown" or another non-version: not a release build
+    }
+    boolean devBuild = current.contains("SNAPSHOT") || "unknown".equals(current);
+    if (devBuild || cmp < 0) {
+      return new PortReleaseCheck(false, current, latest, "Current SUSHI version (" + what + ") is not the latest"
+          + " version: " + (devBuild ? "this sushi.jar is a development build, not a release; " : "")
+          + "the latest fhir-ig-tools release is " + latest + "." + fix);
+    }
+    return new PortReleaseCheck(true, current, latest, null);
   }
 
   public static boolean versionCheckEnabled() {

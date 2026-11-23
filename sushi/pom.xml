@@ -30,6 +30,10 @@
     <sushi.buildDir>${project.basedir}/target</sushi.buildDir>
     <!-- org.hl7.fhir.core release matching the publisher toolchain (7.0.7-SNAPSHOT) -->
     <hl7.fhir.core.version>7.0.6</hl7.fhir.core.version>
+    <!-- the fhir-ig-tools release this sushi.jar belongs to (org/hl7/fhir/sushi/release.properties), checked by sushi
+         require-latest; the release workflow sets it from the tag (sushi.release = the tag without v). Default: the pom version,
+         so a local build reports e.g. 0.2.0-SNAPSHOT, which require-latest treats as a development build -->
+    <sushi.release>${project.version}</sushi.release>
   </properties>
 
   <dependencies>
@@ -98,6 +102,17 @@
 
   <build>
     <directory>${sushi.buildDir}</directory>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes><exclude>org/hl7/fhir/sushi/release.properties</exclude></excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes><include>org/hl7/fhir/sushi/release.properties</include></includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

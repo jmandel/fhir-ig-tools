@@ -42,7 +42,8 @@ jobs:
           java-version: '21'   # sushi needs 21; common and jekyll are compiled with --release 17, so jekyll.jar runs on 17+
           cache: maven
       - name: Build (Maven, all modules; jekyll/target/jekyll.jar is the self-contained release jar, common shaded in)
-        run: ./build.sh -B -ntp package
+        # -Dsushi.release: sushi.jar records which release it is (checked by sushi --require-latest)
+        run: ./build.sh -B -ntp -Dsushi.release="${TAG#v}" package
       - name: Test
         run: |
           git submodule update --init --depth 1 third_party/yaml-test-suite   # YAML suite case data
