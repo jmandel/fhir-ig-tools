@@ -233,12 +233,9 @@ public final class Processing {
         }
       }
       if (status != LoadStatus.LOADED && !isUserConfigured) {
-        String message = "Failed to load automatically-provided " + packageId + "#" + version;
-        String registry = System.getenv("FPL_REGISTRY");
-        if (registry != null && !registry.isEmpty()) {
-          message += " from custom FHIR package registry " + registry + ".";
-        }
-        FshLogger.logger.warn(message);
+        // (TS appends " from custom FHIR package registry $FPL_REGISTRY." when that is set; the port downloads with
+        // core's package servers, fhir-settings.json, and does not read FPL_REGISTRY)
+        FshLogger.logger.warn("Failed to load automatically-provided " + packageId + "#" + version);
       }
     }
   }

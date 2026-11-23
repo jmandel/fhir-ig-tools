@@ -69,22 +69,24 @@ public class BasePackageLoader {
   }
 
   /**
-   * Loads a package. {@code latest} is resolved first and a failure propagates (TS: the promise rejects with
-   * RedundantRegistryClient's "Failed to resolve version for X#latest"; the caller logs {@code e.getMessage()}); every other failure is logged and
-   * returns FAILED, as in FPL.
+   * Loads a package. {@code latest} is resolved first and a failure propagates (the caller logs
+   * {@code e.getMessage()}, as TS does for FPL's rejected promise); every other failure is logged and returns FAILED,
+   * as in FPL.
    */
   public LoadStatus loadPackage(String name, String version) {
     String packageLabel = name + "#" + version;
     String originalVersion = version;
     if ("latest".equals(version)) {
+      // a failure propagates (the caller logs "Failed to load X#latest: <message>")
       try {
         version = packageProvider.resolveLatest(name);
+      } catch (RuntimeException e) {
+        throw e;
       } catch (Exception e) {
-        version = null;
+        throw new RuntimeException(e.getMessage(), e);
       }
       if (version == null || version.isEmpty()) {
-        // FPL's RedundantRegistryClient.resolveVersion: every registry failed (corpus case HL7__davinci-ecdx)
-        throw new RuntimeException("Failed to resolve version for " + packageLabel);
+        throw new RuntimeException("Unable to find the last version for package " + name);
       }
     }
     if (!Objects.equals(version, originalVersion)) {

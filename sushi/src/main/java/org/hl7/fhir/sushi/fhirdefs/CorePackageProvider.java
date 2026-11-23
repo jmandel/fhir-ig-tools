@@ -15,7 +15,8 @@ import org.hl7.fhir.utilities.npm.NpmPackage;
  * {@link PackageProvider} = org.hl7.fhir.core's package layer, used as is (PORTING.md D1a):
  * <ul>
  *   <li>cache: {@code FilesystemPackageCacheManager} over ~/.fhir/packages (same layout FPL uses);</li>
- *   <li>{@code latest}: {@code getLatestVersion(id, false)};</li>
+ *   <li>{@code latest}: packages.fhir.org's {@code dist-tags.latest} (kept rule R2), else core's
+ *       {@code getLatestVersion(id, false)};</li>
  *   <li>everything else ({@code x.y.z}, {@code x.y.x}, {@code current}, {@code current$branch}, {@code dev}):
  *       {@code loadPackage(id, version)} (cache first, then the package servers / build.fhir.org);</li>
  *   <li>the resources of a package: {@code NpmPackage.listResources()} (the {@code package/.index.json} index).</li>
@@ -56,28 +57,23 @@ public final class CorePackageProvider implements PackageProvider {
 
   @Override
   public String resolveLatest(String name) throws Exception {
-    // FPL rule R2 (corpus case HL7__cds-hooks-library, docs/package-resolution-differences.md): #latest is the
-    // registry's dist-tags.latest (FPL registry/utils.js lookUpLatestVersion), tried on packages.fhir.org then
-    // packages2.fhir.org (DefaultRegistryClient), or only $FPL_REGISTRY when set. core's getLatestVersion picks the
-    // highest version and can return a prerelease (3.0.0-ballot instead of 2.0.1).
-    String custom = System.getenv("FPL_REGISTRY");
-    List<String> endpoints = custom != null && !custom.isEmpty() ? List.of(custom)
-        : List.of("https://packages.fhir.org", "https://packages2.fhir.org/packages");
-    for (String endpoint : endpoints) {
-      try {
-        org.hl7.fhir.utilities.http.HTTPResult res =
-            org.hl7.fhir.utilities.http.ManagedWebAccess.get(List.of("web"), endpoint + "/" + name);
-        res.checkThrowException();
-        Object data = Json.parse(res.getContentAsString());
-        if (data instanceof Map<?, ?> m && m.get("dist-tags") instanceof Map<?, ?> tags
-            && tags.get("latest") instanceof String latest && !latest.isEmpty()) {
-          return latest;
-        }
-      } catch (Exception e) {
-        // FPL: fall back to the next registry
+    // Kept rule R2 (corpus case HL7__cds-hooks-library): #latest is packages.fhir.org's dist-tags.latest, as FPL
+    // takes it. core's getLatestVersion reads only the "versions" list and picks the highest, prereleases included
+    // (hl7.fhir.uv.cds-hooks: 3.0.0-ballot instead of 2.0.1). When packages.fhir.org gives no dist-tags.latest,
+    // core decides (its servers, build.fhir.org, then the newest cached version; core's error otherwise).
+    try {
+      org.hl7.fhir.utilities.http.HTTPResult res = org.hl7.fhir.utilities.http.ManagedWebAccess.get(List.of("web"),
+          org.hl7.fhir.utilities.npm.PackageServer.SECONDARY_SERVER + "/" + name);
+      res.checkThrowException();
+      Object data = Json.parse(res.getContentAsString());
+      if (data instanceof Map<?, ?> m && m.get("dist-tags") instanceof Map<?, ?> tags
+          && tags.get("latest") instanceof String latest && !latest.isEmpty()) {
+        return latest;
       }
+    } catch (Exception e) {
+      // core decides
     }
-    return null;
+    return pcm().getLatestVersion(name, false);
   }
 
   /**

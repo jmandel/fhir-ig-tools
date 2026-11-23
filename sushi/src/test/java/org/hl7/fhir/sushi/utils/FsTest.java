@@ -83,9 +83,11 @@ class FsTest {
     try {
       IOException e = assertThrows(IOException.class, () -> Processing.webGet("https://registry.npmjs.org/fsh-sushi"));
       assertEquals("Access to the internet is not allowed by local security policy", e.getMessage());
-      // #latest lookups fall back to the next registry and then give up, as on a network error
-      assertNull(assertDoesNotThrow(
-          () -> new org.hl7.fhir.sushi.fhirdefs.CorePackageProvider(tmp.toString()).resolveLatest("hl7.fhir.us.core")));
+      // #latest: no dist-tags from packages.fhir.org, so core decides: no server, no cached version -> core's error
+      assertEquals("Unable to find the last version for package hl7.fhir.us.core: no local copy, and no network access",
+          assertThrows(Exception.class,
+              () -> new org.hl7.fhir.sushi.fhirdefs.CorePackageProvider(tmp.toString()).resolveLatest("hl7.fhir.us.core"))
+              .getMessage());
     } finally {
       ManagedWebAccess.setAccessPolicy(before);
     }
