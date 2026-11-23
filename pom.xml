@@ -186,7 +186,7 @@
     -Dgpg.skip=false: maven-gpg-plugin's "bc" signer reads the key from MAVEN_GPG_KEY / MAVEN_GPG_PASSPHRASE) and
     hands the bundle to Sonatype's Central Portal (server id "central" in settings.xml; autoPublish off, so a
     deployment waits in the portal for a manual "Publish"). With -DskipPublishing the bundle is only written to
-    target/central-publishing/central-bundle.zip (what CI checks).
+    target/central-publishing/central-bundle.zip (a dry run; it still needs a "central" server entry in settings.xml).
   -->
   <profiles>
     <profile>
