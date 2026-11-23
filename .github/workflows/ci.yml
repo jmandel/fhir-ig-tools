@@ -1,7 +1,7 @@
 name: CI
 
 # build: JDK 21 builds every module (common and jekyll with --release 17, sushi with 21) and runs all JUnit tests,
-#        SUSHI's (~3.3k) included, then the shim's suites against the jekyll/target/shim.jar it built.
+#        SUSHI's (~3.7k) included, then the shim's suites against the jekyll/target/shim.jar it built.
 # shim:  runs that same shim.jar (the release artifact) on JDK 17 and 21 on Linux, macOS and Windows: the
 #        differential suites, the in-process API check, the wrapper end to end and the wrapper bootstrap.
 on:

@@ -29,7 +29,7 @@ sushi/             the SUSHI port, Java 21 (sushi-java before the move, see "The
   src/main/java/org/hl7/fhir/sushi/…         App (CLI), importer (hand-written FSH parser, importer, config),
                                              export, fhirtypes, fshtypes, fhirdefs (packages on org.hl7.fhir.core),
                                              ig, run, utils, xhtml, yaml (the yaml@1.10 composer over common's events)
-  src/test/java/…, src/test/antlr4/          JUnit tests (~3.3k), SUSHI's grammar for the ANTLR test oracle
+  src/test/java/…, src/test/antlr4/          JUnit tests (~3.7k), SUSHI's grammar for the ANTLR test oracle
   scripts/         build.sh (module build), diff-run.sh / corpus-diff.sh (differential vs TypeScript SUSHI), oracles
   PORTING.md, README.md, docs/, tests/inventory.tsv
 scripts/           as before, plus sushi-sync.sh and sushi-restructure.sh (importing/re-syncing the SUSHI port)
@@ -91,7 +91,7 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 
 | What | Command | Notes |
 |---|---|---|
-| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | `common` (event layer API, JS value model) and `sushi` (~3.3k, mostly 1:1 ports of SUSHI's Jest tests; tests that need SUSHI's TypeScript checkout or recorded reference runs skip when absent, `-Dsushi.ts.dir=` points at the checkout) |
+| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | `common` (event layer API, JS value model) and `sushi` (~3.7k, mostly 1:1 ports of SUSHI's Jest tests; tests that need SUSHI's TypeScript checkout or recorded reference runs skip when absent, `-Dsushi.ts.dir=` points at the checkout) |
 | SUSHI differential, one IG | `sushi/scripts/diff-run.sh <IG> [label]` | TypeScript SUSHI 3.21.1 vs `sushi/target/sushi.jar` on the same source copy and frozen package snapshot: classified file diff, log diff, exit codes. Needs the corpus workspace (`ROOT`, default the repository root, with `work/sushi-spike`) and the reference runs on the VM |
 | SUSHI differential, corpus | `sushi/scripts/corpus-diff.sh [-j N] [list]` | `diff-run.sh` over the 267 FSH IGs |
 | Differential suites vs recorded Ruby output | `scripts/test-suites.sh` | builds with Maven first unless `SHIM_NO_BUILD=1`. Runs against `jekyll/target/shim.jar` + `test-classes`, i.e. the release jar itself. `SHIM_BUILD=jekyll/build[-<module>]` tests a `--fast` build instead. `SHIM_W_SUITES=1` (repo at `/w`) adds the YAML file suites. |
@@ -182,6 +182,18 @@ and mounts `sushi/target/sushi.jar`; `ROOT` defaults to the repository root inst
 On a re-sync, a conflict in one of those files means the port's repository changed it too: keep this repository's
 version and re-apply the upstream change by hand.
 
+## What changed for releases (SUSHI move)
+
+- **Build with JDK 21.** CI and the release workflow now use JDK 21 for the whole build; `common` and `jekyll` are
+  still compiled with `--release 17` (`shim.jar`'s class files are version 61, checked in CI), and a CI job runs that
+  same `shim.jar` on JDK 17 and 21 on Linux, macOS and Windows.
+- **shim.jar:** same assets, names, `Main-Class` and behavior. Its only content change is the event layer's
+  opt-in yaml110 code in `org/hl7/fhir/common/yaml/` (unused by the shim). common's JS value model is filtered
+  out of it.
+- **sushi.jar is built and tested but not published.** The release workflow has a disabled step that would add it
+  as an asset; shipping it is the owner's decision (it bundles core's libraries, whose notices would have to be
+  included, see `THIRD_PARTY_NOTICES.md`).
+
 ## What changed for releases (multi-module move)
 
 - **Same artifact.** `shim.jar` is still one self-contained jar: the same `Main-Class`
@@ -198,7 +210,7 @@ version and re-apply the upstream change by hand.
 - **Embedding.** The in-process route (the publisher calling `Shim.build`) can keep using `shim.jar` as one jar.
   A Maven consumer would instead use `fhir-ig-jekyll` + `fhir-ig-common`, which are not published yet.
 
-## Verification of the move (2026-11-22)
+## Verification of the multi-module move (2026-11-22)
 
 All checks were run from the `multimodule` branch, in the reference image.
 - Unit tests: `common` JUnit 5/5.
@@ -223,3 +235,30 @@ All checks were run from the `multimodule` branch, in the reference image.
   byte-identical to `main` (17,800 files).
 - The CLI behaves the same on bad or missing arguments, and a clean rebuild reproduces `shim.jar`
   byte for byte.
+
+## Verification of the SUSHI move (2026-11-22)
+
+Branch `monorepo-sushi` (from `multimodule` 29c24084), with the SUSHI port imported from its repository's final
+`main` (258aa8c) by `scripts/sushi-sync.sh`. All checks in the reference image (Temurin 21).
+- **Build:** `./build.sh -B -ntp clean package` green. JUnit: `common` 13/13 (event layer 6, incl. the yaml110
+  opt-in; JS value model 7), `sushi` 3,706 run, 0 failures, 30 skipped (also 30 in the port's own repository, checked at 1de1e56).
+  Together that is 3,713, the same count as the port's own repository at 258aa8c. Enforcer rules pass; the
+  dependency rule test passes.
+- **SUSHI differential:** `sushi/scripts/diff-run.sh` with the new `sushi/target/sushi.jar` on the 6 reference IGs
+  (HL7__genomics-reporting, IHE__ITI.MHD, hl7ch__ch-term, EEHRxF__logical-model, ahdis__ch-ekm,
+  WorldHealthOrganization__smart-anc): all identical to TypeScript SUSHI 3.21.1, 2,153 files byte for byte, logs
+  identical, exit codes 0/0, the same result as the port's own jar.
+- **Shim suites:** `scripts/test-suites.sh` with `SHIM_W_SUITES=1` against the Maven `shim.jar` and against a
+  `--fast` build: every suite passes with the same pass and `known` counts as on `multimodule`. Extra checks: real
+  `_config`/`_data` 100/100, front matter 310/310, `_data` files 583/587 (the same 4 cases name a golden no longer on
+  disk), markdown corpus 2207/2207, `LiquidWarnCheck`, the kramdown/Rouge concurrency checks, `PreMatchEquivalence`,
+  `JavaSignatureEquivalence`, `ShimApiCheck` 13/13.
+- **Golden sample:** `scripts/jar-compare.sh` with the `multimodule` `shim.jar` (rebuilt from 29c24084, byte-identical
+  to the one verified above) against the new one on IHE__ITI.MHD, FHIR__fhir-tools-ig, HL7__genomics-reporting,
+  kitchen-sink and hl7ch__ch-core: all 21,174 output files byte-identical. (Run before the final re-sync, which
+  changed only sushi's tests; the rebuilt `shim.jar` is byte-identical to the one compared.)
+- `scripts/e2e.sh`, `scripts/test-wrapper.sh` and a dry run of the release `Package` step (without `zip`) pass.
+- `actionlint` (1.7.7, with shellcheck): clean on both workflows.
+- Reproducible: a clean rebuild gives the same `shim.jar` and `sushi.jar` bytes.
+- History: the 129 imported commits carry this repository's author identity and no workspace paths; a second
+  `sushi-sync.sh` run on the updated `main` reused the earlier rewritten commits and merged only the new ones.

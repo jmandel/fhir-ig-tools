@@ -16,7 +16,7 @@ message, until the output is identical.
 | | Fidelity | Evidence |
 |---|---|---|
 | Jekyll shim | **266 real IGs** (everything build.fhir.org built over a month): **260 identical, 1,024,171 files**; the other 6 cannot be identical by construction (build timestamps, case-only file name clashes, one IG where Jekyll itself fails) | [Results](#results) below; [`docs/TRACKER.md`](docs/TRACKER.md) |
-| SUSHI port | **6 / 6 reference IGs** and **267 / 267 FSH IGs of the corpus** (every corpus IG that uses FSH) identical to TypeScript SUSHI 3.21.1: byte-identical `fsh-generated/`, the same console messages, the same exit status; **3,293 JUnit tests**, most of them 1:1 ports of SUSHI's own Jest tests | [The SUSHI port](#the-sushi-port) below; [`sushi/PORTING.md`](sushi/PORTING.md) §6; [`sushi/docs/differences.md`](sushi/docs/differences.md) |
+| SUSHI port | **6 / 6 reference IGs** and **267 / 267 FSH IGs of the corpus** (every corpus IG that uses FSH) identical to TypeScript SUSHI 3.21.1: byte-identical `fsh-generated/`, the same console messages, the same exit status; **3,713 JUnit tests**, most of them 1:1 ports of SUSHI's own Jest tests | [The SUSHI port](#the-sushi-port) below; [`sushi/PORTING.md`](sushi/PORTING.md) §6; [`sushi/docs/differences.md`](sushi/docs/differences.md) |
 
 ## Quick start
 
@@ -254,7 +254,7 @@ with no Node/npm at all.
 |---|---|
 | 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **6 / 6 identical**: `fsh-generated/` byte for byte (2,153 files), console log and exit status, using `sushi/scripts/diff-run.sh` |
 | Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** (files, log, exit status), `sushi/scripts/corpus-diff.sh` |
-| Unit tests | **3,293 JUnit tests** (most ported 1:1 from SUSHI's ~3,600 Jest tests, matched by their Jest names; `sushi/tests/inventory.tsv`) plus oracle tests against the JavaScript libraries |
+| Unit tests | **3,713 JUnit tests** (most ported 1:1 from SUSHI's ~3,600 Jest tests, matched by their Jest names; `sushi/tests/inventory.tsv`) plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
 
