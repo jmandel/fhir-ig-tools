@@ -72,7 +72,7 @@ with no Node/npm at all.
 |---|---|
 | 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **6 / 6 identical**: `fsh-generated/` byte for byte (2,153 files), console log and exit status, using `scripts/diff-run.sh` |
 | Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** (files, log, exit status), `scripts/corpus-diff.sh` |
-| Unit tests | **3,714 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
+| Unit tests | **3,717 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
 
@@ -83,10 +83,10 @@ The comparisons use a frozen FHIR package snapshot, so both implementations see 
 
 ## Tests
 
-The JUnit suite (3,707 tests in this module, plus 7 for the JS value model in `common`) runs in every build and in
+The JUnit suite (3,710 tests in this module, plus 7 for the JS value model in `common`) runs in every build and in
 CI with nothing but the repository:
 
-- **In CI (self-contained): 3,668 run and pass, 39 skipped.** That includes **all 3,584 ported Jest tests** that
+- **In CI (self-contained): 3,671 run and pass, 39 skipped,** on Linux (and the wrapper checks on Linux, macOS, Windows). That includes **all 3,584 ported Jest tests** that
   pass in TypeScript SUSHI (`python3 sushi/scripts/test-inventory.py --coverage sushi/tests/inventory.tsv
   <surefire-reports>`). Their fixtures, the files they read from SUSHI 3.21.1's own test tree, are vendored in
   `src/test/resources/sushi-ts` (377 files, about 23 MB; Apache-2.0, see its `README.md`).
@@ -98,7 +98,7 @@ CI with nothing but the repository:
   `-Dsushi.vmdata=<data root>` (the build VM's layout: `sushi-wp1/`, `sushi-wp3/`, `sushi-port/...`) enables them
   all, or per test `-Dwp1.data=`, `-Dsushi.config.oracle.dir=`, `-Dsushi.wp5.gate.dir=`, `-Dsushi.genomics.fsh=`;
   a few heavy sets also need `-Dwp1.heavy=true`, `-Dwp2.corpus=`, `-Dsushi.wp7gate.ig=`. With `-Dsushi.vmdata` on
-  the build VM, 3,678 run and 29 stay skipped.
+  the build VM, 3,681 run and 29 stay skipped.
 
 `-Dsushi.ts.dir=<a full SUSHI checkout>` runs the tests against another copy of SUSHI's test tree.
 

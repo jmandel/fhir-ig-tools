@@ -135,7 +135,7 @@
   <text x="40" y="678" class="ink" font-size="13">reference IGs identical</text>
   <text x="340" y="656" class="good" font-size="26" font-weight="700">267 / 267</text>
   <text x="340" y="678" class="ink" font-size="13">corpus FSH IGs identical</text>
-  <text x="640" y="656" class="good" font-size="26" font-weight="700">3,714</text>
+  <text x="640" y="656" class="good" font-size="26" font-weight="700">3,717</text>
   <text x="640" y="678" class="ink" font-size="13">JUnit tests, all passing</text>
   <text x="920" y="616" class="muted" font-size="12" text-anchor="end">fsh-generated/ byte for byte · console messages · exit status</text>
 </svg>

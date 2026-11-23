@@ -15,7 +15,7 @@ message until the output is identical, so an IG builds with nothing but Java.
 A port of SUSHI 3.21.1, the FSH compiler, with a hand-written FSH parser (SUSHI's ANTLR grammar serves only as a test
 oracle) and FHIR packages through org.hl7.fhir.core's package cache. **Identical to TypeScript SUSHI 3.21.1 on 6/6
 reference IGs and 267/267 FSH IGs of the corpus** (byte-identical `fsh-generated/`, the same console messages, the
-same exit status); 3,714 JUnit tests, including 3,584 of SUSHI's 3,604 Jest tests ported 1:1. Java 21.
+same exit status); 3,717 JUnit tests, including 3,584 of SUSHI's 3,604 Jest tests ported 1:1. Java 21.
 
 ```sh
 curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/sushi && chmod +x sushi
