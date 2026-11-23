@@ -40,7 +40,7 @@ class RegressSliceTypeDiffTest {
     assertFalse(diffEl.containsKey("type"), Json.stringify(diffEl));
   }
 
-  /** Corpus WHO smart-trust (KD-3): an AddElement rule with an unknown type crashes with V8's TypeError text. */
+  /** Corpus WHO smart-trust (docs/core-divergences.md T2): an AddElement rule with an unknown type crashes with V8's TypeError text. */
   @Test void logicalAddElementWithUnknownTypeLogsV8TypeError() {
     org.hl7.fhir.sushi.testhelpers.LoggerSpy.loggerSpy.reset();
     var doc = importSingleText("""

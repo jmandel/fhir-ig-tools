@@ -131,9 +131,9 @@
   <!-- fidelity -->
   <rect class="out" x="24" y="590" width="912" height="108" rx="10"/>
   <text x="40" y="616" class="ink" font-size="14" font-weight="700">Compared with TypeScript SUSHI 3.21.1 on Node 22</text>
-  <text x="40" y="656" class="good" font-size="26" font-weight="700">6 / 6</text>
+  <text x="40" y="656" class="good" font-size="26" font-weight="700">4 / 6</text>
   <text x="40" y="678" class="ink" font-size="13">reference IGs identical</text>
-  <text x="340" y="656" class="good" font-size="26" font-weight="700">267 / 267</text>
+  <text x="340" y="656" class="good" font-size="26" font-weight="700">259 / 267</text>
   <text x="340" y="678" class="ink" font-size="13">corpus FSH IGs: fsh-generated identical</text>
   <text x="640" y="656" class="good" font-size="26" font-weight="700">3,717</text>
   <text x="640" y="678" class="ink" font-size="13">JUnit tests, all passing</text>

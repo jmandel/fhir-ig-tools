@@ -43,24 +43,29 @@ code. No other third-party libraries, and **no ANTLR at runtime**.
 |---|---|---|---|
 | `ca.uhn.hapi.fhir:org.hl7.fhir.utilities` | compile (on main since WP-8 day 1) | **7.0.6** (release matching the publisher toolchain's 7.0.7-SNAPSHOT) | package cache (`FilesystemPackageCacheManager`, same `~/.fhir/packages` layout), registry/`PackageClient`, `NpmPackage` reading, **package/version resolution as is** (owner decision, see D1a), `VersionUtilities`, ini |
 | `org.apache.commons:commons-compress` | **runtime** | 1.26.0 (= publisher's) | optional in core's pom, needed by core's package cache to unpack .tgz packages; not imported by our code |
-| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r5` | **not used**: fhir-tool's XML→JSON is ported once, `fhirdefs.xml.FhirXmlToJs` (WP-8: sax 1.2.4 + xml-js + R4 type data; used by fhirdefs for predefined XML and by `importer.config` for legacy ig.xml) | same | XML→JSON of a legacy `ig.xml` IG resource (TS uses `fhir-tool`); input side only |
+| `ca.uhn.hapi.fhir:org.hl7.fhir.r4`/`r4b`/`r5` | compile | 7.0.6 | only their `formats.XmlParser`/`JsonParser`: predefined resources and a legacy `ig.xml` in FHIR XML are read with core (`fhirdefs.FhirXml`; owner decision, replacing the earlier port of fhir-tool's xmlToObj; docs/core-divergences.md C6). r5 without jgit, nimbus-jose-jwt and plantuml-mit, which its parsers don't use |
+| `org.codelibs:xpp3` | compile | 1.1.4c.0 (= core's) | optional in core's poms; the XML pull parser core's XmlParsers need; not imported by our code |
 | `org.antlr:antlr4-runtime` | **test** | 4.13.2 (= publisher's) | oracle parser generated from SUSHI's unmodified `.g4` files (`src/test/antlr4`) |
 | `org.junit.jupiter:junit-jupiter` | test | 5.11.4 | tests |
 | build plugins: antlr4-maven-plugin 4.13.2, build-helper 3.6.0, compiler/surefire/jar | build | | the antlr plugin's output is excluded from main and added to test sources |
 Its transitive libraries (jackson, guava, commons-lang3/text/io/codec/net, okhttp/okio/kotlin-stdlib, icu4j, Saxon-HE,
-slf4j, opentelemetry, hapi-fhir-base) ship with the publisher but **must not be imported directly**:
+slf4j, opentelemetry, hapi-fhir-base, xpp3) ship with the publisher but **must not be imported directly**:
 `build.DependencyRuleTest` fails the build on any main-code import outside the JDK, `org.hl7.fhir.sushi`,
-`org.hl7.fhir.utilities` (and `org.hl7.fhir.r4/r5` only under `importer/config`).
+`org.hl7.fhir.utilities` (and `org.hl7.fhir.r4/r4b/r5` only in `fhirdefs/FhirXml.java`, by import or fully qualified
+name).
 `target/sushi.jar` is one self-contained jar (maven-shade: our classes, `common`, core utilities and the libraries it
-brings), so `java -jar sushi.jar <ig dir>` needs nothing else; `DependencyRuleTest` also pins the pom's non-test
-dependencies to exactly `fhir-ig-common`, core utilities and commons-compress, and the pom's enforcer
-`bannedDependencies` rule checks the same on every build.
-Not used from core, deliberately: model classes (R4/R5 `StructureDefinition` etc.), `ProfileUtilities` snapshot
+brings; 78 MB since the r4/r4b/r5 modules, 41 MB before), so `java -jar sushi.jar <ig dir>` needs nothing else;
+`DependencyRuleTest` also pins the pom's non-test dependencies to exactly `fhir-ig-common`, core utilities, the
+r4/r4b/r5 modules, xpp3 and commons-compress, and the pom's enforcer `bannedDependencies` rule checks the same on every
+build.
+Not used from core, deliberately (each with its reason and the IGs that hinge on it in docs/core-divergences.md): model
+classes (R4/R5 `StructureDefinition` etc.) except to read FHIR XML, `ProfileUtilities` snapshot
 generation, FHIRPath, validation, core's JSON (`JsonNumber` keeps source text; SUSHI normalises through JS doubles).
 SUSHI works on loose JSON across R4–R6 and clones/constrains the parent snapshot itself; reusing those changes output.
 npm libraries are replaced by in-tree code: yaml 1.10 (WP-3, on the shared YAML event layer), ajv messages (WP-3),
 html-minifier-terser + sax (WP-9), lodash (`js.Js`), winston/chalk (`utils.FshLogger`), text-table, title-case,
-sanitize-filename, valid-url, junk, semver, ini, commander (WP-10), fhir-package-loader (WP-8).
+sanitize-filename, valid-url, junk, semver, ini, commander (WP-10), fhir-package-loader (WP-8). fhir-tool (FHIR XML)
+was ported too (WP-8) and then replaced by core's XML parsers.
 
 **D1a Package resolution: core as is, measured, patched only where it differs (owner decision).** WP-8 does not
 port fhir-package-loader's precedence rules up front. It uses core's package resolution (which packages/versions load,
@@ -207,7 +212,7 @@ accessor, `fhir-settings.json`, proxies, offline mode), so it applies to SUSHI t
   `~/.fhir/fhir-settings.json` (or `-Dfhir.settings.path=`) applies, including `prohibitNetworkAccess`, configured
   package servers and their authentication, and SSRF protection. Tests, which call `App.run`, don't load it.
 - **Not file access, allowed:** classpath resources (`Class.getResourceAsStream`: R5-for-R4 definitions, the config
-  schema, fhir-tool's type data, the `init` templates) and `App.out/err`, UTF-8 `PrintStream`s on the stdout/stderr
+  schema, the `init` templates) and `App.out/err`, UTF-8 `PrintStream`s on the stdout/stderr
   file descriptors.
 - **Enforced** by `build.ManagedIoRuleTest`: it reads the constant pool of every compiled main class and fails on any
   direct use of `java.io` file streams/readers/writers, `RandomAccessFile`, non-path `java.io.File` members,
@@ -314,9 +319,10 @@ was accepted. Accepted contract changes are announced in the `main` commit messa
 
 ## 6b. Known differences
 
-`docs/differences.md` lists every known behaviour difference from TS SUSHI 3.21.1 (one KD-n table row each: WP,
-area, class, difference, decision; details below the table). Each WP adds its entries when it finishes. `docs/package-resolution-differences.md` (WP-8) lists FPL rules ported because core
-resolved differently. Add entries there, never silently.
+`docs/core-divergences.md` lists every place where the port does not use org.hl7.fhir.core although core has the
+capability (C1-C17: why, which IGs hinge on it, verdict), including package resolution (C5) and FHIR XML (C6), and
+every other known behaviour difference from TS SUSHI 3.21.1 (T1-T6 and minor ones). Add entries there, never
+silently.
 
 ## 7. Monorepo move (done)
 
@@ -332,7 +338,7 @@ The port lives in this repository's `sushi/` module, next to `common` (zero-depe
   libyaml): `yes/no/on/off` are strings, timestamps stay strings, `0o` octal, `.inf/.nan`, no `<<` merge, duplicate
   keys are errors, and its own error messages. The syntax layer is the libyaml 0.2.5 event layer in `common`
   (`org.hl7.fhir.common.yaml`: `Parser`, `Event`, `Mark`, `LibyamlError`), shared with the shim. The relaxations
-  where yaml@1.10 accepts input libyaml rejects (WP-3, docs/differences.md) are an opt-in mode of that layer,
+  where yaml@1.10 accepts input libyaml rejects (WP-3, docs/core-divergences.md T1) are an opt-in mode of that layer,
   `new Parser(bytes, encoding, true)`; the shim uses the default, plain libyaml. The yaml@1.10 composer
   (`yaml.Yaml`, `yaml.YamlError`: core-schema scalar resolution, anchors/aliases, duplicate-key and error wording)
   stays in `sushi` and uses only `common`'s public API.
@@ -360,6 +366,10 @@ The port lives in this repository's `sushi/` module, next to `common` (zero-depe
 ported and passing: **3,584**. The other 20 are all accounted for: 15 are skipped/pending/todo in TS SUSHI 3.21.1
 itself (ported and kept `@Disabled` with the TS marker), 2 assert a Jest spy on a private method (TS-only), 3 test the
 axios HTTP wrapper, which the port doesn't have (HTTP goes through core's ManagedWebAccess).
+**Since then:** predefined FHIR XML is read with core instead of the fhir-tool port (owner decision,
+docs/core-divergences.md C6): the suite is 3,723 tests in this module (42 skipped), and 3 more WP-3 tests
+(`loadConfigurationFromIgResource` on invalid FHIR XML fixtures) are disabled as different by design, so 3,581 are
+ported and passing.
 
 | WP | area | passing / inventory | not passing (all `@Disabled` or n/a, with reason) |
 |---|---|---|---|
@@ -390,7 +400,11 @@ validation errors instead (same logging assertions).
   hl7-eu laboratory, ConsentAboutAI), `Attempting to download` (WHO smart-trust) and `Failed to resolve version for
   X#latest` (davinci-ecdx, now core's message; still one error). Those 6 IGs were rerun: `fsh-generated/` identical,
   exit codes equal; the other 260 contain none of these lines in TS's log.
+- Predefined FHIR XML through core (after the port; docs/core-divergences.md C6): reference IGs 4 / 6 identical
+  (ch-term and smart-anc differ in ImplementationGuide descriptions, smart-anc also in XML warnings); corpus
+  `fsh-generated/` identical in **259 / 267** (8 IGs differ in `ImplementationGuide.definition.resource` entries and
+  link references only), logs in 250 / 267, exit codes in 267 / 267.
 - Package resolution (WP-8 probe): every lookup on the reference IGs and corpus picks the same definition as TS
-  (in hl7-eu imaging-api the package of 5 of them is labelled `ihe.rad.mado#dev`, TS: `#current`); one SUSHI rule kept on top of core (R2, `latest`), everything else is core's (`docs/package-resolution-differences.md`).
-- Known, accepted differences: `docs/differences.md` (KD-1..KD-15; none changes output on real inputs).
+  (in hl7-eu imaging-api the package of 5 of them is labelled `ihe.rad.mado#dev`, TS: `#current`); one SUSHI rule kept on top of core (R2, `latest`), everything else is core's (`docs/core-divergences.md` C5).
+- Known differences, where core is not used and why: `docs/core-divergences.md`.
 

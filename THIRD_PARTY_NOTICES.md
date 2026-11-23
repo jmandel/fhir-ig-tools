@@ -22,9 +22,6 @@ Ruby sources as optional git submodules for developers.
 | SUSHI (FHIR Shorthand compiler) | 3.21.1 | Apache-2.0 | `org.hl7.fhir.sushi`, `org.hl7.fhir.common.js`; grammar and data files, see below |
 | ANTLR 4 (JavaScript runtime 4.13.2; the tool's ATN construction) | 4.13 | BSD-3-Clause | `org.hl7.fhir.sushi.importer.parser` (the hand-written parser reproduces the runtime's prediction, error messages and recovery) |
 | fhir-package-loader | 2.2.4 | Apache-2.0 | `org.hl7.fhir.sushi.fhirdefs` (the rules ported where core resolves differently, and log messages) |
-| fhir-tool (XML to JSON conversion) | 5.0.2 | Apache-2.0 (LICENSE file; its package.json says ISC) | `org.hl7.fhir.sushi.fhirdefs.xml` |
-| xml-js | 1.6.11 | MIT | `org.hl7.fhir.sushi.fhirdefs.xml` |
-| sax | 1.2.4 (in fhir-tool) | ISC | `org.hl7.fhir.sushi.fhirdefs.xml` |
 | sax | 1.6.1 | BlueOak-1.0.0 | `org.hl7.fhir.sushi.xhtml` |
 | html-minifier-terser (the options SUSHI uses) | 5.1.1 | MIT | `org.hl7.fhir.sushi.xhtml` |
 | yaml (eemeli/yaml, the composer and messages) | 1.10.3 | ISC | `org.hl7.fhir.sushi.yaml` |
@@ -814,7 +811,7 @@ as SUSHI writes it):
 - `sushi/src/main/resources/org/hl7/fhir/sushi/fhirdefs/R5DefsForR4/*.json`,
   `.../importer/config/YAMLschema.json`, `.../utils/init-project/*` (the `sushi init` template).
 
-fhir-package-loader 2.2.4 and fhir-tool 5.0.2 are also Apache-2.0 (same text).
+fhir-package-loader 2.2.4 is also Apache-2.0 (same text).
 
 ---
 
@@ -825,7 +822,6 @@ lodash 4.18.1:              Copyright OpenJS Foundation and other contributors <
                             Based on Underscore.js, copyright Jeremy Ashkenas, DocumentCloud and
                             Investigative Reporters & Editors <http://underscorejs.org/>
 html-minifier-terser 5.1.1: Copyright (c) 2010-2019 Juriy "kangax" Zaytsev
-xml-js 1.6.11:              Copyright (c) 2016-2017 Yousuf Almarzooqi
 ajv 8.20.0:                 Copyright (c) 2015-2021 Evgeny Poberezkin
 commander 13.1.0:           Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
 winston 3.19.0:             Copyright (c) 2010 Charlie Robbins
@@ -859,8 +855,7 @@ SOFTWARE.
 
 ```
 yaml 1.10.3:                Copyright 2018 Eemeli Aro <eemeli@gmail.com>
-sax 1.2.4, ini 5.0.0,
-semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
+ini 5.0.0, semver 7.8.5:               Copyright (c) Isaac Z. Schlueter and Contributors
 sanitize-filename 1.6.4:    (WTFPL or ISC; used under ISC) Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -926,14 +921,16 @@ the oracle parser generated from SUSHI's grammar in the tests and is not part of
 ## Libraries bundled in sushi.jar
 
 `sushi/target/sushi.jar` (the `sushi.jar` release asset) contains, unchanged, the runtime dependencies of the `sushi`
-module: org.hl7.fhir.core's `org.hl7.fhir.utilities`, commons-compress, and what they depend on. The list below is
+module: org.hl7.fhir.core's `org.hl7.fhir.utilities` and `org.hl7.fhir.r4`/`r4b`/`r5`, xpp3, commons-compress, and
+what they depend on. The list below is
 the module's runtime dependency set as Maven resolves it (`license-maven-plugin add-third-party`), checked against
 the packages present in the jar. Their Apache `NOTICE` files are merged into the jar's `META-INF/NOTICE`; this file
 and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
 
 | Library | Version | License |
 |---|---|---|
-| HL7 FHIR core: org.hl7.fhir.utilities (`ca.uhn.hapi.fhir`) | 7.0.6 | Apache-2.0 |
+| HL7 FHIR core: org.hl7.fhir.utilities, org.hl7.fhir.r4, org.hl7.fhir.r4b, org.hl7.fhir.r5 (`ca.uhn.hapi.fhir`) | 7.0.6 | Apache-2.0 |
+| XPP3 (`org.codelibs:xpp3`, the XML pull parser) | 1.1.4c.0 | Indiana University Extreme! Lab Software License, an Apache 1.1-style license (its POM declares the Apache Software License 1.1) |
 | HAPI FHIR base (`ca.uhn.hapi.fhir:hapi-fhir-base`) | 8.10.0 | Apache-2.0 |
 | Apache Commons Compress, Codec, IO, Lang, Net, Text | 1.26.0, 1.15, 2.15.1, 3.14.0, 3.9.0, 1.10.0 | Apache-2.0 |
 | Jackson annotations, core, databind, datatype-jsr310 | 2.21, 2.21.1, 2.21.1, 2.21.1 | Apache-2.0 (jackson-core includes FastDoubleParser, MIT; its notices are in the jar's `META-INF/FastDoubleParser-*`) |
@@ -945,7 +942,7 @@ and the repository's license are in the jar under `META-INF/fhir-ig-tools/`.
 | OpenTelemetry API, common, context, instrumentation annotations | 1.60.1, 1.60.1, 1.60.1, 2.33.1 | Apache-2.0 |
 | XML Resolver (xmlresolver, xmlresolver data) | 6.0.23 | Apache-2.0 |
 | JCL 1.2 implemented over SLF4J (`jcl-over-slf4j`) | 2.0.16 | Apache-2.0 |
-| SLF4J API | 2.0.16 | MIT |
+| SLF4J API | 2.0.17 | MIT |
 | Checker Qual | 3.42.0 | MIT |
 | Jakarta Annotations API | 2.1.1 | EPL-2.0 or GPL-2.0 with Classpath Exception (used under EPL-2.0); source: https://github.com/jakartaee/common-annotations-api |
 | Saxon-HE | 13.0 | MPL-2.0; source: https://github.com/Saxonica/Saxon-HE (license text: https://www.mozilla.org/MPL/2.0/) |

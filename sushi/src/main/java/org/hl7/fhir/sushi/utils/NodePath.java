@@ -12,7 +12,7 @@ import java.util.List;
  *
  * <p>On Windows only, so that Windows paths work at all: backslashes are read as "/" and a drive root ("C:/") counts
  * as a root like "/" (results use "/" separators, e.g. {@code C:/ig/input/fsh}, which Java's file APIs accept).
- * Node's own path.win32 would print backslashes (docs/differences.md KD-16). Elsewhere nothing changes.
+ * Node's own path.win32 would print backslashes (docs/core-divergences.md T6). Elsewhere nothing changes.
  */
 public final class NodePath {
   private NodePath() {}

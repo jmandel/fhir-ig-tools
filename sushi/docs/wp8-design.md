@@ -3,7 +3,7 @@
 SUSHI (TS) gets its external definitions from fhir-package-loader 2.2.4 (FPL). The Java port uses
 org.hl7.fhir.core's package layer (`org.hl7.fhir.utilities.npm`, 7.0.6) **as is** for everything core already does,
 and keeps only what core has no equivalent for (PORTING.md D1a). Where core decides differently from FPL, the
-difference is measured on real IGs and listed in [package-resolution-differences.md](package-resolution-differences.md).
+difference is measured on real IGs and listed in [core-divergences.md](core-divergences.md) C5.
 
 ## What comes from core, what we add
 
@@ -48,7 +48,7 @@ core's lookup layer for conformance resources is `IWorkerContext` / `CanonicalRe
    FHIRPath, snapshot generation) that SUSHI does not use.
 
 So the index is small (≈300 lines) and specific; the measured question is only whether core *loads the same
-packages and files* as FPL — see the differences document.
+packages and files* as FPL; see core-divergences.md C4/C5.
 
 ## Notes
 

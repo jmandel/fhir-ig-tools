@@ -75,7 +75,8 @@ Outputs:
   common's YAML event layer is shaded in (its JS value model is left out, the shim doesn't use it), and
   `Main-Class` is `org.hl7.fhir.jekyll.site.Main`.
 - Maven, sushi: `sushi/target/fhir-ig-sushi-<version>.jar` (module classes only) and **`sushi/target/sushi.jar`**
-  (about 40 MB): `common`, org.hl7.fhir.utilities, commons-compress and the libraries core brings, shaded into one
+  (about 78 MB): `common`, org.hl7.fhir.utilities and r4/r4b/r5, xpp3, commons-compress and the libraries core
+  brings, shaded into one
   jar with `Main-Class` `org.hl7.fhir.sushi.App` and `Multi-Release: true` (some bundled libraries are multi-release
   jars). `java -jar sushi.jar <ig dir>` runs like `sushi <ig dir>`.
 - `--fast` puts common's classes into each output dir's `classes/` as well, so `-cp <dir>/classes:<dir>/test-classes`
@@ -122,7 +123,7 @@ The Maven enforcer plugin checks the dependency rules on every build (`bannedDep
 |---|---|---|---|
 | `common` | 17 (`--release 17`) | nothing (JDK only); test-scope libraries such as JUnit are fine | depend on any other module or library, or carry one tool's semantics by default. Put a port's shared lower layer here; behavior only one tool needs is opt-in (like the event layer's yaml110 mode), never the default. |
 | `jekyll` | 17 | `common` only (plus test scope) | depend on `sushi` or any library: `jekyll.jar` must stay a self-contained, dependency-free jar that runs on Java 17 |
-| `sushi` | 21 | `common`, the FHIR core libraries the IG Publisher ships (`ca.uhn.hapi.fhir:org.hl7.fhir.*`; today `org.hl7.fhir.utilities` for the package cache), commons-compress at runtime (core's package cache needs it), test-scope libraries (JUnit, the ANTLR oracle). Enforcer `bannedDependencies` checks the direct dependencies; `build.DependencyRuleTest` checks that main code imports only the JDK, `org.hl7.fhir.{sushi,common,utilities}` (and r4/r5 model classes in `importer/config`), not the libraries core brings along | be depended on by `common` or `jekyll` |
+| `sushi` | 21 | `common`, the FHIR core libraries the IG Publisher ships (`ca.uhn.hapi.fhir:org.hl7.fhir.*`; today `org.hl7.fhir.utilities` for the package cache and `r4`/`r4b`/`r5` for predefined FHIR XML), xpp3 (core's XML parsers need it), commons-compress at runtime (core's package cache needs it), test-scope libraries (JUnit, the ANTLR oracle). Enforcer `bannedDependencies` checks the direct dependencies; `build.DependencyRuleTest` checks that main code imports only the JDK, `org.hl7.fhir.{sushi,common,utilities}` (and r4/r4b/r5 model classes in `fhirdefs/FhirXml`), not the libraries core brings along | be depended on by `common` or `jekyll` |
 
 More rules:
 - Each package lives in exactly one module (`org.hl7.fhir.common.*` in `common`, `org.hl7.fhir.jekyll.*` in `jekyll`,

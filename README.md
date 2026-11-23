@@ -13,9 +13,13 @@ message until the output is identical, so an IG builds with nothing but Java.
 ## sushi.jar: SUSHI in Java
 
 A port of SUSHI 3.21.1, the FSH compiler, with a hand-written FSH parser (SUSHI's ANTLR grammar serves only as a test
-oracle) and FHIR packages through org.hl7.fhir.core's package cache. **Identical to TypeScript SUSHI 3.21.1 on 6/6
-reference IGs and 267/267 FSH IGs of the corpus** (byte-identical `fsh-generated/`, the same exit status; the same
-console messages except package-loading lines in 6 corpus IGs, where core's package handling is followed); 3,717 JUnit tests, including 3,584 of SUSHI's 3,604 Jest tests ported 1:1. Java 21.
+oracle), FHIR packages through org.hl7.fhir.core's package cache and predefined FHIR XML through core's XML parsers.
+**Byte-identical `fsh-generated/` to TypeScript SUSHI 3.21.1 on 259/267 FSH IGs of the corpus and 4/6 reference
+IGs, the same exit status on all**; the other 8 IGs read predefined XML resources, which the port converts with
+core instead of fhir-tool, and differ only in their ImplementationGuide resource listing
+([`sushi/docs/core-divergences.md`](sushi/docs/core-divergences.md) C6). Console messages are the same except
+package-loading lines in 6 IGs and XML warnings in 11; 3,730 JUnit tests, including 3,581 of SUSHI's 3,604 Jest
+tests ported 1:1. Java 21.
 
 ```sh
 curl -fLO https://github.com/jmandel/fhir-ig-tools/releases/latest/download/sushi && chmod +x sushi

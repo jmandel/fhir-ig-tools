@@ -2,10 +2,12 @@
 
 A Java port of [SUSHI](https://github.com/FHIR/sushi) 3.21.1, the FHIR Shorthand (FSH) compiler: for the same
 inputs and FHIR packages it writes byte-identical `fsh-generated/`, prints the same console messages and exits
-with the same status as TypeScript SUSHI 3.21.1, with no Node.js or npm. This is the `sushi` module of
+with the same status as TypeScript SUSHI 3.21.1, with no Node.js or npm, except where it deliberately follows
+org.hl7.fhir.core instead (package-loading messages, and predefined resources in FHIR XML:
+[`docs/core-divergences.md`](docs/core-divergences.md)). This is the `sushi` module of
 [fhir-ig-tools](../README.md) (Java 21, package `org.hl7.fhir.sushi`); it builds `sushi/target/sushi.jar`.
 
-![sushi.jar: FSH is parsed by a hand-written lexer and parser (SUSHI's ANTLR grammar is a test-only oracle), imported into the FSHTank, exported to StructureDefinitions, instances, value sets, code systems and the ImplementationGuide, and written to fsh-generated; configuration through a yaml@1.10 composer on common's YAML events; packages through org.hl7.fhir.core's package cache; identical to TypeScript SUSHI on 6/6 reference and 267/267 corpus IGs](../docs/img/sushi.svg)
+![sushi.jar: FSH is parsed by a hand-written lexer and parser (SUSHI's ANTLR grammar is a test-only oracle), imported into the FSHTank, exported to StructureDefinitions, instances, value sets, code systems and the ImplementationGuide, and written to fsh-generated; configuration through a yaml@1.10 composer on common's YAML events; packages through org.hl7.fhir.core's package cache; fsh-generated identical to TypeScript SUSHI on 4/6 reference and 259/267 corpus IGs, the rest differing only where predefined FHIR XML is read with core](../docs/img/sushi.svg)
 
 ## Quick start
 
@@ -31,7 +33,7 @@ folder on the `PATH` (the publisher runs `cmd /C sushi ...`).
   first on the `PATH` it gives SUSHI, so an npm-installed `sushi` there wins over the wrapper.
 - **Caveat: `--require-latest`.** In the publisher's CI build mode it adds `--require-latest`; like TypeScript
   SUSHI 3.21.1, the port then fails once the npm registry lists a newer `fsh-sushi` than 3.21.1
-  ([`docs/differences.md`](docs/differences.md) KD-10).
+  ([`docs/core-divergences.md`](docs/core-divergences.md) T3).
 - Offline machines: put `sushi.jar` next to the wrapper, or set `FHIR_IG_SUSHI_JAR=/path/to/sushi.jar`.
   `FHIR_IG_SUSHI_URL` overrides the download URL, `FHIR_IG_SUSHI_HOME` moves the cache, `SUSHI_JAVA_OPTS` adds JVM
   options. Without the wrapper: `java -jar sushi.jar path/to/ig`.
@@ -69,7 +71,8 @@ with no Node/npm at all.
   (`org.hl7.fhir.utilities`, the version the publisher ships), unchanged. SUSHI's own resolution rules
   (fhir-package-loader) are kept only where core would change an IG's output: one rule, `latest` =
   packages.fhir.org's `dist-tags.latest` (HL7 cds-hooks-library)
-  ([`package-resolution-differences.md`](docs/package-resolution-differences.md)).
+  ([`core-divergences.md`](docs/core-divergences.md) C5). Predefined resources in FHIR XML are read with core's XML
+  parsers (C6).
 - **Dependencies:** at runtime only `common` (this repository), core's utilities and commons-compress (which core's
   package cache needs). No other libraries; npm libraries SUSHI uses (yaml, lodash, html-minifier, sax, ini, ...)
   are replaced by small in-tree ports, each checked against the JavaScript original.
@@ -78,35 +81,40 @@ with no Node/npm at all.
 
 | Check | Result |
 |---|---|
-| 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **6 / 6 identical**: `fsh-generated/` byte for byte (2,153 files), console log and exit status, using `scripts/diff-run.sh` |
-| Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **267 / 267 identical** `fsh-generated/` and exit status; console log identical in 261 / 267, the other 6 differ only in package-loading lines (FPL messages the port doesn't reproduce because it follows core's package handling), `scripts/corpus-diff.sh` |
-| Unit tests | **3,717 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,584 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 20 are skipped or pending in SUSHI itself (15), spy on a private method (2) or test an HTTP wrapper the port doesn't have (3). Plus oracle tests against the JavaScript libraries |
+| 6 reference IGs (genomics-reporting, IHE ITI.MHD, ch-term, EEHRxF logical model, ch-ekm, WHO smart-anc) | **4 / 6 identical** `fsh-generated/` byte for byte, console log and exit status, using `scripts/diff-run.sh`; ch-term and smart-anc read predefined XML: 3 and 1 ImplementationGuide `description` texts differ (XML attribute whitespace), smart-anc also logs 4 XML warnings; exit status equal |
+| Corpus: every IG in the project's corpus of 317 IG repositories that uses FSH (267) | **259 / 267 identical** `fsh-generated/`, exit status equal in 267 / 267; the 8 others read predefined FHIR XML (converted with core, not fhir-tool) and differ only in `ImplementationGuide.definition.resource` entries and link references. Console log identical in 250 / 267: 6 differ in package-loading lines (core's package handling), 11 in XML warnings or resource counts. `scripts/corpus-diff.sh`; per IG in `docs/core-divergences.md` C6 |
+| Unit tests | **3,730 JUnit tests**, 0 failures. Of SUSHI's 3,604 Jest tests, **3,581 are ported 1:1 and pass** (matched by their Jest names, `tests/inventory.tsv`); the other 23 are skipped or pending in SUSHI itself (15), spy on a private method (2), test an HTTP wrapper the port doesn't have (3), or read invalid FHIR XML that core's parser rejects (3, C6). Plus oracle tests against the JavaScript libraries |
 | Package resolution | 5,497 / 5,497 lookups on the reference IGs pick the same definition as SUSHI |
 | `sushi-config.yaml` | all 266 corpus configs import identically; on 1,035 malformed or unusual configs, the same accept/reject decisions everywhere, 44 YAML error messages worded differently |
 
-Every known difference from TypeScript SUSHI (messages on malformed input, debug stack traces, the off-by-default
-"newer SUSHI available" check, and so on) is listed with its reason in
-[`docs/differences.md`](docs/differences.md). None changes `fsh-generated/` on real input.
+Every place where the port does not use org.hl7.fhir.core although core could do it (and why, and which IGs hinge
+on it), and every known difference from TypeScript SUSHI (predefined XML, package-loading messages, messages on
+malformed input, the off-by-default "newer SUSHI available" check, and so on) is in
+[`docs/core-divergences.md`](docs/core-divergences.md). Only the XML change (C6) changes `fsh-generated/` on real
+input.
 The comparisons use a frozen FHIR package snapshot, so both implementations see the same packages.
 
 ## Tests
 
-The JUnit suite (3,710 tests in this module, plus 7 for the JS value model in `common`) runs in every build and in
+The JUnit suite (3,723 tests in this module, plus 7 for the JS value model in `common`) runs in every build and in
 CI with nothing but the repository:
 
-- **In CI (self-contained): 3,671 run and pass, 39 skipped,** on Linux (and the wrapper checks on Linux, macOS, Windows). That includes **all 3,584 ported Jest tests** that
-  pass in TypeScript SUSHI (`python3 sushi/scripts/test-inventory.py --coverage sushi/tests/inventory.tsv
+- **In CI (self-contained): 3,681 run and pass, 42 skipped,** on Linux (and the wrapper checks on Linux, macOS, Windows). That includes **3,581 ported Jest tests**: all that
+  pass in TypeScript SUSHI except 3 below (`python3 sushi/scripts/test-inventory.py --coverage sushi/tests/inventory.tsv
   <surefire-reports>`). Their fixtures, the files they read from SUSHI 3.21.1's own test tree, are vendored in
   `src/test/resources/sushi-ts` (377 files, about 23 MB; Apache-2.0, see its `README.md`).
 - **Skipped as in SUSHI (17):** tests that are `it.skip`/`it.todo` in TypeScript SUSHI, or that spy on a private
   method; each says so in its skip message.
+- **Different by design (3):** `loadConfigurationFromIgResource` tests whose fixtures are not valid FHIR XML; TS reads
+  them with fhir-tool, the port with core's XML parser, which rejects them (`docs/core-divergences.md` C6;
+  `LoadConfigurationFromCoreXmlTest` covers the behaviour).
 - **Opt-in (22):** tests over data that cannot be in the repository: the 267-IG FSH corpus and the JS parser's dumps
   of it (parser differentials), TypeScript SUSHI's results on the corpus configurations and the reference IGs, the
   WP-2/WP-7 gates. They are skipped with a message naming the property that enables them:
   `-Dsushi.vmdata=<data root>` (the build VM's layout: `sushi-wp1/`, `sushi-wp3/`, `sushi-port/...`) enables them
   all, or per test `-Dwp1.data=`, `-Dsushi.config.oracle.dir=`, `-Dsushi.wp5.gate.dir=`, `-Dsushi.genomics.fsh=`;
   a few heavy sets also need `-Dwp1.heavy=true`, `-Dwp2.corpus=`, `-Dsushi.wp7gate.ig=`. With `-Dsushi.vmdata` on
-  the build VM, 3,681 run and 29 stay skipped.
+  the build VM, 3,691 run and 32 stay skipped.
 
 `-Dsushi.ts.dir=<a full SUSHI checkout>` runs the tests against another copy of SUSHI's test tree.
 
@@ -115,13 +123,13 @@ CI with nothing but the repository:
 - [`PORTING.md`](PORTING.md): design decisions (dependencies, the JS value model, the hand-written parser with
   ANTLR as test oracle, package resolution through org.hl7.fhir.core), conventions, the TS → Java module map, the
   tests and the differential harness, and the final status (§9).
-- [`docs/differences.md`](docs/differences.md): every known behaviour difference from TypeScript SUSHI, with
-  evidence and decision. [`docs/package-resolution-differences.md`](docs/package-resolution-differences.md): where
-  core's package resolution differed from fhir-package-loader and what was ported.
+- [`docs/core-divergences.md`](docs/core-divergences.md): where the port does not use org.hl7.fhir.core and why
+  (with the IGs that hinge on it), package resolution, predefined FHIR XML, and every other known difference from
+  TypeScript SUSHI.
 - `tests/inventory.tsv`: SUSHI's Jest tests and which JUnit test ports each.
 - `tests/e2e/ig`: the small FSH project `scripts/sushi-e2e.sh` runs through the wrapper.
 - `scripts/`: `build.sh` (the module build), `diff-run.sh` / `corpus-diff.sh` (differential runs against
-  TypeScript SUSHI), `classify-diff.py`; `oracle/`, `xhtml/`, `fhirtool/`, `probe/`, `wp1/`, `ts2junit/` are the
+  TypeScript SUSHI), `classify-diff.py`; `oracle/`, `xhtml/`, `probe/`, `corexml/` (the XML-usage census), `wp1/`, `ts2junit/` are the
   oracle and test-porting tools used during the port (they expect the corpus workspace and the reference image).
 
 The module's place in the repository (shared code in `common`, module rules, building) is in

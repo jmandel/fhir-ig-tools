@@ -7,7 +7,7 @@
 #   sushi/scripts/build.sh -B -q -DskipTests package             jars only: sushi/target/sushi.jar
 #
 # SUSHI_BUILD_DIR=<dir> puts sushi's target dir there instead of sushi/target (for example on the VM disk,
-# $VMDATA/sushi-port/build/<name>, which the oracle scripts under scripts/{xhtml,fhirtool,probe} read; D11).
+# $VMDATA/sushi-port/build/<name>, which the oracle scripts under scripts/{xhtml,probe,corexml} read; D11).
 # Start heavy runs with work/locks/waitfree.sh timing on the shared build machine.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"

@@ -12,7 +12,7 @@ import org.hl7.fhir.common.js.Js;
 /**
  * Writes updated dependency versions into sushi-config.yaml text. TS re-serialises the whole document with the yaml
  * library (which may reformat the file, as its prompt warns); the port edits only the version scalars of the
- * top-level {@code dependencies} block in place and keeps everything else byte for byte (docs/known-differences.md).
+ * top-level {@code dependencies} block in place and keeps everything else byte for byte (docs/core-divergences.md T4).
  * Supported forms: {@code id: 1.2.3}, a nested block with or without a {@code version:} line, and a one-line flow
  * map {@code id: { ..., version: 1.2.3 }}. Returns null when the file has no block-style top-level
  * {@code dependencies} mapping (TS: no write when the node is not a YAMLMap).
