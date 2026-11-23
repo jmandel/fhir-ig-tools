@@ -161,10 +161,9 @@
           <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
             <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
           </statelessTestsetReporter>
-          <systemPropertyVariables>
-            <!-- SUSHI checkout (tests + fixtures), used by data-driven tests; they skip when it is absent -->
-            <sushi.ts.dir>${sushi.ts.dir}</sushi.ts.dir>
-          </systemPropertyVariables>
+          <!-- Test data: SUSHI's own test fixtures are vendored (src/test/resources/sushi-ts). Data that cannot be in the
+               repository (the corpus, recorded TS runs) is opt-in: -Dsushi.vmdata=<data root> or the per-test
+               properties; Maven passes -D properties on to the tests (testhelpers.OptInData, sushi/README.md). -->
         </configuration>
       </plugin>
       <plugin>
@@ -232,12 +231,4 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <!-- default location of the SUSHI checkout on the build VM (scripts/lib/vmdata.sh); -Dsushi.ts.dir=... overrides -->
-      <id>ts-dir-default</id>
-      <activation><property><name>!sushi.ts.dir</name></property></activation>
-      <properties><sushi.ts.dir>/srv/ig/sushi-spike/sushi</sushi.ts.dir></properties>
-    </profile>
-  </profiles>
 </project>

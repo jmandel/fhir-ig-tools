@@ -30,8 +30,10 @@ SUSHI_BUILD_DIR=$VMDATA/sushi-port/build/<name> scripts/build.sh ...   # target 
 - Java 21 (`--release 21`). `common`, which sushi uses for the JS value model and the YAML event layer, is Java 17.
 - Shared machine: start Maven/node/TS-SUSHI runs with `../work/locks/waitfree.sh timing <cmd>`; kill only your own
   PIDs.
-- Tests that need VM data (`$VMDATA/sushi-spike/sushi/test`, `$VMDATA/sushi-port/ref`) skip when it is absent
-  (`-Dsushi.ts.dir=` overrides the TS checkout path).
+- SUSHI's test fixtures (the files the ported tests read from TS SUSHI's `test/` tree) are vendored in
+  `src/test/resources/sushi-ts`; `-Dsushi.ts.dir=<checkout>` points the tests at a full checkout instead. Tests
+  over data that can't be in the repository (the corpus, recorded TS runs) are opt-in, `-Dsushi.vmdata=$VMDATA`
+  or per-test properties (`testhelpers.OptInData`, README "Tests").
 
 ## 2. Key design decisions
 

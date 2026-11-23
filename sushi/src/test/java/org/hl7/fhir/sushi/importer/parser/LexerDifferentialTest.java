@@ -34,7 +34,7 @@ class LexerDifferentialTest {
   }
 
   static void check(String set, String ext) throws IOException {
-    Path in = OracleCrossCheckTest.DATA.resolve(set), dumps = OracleCrossCheckTest.DATA.resolve("jsdump").resolve(set);
+    Path in = OracleCrossCheckTest.data().resolve(set), dumps = OracleCrossCheckTest.data().resolve("jsdump").resolve(set);
     Assumptions.assumeTrue(Files.isDirectory(in) && Files.isDirectory(dumps), "no " + set + " data");
     Assumptions.assumeTrue(Differential.heavy(set), "heavy set " + set + ": run with -Dwp1.heavy=true");
     List<Path> inputs;

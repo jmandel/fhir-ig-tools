@@ -12,13 +12,16 @@ import org.junit.jupiter.api.Test;
 /**
  * Checks the Java ANTLR oracle (AntlrOracle) against SUSHI's real JS parser: identical tokens, errors (text, order,
  * position) and trees on every input that has a JS dump. Inputs/dumps live on the VM disk (skipped when absent):
- * {@code -Dwp1.data=/srv/ig/sushi-wp1} with {@code corpus/}, {@code jsdump/corpus/}, ...
+ * {@code -Dwp1.data=<dir>} (or {@code -Dsushi.vmdata}: {@code <root>/sushi-wp1}) with {@code corpus/}, {@code jsdump/corpus/}, ...
  */
 class OracleCrossCheckTest {
-  static final Path DATA = Paths.get(System.getProperty("wp1.data", "/srv/ig/sushi-wp1"));
+  /** The WP-1 data dir (opt-in): -Dwp1.data, or -Dsushi.vmdata/sushi-wp1. */
+  static Path data() {
+    return org.hl7.fhir.sushi.testhelpers.OptInData.require("wp1.data", "sushi-wp1", "the FSH corpus with JS parser dumps");
+  }
 
   static void check(String set, String ext) throws IOException {
-    Path in = DATA.resolve(set), dumps = DATA.resolve("jsdump").resolve(set);
+    Path in = data().resolve(set), dumps = data().resolve("jsdump").resolve(set);
     Assumptions.assumeTrue(Files.isDirectory(in) && Files.isDirectory(dumps), "no " + set + " data");
     Assumptions.assumeTrue(Differential.heavy(set), "heavy set " + set + ": run with -Dwp1.heavy=true");
     Differential.Report r = Differential.compare(in, dumps, ext,

@@ -11,7 +11,7 @@ class ParserSpeedTest {
   @Test void speed() throws Exception {
     if (!Boolean.getBoolean("wp1.speed")) return;
     List<String> inputs;
-    try (Stream<Path> s = Files.walk(OracleCrossCheckTest.DATA.resolve("corpus"))) {
+    try (Stream<Path> s = Files.walk(OracleCrossCheckTest.data().resolve("corpus"))) {
       inputs = s.filter(p -> p.toString().endsWith(".fsh")).sorted().map(p -> Differential.readInput(p, true)).toList();
     }
     long chars = inputs.stream().mapToLong(String::length).sum();

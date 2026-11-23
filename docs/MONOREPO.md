@@ -97,7 +97,7 @@ doesn't count) and, for Maven builds, when `mvn` is on the PATH. Otherwise it ru
 
 | What | Command | Notes |
 |---|---|---|
-| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | `common` (event layer API, JS value model) and `sushi` (~3.7k, mostly 1:1 ports of SUSHI's Jest tests; tests that need SUSHI's TypeScript checkout or recorded reference runs skip when absent, `-Dsushi.ts.dir=` points at the checkout) |
+| Unit tests (JUnit) | part of `./build.sh` (`mvn package`) | `common` (event layer API, JS value model) and `sushi` (~3.7k, mostly 1:1 ports of SUSHI's Jest tests). Self-contained: SUSHI's test fixtures are vendored (`sushi/src/test/resources/sushi-ts`). 22 tests over data outside the repository (corpus, recorded TS runs) are opt-in: `-Dsushi.vmdata=$VMDATA` (`sushi/README.md`, "Tests") |
 | SUSHI differential, one IG | `sushi/scripts/diff-run.sh <IG> [label]` | TypeScript SUSHI 3.21.1 vs `sushi/target/sushi.jar` on the same source copy and frozen package snapshot: classified file diff, log diff, exit codes. Needs the corpus workspace (`ROOT`, default the repository root, with `work/sushi-spike`) and the reference runs on the VM |
 | SUSHI differential, corpus | `sushi/scripts/corpus-diff.sh [-j N] [list]` | `diff-run.sh` over the 267 FSH IGs |
 | Differential suites vs recorded Ruby output | `scripts/test-suites.sh` | builds with Maven first unless `SHIM_NO_BUILD=1`. Runs against `jekyll/target/jekyll.jar` + `test-classes`, i.e. the release jar itself. `SHIM_BUILD=jekyll/build[-<module>]` tests a `--fast` build instead. `SHIM_W_SUITES=1` (repo at `/w`) adds the YAML file suites. |

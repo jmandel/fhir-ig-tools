@@ -318,7 +318,7 @@ class PathUtilsTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void load() throws Exception {
-      Path p = Path.of(System.getProperty("sushi.ts.dir", "/srv/ig/sushi-spike/sushi"), "test", "testhelpers",
+      Path p = Path.of(org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.tsDir(), "test", "testhelpers",
           "testdefs", "r4-definitions", "package", "Observation-20minute-apgar-score.json");
       assumeTrue(Files.exists(p), "TS checkout not available: " + p);
       object = InstanceDefinition.fromJSON((Map<String, Object>) Json.parseFile(Files.readString(p)));

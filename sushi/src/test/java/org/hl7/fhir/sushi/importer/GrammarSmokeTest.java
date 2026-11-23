@@ -57,9 +57,11 @@ class GrammarSmokeTest {
 
   /** All .fsh files under the given VM dirs (TS SUSHI's test fixtures and a corpus IG); skipped when absent. */
   @Test void parsesRealFshFiles() throws IOException {
-    List<Path> roots = Stream.of(System.getProperty("sushi.ts.dir", "") + "/test",
-            "/srv/ig/sushi-spike/src/HL7__genomics-reporting/input/fsh")
-        .map(Paths::get).filter(Files::isDirectory).toList();
+    // SUSHI's test fixtures (vendored) and, opt-in, a corpus IG (-Dsushi.vmdata)
+    Path corpusIg = org.hl7.fhir.sushi.testhelpers.OptInData.dir("sushi.genomics.fsh", "sushi-spike/src/HL7__genomics-reporting/input/fsh");
+    List<Path> roots = Stream.concat(Stream.of(Paths.get(org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.tsDir(), "test")),
+            corpusIg == null ? Stream.<Path>empty() : Stream.of(corpusIg))
+        .filter(Files::isDirectory).toList();
     org.junit.jupiter.api.Assumptions.assumeFalse(roots.isEmpty(), "no FSH sources on this machine");
     int files = 0, entities = 0;
     List<String> failures = new ArrayList<>();

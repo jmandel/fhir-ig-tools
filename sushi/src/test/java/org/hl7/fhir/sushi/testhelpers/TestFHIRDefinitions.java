@@ -116,10 +116,26 @@ public class TestFHIRDefinitions extends FHIRDefinitions {
     return virtualPackages;
   }
 
-  /** SUSHI checkout with tests and fixtures (default: the VM copy). */
+  /**
+   * The TS SUSHI 3.21.1 test fixtures: by default the copy vendored in src/test/resources/sushi-ts (its test/ tree,
+   * only the files the ported tests read; see its README.md), as found on the test class path;
+   * {@code -Dsushi.ts.dir=<a full SUSHI checkout>} overrides.
+   */
   public static String tsDir() {
     String d = System.getProperty("sushi.ts.dir");
-    return d == null || d.isEmpty() ? "/srv/ig/sushi-spike/sushi" : d;
+    return d == null || d.isEmpty() ? VENDORED : d;
+  }
+
+  private static final String VENDORED = vendored();
+
+  private static String vendored() {
+    java.net.URL u = TestFHIRDefinitions.class.getResource("/sushi-ts/LICENSE");
+    if (u == null) throw new IllegalStateException("the vendored SUSHI test fixtures (sushi-ts/) are not on the class path");
+    try {
+      return Path.of(u.toURI()).getParent().toString();
+    } catch (java.net.URISyntaxException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /** TS testDefsPath(...): test/testhelpers/testdefs/... in the SUSHI checkout */

@@ -23,14 +23,14 @@ import org.junit.jupiter.api.function.Executable;
 /**
  * The TS tests compare the returned Configuration with toEqual; here the typed {@code Configuration} is turned back
  * into the TS object ({@link ConfigurationJs#toJs}) and compared with Jest's toEqual semantics ({@link TestJs}).
- * Fixtures are read from the TS checkout ({@code -Dsushi.ts.dir}, default the VM path).
+ * Fixtures are SUSHI's own (vendored, {@code TestFHIRDefinitions.tsDir()}).
  */
 class ImportConfigurationTest {
   JsObject minYAML;
   final Map<String, Object> vars = new HashMap<>();
 
   static Path tsTestDir() {
-    return Path.of(System.getProperty("sushi.ts.dir", "/srv/ig/sushi-spike/sushi")).resolve("test/import");
+    return Path.of(org.hl7.fhir.sushi.testhelpers.TestFHIRDefinitions.tsDir()).resolve("test/import");
   }
 
   /** path.join(__dirname, ...) */

@@ -30,7 +30,8 @@ final class ConfigOracle {
 
   /** The oracle dir (VM): corpus-inputs.json + corpus-oracle.json, mutation-inputs.json + mutation-oracle.json. */
   static Path dir() {
-    return Path.of(System.getProperty("sushi.config.oracle.dir", "/srv/ig/sushi-wp3"));
+    return org.hl7.fhir.sushi.testhelpers.OptInData.require("sushi.config.oracle.dir", "sushi-wp3",
+        "the config oracle data (TS SUSHI's results on the corpus configs and the mutation set)");
   }
 
   @SuppressWarnings("unchecked")
